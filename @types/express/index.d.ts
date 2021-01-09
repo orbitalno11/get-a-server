@@ -1,9 +1,9 @@
-import CurrentUser from "../../models/common/CurrentUser"
+import User from "../../src/model/User"
 
 declare global {
-    namespace Express {
-        interface Request {
-            currentUser: CurrentUser
-        }
+  namespace Express {
+    interface Request {
+      currentUser: User
     }
+  }
 }
