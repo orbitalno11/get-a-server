@@ -12,7 +12,7 @@
     <artifactId>auth</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>auth</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Authorization server</description>
 
     <properties>
         <java.version>15</java.version>
@@ -63,6 +63,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dev-get-a</groupId>
+            <artifactId>core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
