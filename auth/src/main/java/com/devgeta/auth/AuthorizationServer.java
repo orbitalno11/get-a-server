@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan("com.devgeta")
 @EnableJpaRepositories("com.devgeta")
 @ComponentScan("com.devgeta")
-public class AuthApplication {
+public class AuthorizationServer {
 
     public static void main(String[] args) {
-        SpringApplication.run(AuthApplication.class, args);
+        SpringApplication.run(AuthorizationServer.class, args);
     }
 
 }
