@@ -6,10 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="server" />
         <module name="core" />
+        <module name="data" />
         <module name="auth" />
         <module name="resource" />
+        <module name="domain" />
       </profile>
     </annotationProcessing>
   </component>
@@ -17,6 +18,8 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="auth" options="-parameters" />
       <module name="core" options="-parameters" />
+      <module name="data" options="-parameters" />
+      <module name="domain" options="-parameters" />
       <module name="resource" options="-parameters" />
     </option>
   </component>
