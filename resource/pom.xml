@@ -8,14 +8,15 @@
         <version>2.3.7.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.dev-get-a</groupId>
+    <groupId>com.get-a</groupId>
     <artifactId>resource</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>resource</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
-        <java.version>15</java.version>
+        <java.version>1.8</java.version>
         <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
     </properties>
 
@@ -35,6 +36,17 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.get-a</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.get-a</groupId>
+            <artifactId>data</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -83,6 +95,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
             </plugin>
         </plugins>
     </build>

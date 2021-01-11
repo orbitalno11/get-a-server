@@ -1,0 +1,51 @@
+version: '3.3'
+
+services: 
+  db:
+    image: mysql:latest
+    container_name: mysql-db
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+    ports: 
+      - "3306:3306"
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: my-php-myadmin
+    ports: 
+      - "8082:80"
+    restart: always
+    depends_on: 
+      - db
+    environment: 
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWAORD: root
+    
+  auth:
+    image: auth-server
+    container_name: auth-server-app
+    build: 
+      context: .
+      dockerfile: ./docker/auth-server/Dockerfile
+    ports: 
+      - "8090:8090"
+    restart: always
+    depends_on: 
+      - db
+    environment: 
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/get_a_dev?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+  resource:
+    image: resource-server
+    container_name: resource-server-app
+    build: 
+      context: .
+      dockerfile: ./docker/resource-server/Dockerfile
+    ports: 
+      - "8091:8091"
+    restart: always
+    
