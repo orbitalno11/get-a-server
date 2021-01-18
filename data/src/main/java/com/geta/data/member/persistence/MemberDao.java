@@ -1,4 +1,4 @@
-package com.geta.domain.member.persistence;
+package com.geta.data.member.persistence;
 
 import com.geta.core.member.model.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

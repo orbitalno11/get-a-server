@@ -1,4 +1,4 @@
-package com.geta.domain.config;
+package com.geta.data.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;

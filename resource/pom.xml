@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.get-a</groupId>
     <artifactId>resource</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-DEV</version>
     <packaging>jar</packaging>
     <name>resource</name>
     <description>Demo project for Spring Boot</description>
@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>com.get-a</groupId>
-            <artifactId>data</artifactId>
+            <artifactId>domain</artifactId>
             <version>${project.version}</version>
         </dependency>
 

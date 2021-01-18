@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.get-a</groupId>
     <artifactId>auth</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-DEV</version>
     <packaging>jar</packaging>
     <name>auth</name>
     <description>Authorization server</description>
@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>com.get-a</groupId>
-            <artifactId>domain</artifactId>
+            <artifactId>data</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.get-a</groupId>
     <artifactId>core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-DEV</version>
     <packaging>jar</packaging>
     <name>core</name>
     <description>core for application</description>

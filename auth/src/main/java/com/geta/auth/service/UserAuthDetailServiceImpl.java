@@ -4,7 +4,7 @@ import com.geta.core.oauth.model.UserAuth;
 import com.geta.core.oauth.model.UserAuthority;
 import com.geta.core.oauth.model.dto.CustomGrantedAuthority;
 import com.geta.core.oauth.model.dto.CustomUserDetails;
-import com.geta.domain.auth.persistence.AuthenticationDao;
+import com.geta.data.auth.persistence.AuthenticationDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
