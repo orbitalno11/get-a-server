@@ -1,10 +1,10 @@
-package com.geta.domain.member;
+package com.geta.data.member;
 
 import com.geta.core.auth.RegisterForm;
 import com.geta.core.member.model.Member;
 import com.geta.core.utils.common.DateFormatter;
 import com.geta.core.utils.common.Thailand;
-import com.geta.domain.common.CustomRepository;
+import com.geta.data.common.CustomRepository;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;

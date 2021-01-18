@@ -1,10 +1,10 @@
-package com.geta.data.member;
+package com.geta.domain.member;
 
 import com.geta.core.auth.RegisterForm;
 import com.geta.core.member.model.Member;
 import com.geta.core.utils.UseCase;
-import com.geta.domain.member.MemberRepository;
-import com.geta.domain.member.persistence.MemberDao;
+import com.geta.data.member.MemberRepository;
+import com.geta.data.member.persistence.MemberDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

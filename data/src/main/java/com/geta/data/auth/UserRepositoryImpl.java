@@ -1,8 +1,8 @@
-package com.geta.domain.auth;
+package com.geta.data.auth;
 
 import com.geta.core.oauth.model.UserAuth;
 import com.geta.core.utils.CustomPasswordEncoder;
-import com.geta.domain.common.CustomRepository;
+import com.geta.data.common.CustomRepository;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;

@@ -1,12 +1,12 @@
-package com.geta.data.auth;
+package com.geta.domain.auth;
 
 import com.geta.core.auth.RegisterForm;
 import com.geta.core.oauth.model.UserAuth;
 import com.geta.core.utils.UseCase;
 import com.geta.core.utils.common.mapper.RegisterFormToUserAuthMapper;
-import com.geta.domain.auth.UserAuthRepository;
-import com.geta.domain.auth.UserAuthorityRepository;
-import com.geta.domain.auth.persistence.AuthenticationDao;
+import com.geta.data.auth.UserAuthRepository;
+import com.geta.data.auth.UserAuthorityRepository;
+import com.geta.data.auth.persistence.AuthenticationDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

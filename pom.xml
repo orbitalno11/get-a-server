@@ -6,7 +6,7 @@
 
     <groupId>com.get-a</groupId>
     <artifactId>server</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1-DEV</version>
     <packaging>pom</packaging>
     <name>get-a-server</name>
 

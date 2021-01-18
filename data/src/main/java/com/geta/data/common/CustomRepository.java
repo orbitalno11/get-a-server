@@ -1,4 +1,4 @@
-package com.geta.domain.common;
+package com.geta.data.common;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

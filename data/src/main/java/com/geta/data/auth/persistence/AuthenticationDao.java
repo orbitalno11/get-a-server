@@ -1,4 +1,4 @@
-package com.geta.domain.auth.persistence;
+package com.geta.data.auth.persistence;
 
 import com.geta.core.oauth.model.UserAuth;
 import org.springframework.data.jpa.repository.JpaRepository;

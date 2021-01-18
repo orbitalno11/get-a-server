@@ -1,4 +1,4 @@
-package com.geta.domain;
+package com.geta.data;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

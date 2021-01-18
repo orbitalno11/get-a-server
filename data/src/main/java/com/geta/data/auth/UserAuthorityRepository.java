@@ -1,4 +1,4 @@
-package com.geta.domain.auth;
+package com.geta.data.auth;
 
 import com.geta.core.oauth.model.UserAuth;
 

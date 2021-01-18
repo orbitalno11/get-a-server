@@ -1,4 +1,4 @@
-package com.geta.domain.member;
+package com.geta.data.member;
 
 import com.geta.core.auth.RegisterForm;
 import com.geta.core.member.model.Member;
