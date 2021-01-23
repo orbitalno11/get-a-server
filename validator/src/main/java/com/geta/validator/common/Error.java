@@ -1,11 +1,12 @@
 package com.geta.validator.common;
 
 public enum Error {
-    NAME("You can not use this name"),
+    // learner register form
     EMAIL("e-mail is invalid"),
     PHONE_NUMBER("phone number is invalid"),
     NATION_ID_TH("nation id is valid"),
-    PASSWORD("password is invalid");
+    PASSWORD("password is invalid"),
+    GENDER("gender is invalid");
 
     public final String value;
     private Error(String value) {

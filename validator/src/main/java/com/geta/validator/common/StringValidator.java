@@ -3,14 +3,6 @@ package com.geta.validator.common;
 import cyclops.control.Validated;
 
 public class StringValidator {
-    public static Validated<Error, String> isValidName(String name) {
-        if (isSafeNotBlank(name) && name.matches(Pattern.NAME.value)) {
-            return Validated.valid(Success.NAME.value);
-        } else {
-            return Validated.invalid(Error.NAME);
-        }
-    }
-
     public static Validated<Error, String> isValidEmail(String email) {
         if (isSafeNotBlank(email) && email.matches(Pattern.EMAIL.value)) {
             return Validated.valid(Success.EMAIL.value);

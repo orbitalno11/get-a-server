@@ -1,7 +1,7 @@
 package com.geta.validator.common;
 
 public enum Pattern {
-    NAME("^[a-zA-Z0-9]+$"),
+    // learner register form
     EMAIL("^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$"),
     PHONE_NUMBER("^[0-9]{9,10}$"),
     NATION_ID_TH("^[0-9]{13}$"),

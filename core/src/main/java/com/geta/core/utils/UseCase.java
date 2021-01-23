@@ -1,5 +1,5 @@
 package com.geta.core.utils;
 
-public interface UseCase<IN, OUT> {
-    OUT execute(IN input);
+public abstract class UseCase<IN, OUT> {
+    protected abstract OUT execute(IN input);
 }

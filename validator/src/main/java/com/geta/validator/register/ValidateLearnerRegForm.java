@@ -1,6 +1,7 @@
 package com.geta.validator.register;
 
 import com.geta.core.auth.LearnerRegisterForm;
+import com.geta.core.utils.common.Constants;
 import com.geta.validator.common.Pattern;
 import com.geta.validator.common.StringValidator;
 import com.geta.validator.common.Error;
@@ -16,10 +17,8 @@ public class ValidateLearnerRegForm {
     }
 
     public Validated<Error, String> validate() {
-        return StringValidator.isValidName(form.getFirstname())
-                .combine(Semigroups.stringConcat, StringValidator.isValidName(form.getLastname()))
-                .combine(Semigroups.stringConcat, StringValidator.isValidEmail(form.getEmail()))
-                .combine(Semigroups.stringConcat, validatePassword(form.getPassword(), form.getConfirmPassword()));
+        return validatePassword(form.getPassword(), form.getConfirmPassword())
+                .combine(Semigroups.stringConcat, validateGender(form.getGender()));
     }
 
     private Validated<Error, String> validatePassword(String pwd, String confirmPwd) {
@@ -27,6 +26,14 @@ public class ValidateLearnerRegForm {
             return Validated.valid(Success.PASSWORD.value);
         } else {
             return Validated.invalid(Error.PASSWORD);
+        }
+    }
+
+    private Validated<Error, String> validateGender(String gender) {
+        if (StringValidator.isSafeNotBlank(gender) && (gender.equals(Constants.MALE.value) || gender.equals(Constants.FEMALE.value) || gender.equals(Constants.LGBT.value))) {
+            return Validated.valid(Success.GENDER.value);
+        } else {
+            return Validated.invalid(Error.GENDER);
         }
     }
 }

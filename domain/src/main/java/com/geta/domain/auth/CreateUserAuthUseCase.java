@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 
 @Component
-public class CreateUserAuthUseCase implements UseCase<RegisterForm, UserAuth> {
+public class CreateUserAuthUseCase extends UseCase<RegisterForm, UserAuth> {
     @Autowired
     private UserAuthRepository userAuthRepository;
 

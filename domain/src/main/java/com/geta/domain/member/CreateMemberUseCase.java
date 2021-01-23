@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreateMemberUseCase implements UseCase<RegisterForm, Member> {
+public class CreateMemberUseCase extends UseCase<RegisterForm, Member> {
     @Autowired
     private MemberRepository memberRepository;
 
