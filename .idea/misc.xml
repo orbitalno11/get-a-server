@@ -10,6 +10,7 @@
         <option value="$PROJECT_DIR$/core/pom.xml" />
         <option value="$PROJECT_DIR$/domain/pom.xml" />
         <option value="$PROJECT_DIR$/data/pom.xml" />
+        <option value="$PROJECT_DIR$/validator/pom.xml" />
       </list>
     </option>
   </component>
