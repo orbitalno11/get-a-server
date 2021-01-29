@@ -7,6 +7,7 @@ import bodyParser from "body-parser"
 import helmet from "helmet"
 
 import { handleResponse } from "./core/response/ResponseHandler"
+import { logger, httpLog } from "./utils/log/logger"
 
 class Server {
     private app
@@ -37,6 +38,7 @@ class Server {
                 extended: true
             })
         )
+        this.app.use(httpLog)
     }
 
     private initialRoute(): void {
@@ -49,7 +51,7 @@ class Server {
 
     startServer(): void {
         this.app.listen(this.portNumber, () => {
-            console.log("[GET-A SERVER] WAS STARTED")
+            logger.info(`[GET-A SERVER] WAS STARTED AT ${this.portNumber}`)
         })
     }
 }
