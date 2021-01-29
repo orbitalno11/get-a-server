@@ -1,5 +1,7 @@
 import admin from "firebase-admin"
+import firebase from "firebase"
 import serviceAccount from "./serviceAccountKey.json"
+import clientConfig from "./FirebaseClient"
 
 const credentailData = {
     type: serviceAccount.type,
@@ -18,9 +20,13 @@ admin.initializeApp({
     credential: admin.credential.cert(credentailData)
 })
 
+firebase.initializeApp(clientConfig)
+
 const auth = admin.auth()
+const clientAuth = firebase.auth()
 
 export {
     admin,
-    auth
+    auth,
+    clientAuth
 }
