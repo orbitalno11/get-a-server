@@ -8,10 +8,13 @@ import helmet from "helmet"
 
 import { handleResponse } from "./core/response/ResponseHandler"
 import { logger, httpLog } from "./utils/log/logger"
+import APIsV1 from "./routes/v1"
 
 class Server {
     private app
     private portNumber
+
+    private readonly apiV1: APIsV1 = new APIsV1()
 
     constructor() {
         this.app = express()
@@ -42,7 +45,8 @@ class Server {
     }
 
     private initialRoute(): void {
-
+        // APIs V1 route
+        this.app.use('/v1', this.apiV1.getRouter())
     }
 
     private initialHandler(): void {
