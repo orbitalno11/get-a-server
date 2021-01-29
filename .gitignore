@@ -4,3 +4,4 @@ package-lock.json
 /build
 /firebase-emulator
 /logs
+/configs/firebase/serviceAccountKey.json
