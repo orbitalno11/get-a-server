@@ -34,6 +34,10 @@ class DatabaseConnection {
     rollback() {
         return util.promisify(this.conn.rollback).call(this.conn)
     }
+
+    close() {
+        return util.promisify(this.conn.end).call(this.conn)
+    }
 }
 
 export default DatabaseConnection
