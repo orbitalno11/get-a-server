@@ -1,37 +1,27 @@
 import { Request, Response, NextFunction } from "express"
-import { authentication } from "../configs/firebase/FirebaseConfig"
 import FailureResponse from "../core/response/FailureResponse"
-import UserRole from "../models/constant/UserRole"
 import { logger } from "../utils/log/logger"
+import TokenManager from "../utils/token/TokenManager"
 import UserManager from "../utils/UserManager"
 
 class AuthenticationMiddleware {
 
-    private getAuthToken(req: Request) {
-        if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-            const token = req.headers.authorization.split("Bearer ")[1]
-            req["currentUser"] = {
-                id: null,
-                role: null,
-                token: token
-            }
-            return token
-        } else {
-            logger.error("Cannot found token")
-            return null
-        }
-    }
-
     isSignin = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const token = this.getAuthToken(req)
-            
+            const token = TokenManager.extractAuthToken(req)
+
             if (!token) return next(new FailureResponse("Can not found token", 401))
 
-            const firebaseUser = await authentication.verifyIdToken(token)
-            const userData = await UserManager.getUser(firebaseUser["uid"])
+            const validToken = await TokenManager.verifyToken(token)
+            if (!validToken) return next(new FailureResponse("Yout token is invalid", 401))
 
+            const firebaseUser = await TokenManager.decodeFirebaseToken(token)
+            const userData = await UserManager.getUser(firebaseUser["uid"])
+            
             req["currentUser"]["id"] = userData["id"]
+            req["currentUser"]["token"] = token
+            req["currentUser"]["role"] = userData["role"]
+            
             next()
         } catch (error) {
             logger.error(error)
