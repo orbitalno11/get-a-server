@@ -51,7 +51,9 @@ class LearnerController extends ControllerCRUD {
             await connection.query(insertMemberRoleCommand, [UserRole.LEARNER, userId])
             await connection.commit()
             const token = TokenManager.generateSimpleProfileTokenData({
-                userId: user['uid'],
+                id: inputData['id'],
+                email: inputData["email"],
+                username: inputData["username"],
                 role: UserRole.LEARNER
             })
             return next(new SuccessResponse<String | null>(token))
