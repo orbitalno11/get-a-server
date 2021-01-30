@@ -1,6 +1,5 @@
 import util from "util"
 import mysql from "mysql"
-import { DatabaseError } from "../models/constant/Database"
 class DatabaseConnection {
     private conn
 

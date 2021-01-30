@@ -17,6 +17,7 @@ import TokenManager from "../../utils/token/TokenManager"
 import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFromValidator"
 import LearnerToArrayMapper from "../../utils/mapper/query/LearnerToArrayMapper"
 import UserErrorType from "../../core/exception/model/UserErrorType"
+import { isEmpty } from "../../core/extension/CommonExtension"
 
 class LearnerController extends ControllerCRUD {
     private readonly table: string = DatabaseTable.MEMBER_TABLE
@@ -43,9 +44,11 @@ class LearnerController extends ControllerCRUD {
             userId = user['uid']
 
             // insert learner data to database
-            const sqlCommand = "INSERT INTO member (id, firstname, lastname, gender, dateOfBirth, address1, address2, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            const insertMemberCommand = `INSERT INTO ${DatabaseTable.MEMBER_TABLE} (member_id, firstname, lastname, gender, dateOfBirth, address1, address2, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            const insertMemberRoleCommand = `INSERT INTO ${DatabaseTable.MEMBER_ROLE_TABLE} (role_id, member_id) VALUES (?, ?)`
             await connection.beginTransaction()
-            await connection.query(sqlCommand, LearnerToArrayMapper(inputData))
+            await connection.query(insertMemberCommand, LearnerToArrayMapper(inputData))
+            await connection.query(insertMemberRoleCommand, [UserRole.LEARNER, userId])
             await connection.commit()
             const token = TokenManager.generateSimpleProfileTokenData({
                 userId: user['uid'],
@@ -66,11 +69,29 @@ class LearnerController extends ControllerCRUD {
     }
 
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
-        
-        return next(new SuccessResponse("Hello"))
+        const idParam = req.params.id
+
+        if (!idParam) return next(new FailureResponse("Can not find user id", 404))
+
+        try {
+            const db = new DatabaseConnection()
+            const sqlCommand = `SELECT  member_id, firstname, lastname, gender, dateOfBirth, 
+                                address1, address2, email, username, created, updated, role_id 
+                                FROM ${DatabaseTable.MEMBER_TABLE} NATURAL JOIN ${DatabaseTable.MEMBER_ROLE_TABLE} 
+                                WHERE member_id like ?`
+            const memberData = await db.query(sqlCommand, idParam)
+
+            if (isEmpty(memberData)) return next(new SuccessResponse("Can not find user"))
+
+            return next(new SuccessResponse(memberData))
+        } catch (err) {
+            return next(new FailureResponse("Can not get user from database", 500, err))
+        }
     }
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<void> { }
+    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    }
     async delete(req: Request, res: Response, next: NextFunction): Promise<void> { }
 }
 

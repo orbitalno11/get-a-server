@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken"
 import { authentication } from "../../configs/firebase/FirebaseConfig"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FailureResponse from "../../core/response/FailureResponse"
 import UserTokenData from "../../models/UserTokenData"
 

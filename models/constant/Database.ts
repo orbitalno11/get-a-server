@@ -1,5 +1,6 @@
 enum DatabaseTable {
-    MEMBER_TABLE = "member"
+    MEMBER_TABLE = "member",
+    MEMBER_ROLE_TABLE = "member_role"
 }
 
 enum DatabaseError {

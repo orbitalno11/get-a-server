@@ -7,5 +7,14 @@ import { SuccessResponse, FailureResponse } from "../../core/response/ResponseHa
 
 
 class AuthenticationConroller extends ControllerCRUD {
+    async getTokenProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const currentUser = req.currentUser
+        try {
+            if (!currentUser) return next(new FailureResponse("Can not find user from token", 400))
 
+            
+        } catch (err) {
+
+        }
+    }
 }
