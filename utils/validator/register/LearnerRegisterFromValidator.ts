@@ -1,6 +1,7 @@
 import validator from "validator"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import LearnerForm from "../../../models/form/register/LearnerForm"
+import { logger } from "../../log/logger"
 import ValidateResult from "../ValidateResult"
 
 class LearnerRegisterFromValidator {
@@ -20,10 +21,20 @@ class LearnerRegisterFromValidator {
         if (!validator.isEmail(this.form.email)) this.errors['email'] = "email is required"
         if (isEmpty(this.form.password)) this.errors['password'] = "password is required"
         if (isEmpty(this.form.confirmPassword)) this.errors['confirmPassword'] = "password is required"
-        if (!validator.isStrongPassword(this.form.password)) this.errors['password'] = "password is not strong"
-        if (!validator.isStrongPassword(this.form.confirmPassword) && (this.form.password === this.form.confirmPassword)) this.errors['confirmPassword'] = "confirmPassword is not match with password"
-        if (!validator.isNumeric(this.form.grade.toString())) this.errors['grade'] = "grade is required"
 
+        const passwordOptions = {
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+            returnScore: false
+        }
+
+        if (!validator.isStrongPassword(this.form.password, passwordOptions)) this.errors['password'] = "password is not strong"
+        if (!validator.isStrongPassword(this.form.confirmPassword, passwordOptions) && (this.form.password !== this.form.confirmPassword)) this.errors['confirmPassword'] = "confirmPassword is not match with password"
+        if (!validator.isNumeric(this.form.grade.toString())) this.errors['grade'] = "grade is required"
+        
         this.isValid = isEmpty(this.errors)
 
         return {

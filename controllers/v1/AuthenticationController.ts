@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { auth } from "../../configs/firebase/FirebaseConfig"
+import { authentication } from "../../configs/firebase/FirebaseConfig"
 import ControllerCRUD from "../../core/Controller"
 
 // handle result

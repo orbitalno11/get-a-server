@@ -6,7 +6,7 @@ const LearnerFormToLearnerMapper = (from: LearnerForm): Learner => (
         id: null,
         firstname: from.firstname,
         lastname: from.lastname,
-        dateOfBirth: from.dateOfBirth,
+        dateOfBirth: new Date(from.dateOfBirth),
         gender: from.gender,
         email: from.email,
         username: from.email,

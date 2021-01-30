@@ -12,7 +12,9 @@ class LearnerRouter extends Route {
     }
 
     initialRoute(): void {
-        this.router.route('/create').post((req, res, next) => controllerHandler(this.controller.create(req, res, next)))
+        this.router.route("/create").post((req, res, next) => controllerHandler(this.controller.create(req, res, next)))
+        this.router.route("/:id")
+            .get(this.auth.isSignin, (req, res, next) => controllerHandler(this.controller.read(req, res, next)))
     }
 
 }

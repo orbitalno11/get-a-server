@@ -1,28 +1,38 @@
+import util from "util"
 import mysql from "mysql"
-
+import { DatabaseError } from "../models/constant/Database"
 class DatabaseConnection {
-    private connection
+    private conn
 
     constructor() {
-        this.connection = mysql.createConnection({
+        this.conn = mysql.createConnection({
             host: process.env.db_host,
             user: process.env.db_user,
             password: process.env.password,
             database: process.env.db_name
         })
-        this.connect()
+        this.conn.connect()
     }
 
-    connect() {
-        this.connection.connect()
+    query(sqlCommand: string, args?: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.conn.query(sqlCommand, args, (err, result, fields) => {
+                if (!err) resolve(result)
+                else reject(err)
+            })
+        })
     }
 
-    getConnection(): mysql.Connection {
-        return this.connection
+    beginTransaction() {
+        return util.promisify(this.conn.beginTransaction).call(this.conn)
     }
 
-    close() {
-        this.connection.destroy()
+    commit() {
+        return util.promisify(this.conn.commit).call(this.conn)
+    }
+
+    rollback() {
+        return util.promisify(this.conn.rollback).call(this.conn)
     }
 }
 
