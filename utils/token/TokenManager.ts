@@ -1,5 +1,5 @@
-import { auth, clientAuth } from "../configs/firebase/FirebaseConfig"
-import FailureResponse from "../core/response/FailureResponse"
+import { auth, clientAuth } from "../../configs/firebase/FirebaseConfig"
+import FailureResponse from "../../core/response/FailureResponse"
 
 class TokenManager {
     public static async getToken(userId: string) {

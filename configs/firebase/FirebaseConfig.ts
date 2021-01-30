@@ -22,11 +22,11 @@ admin.initializeApp({
 
 firebase.initializeApp(clientConfig)
 
-const auth = admin.auth()
+const authentication = admin.auth()
 const clientAuth = firebase.auth()
 
 export {
     admin,
-    auth,
+    authentication,
     clientAuth
 }
