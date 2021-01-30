@@ -92,8 +92,9 @@ class LearnerController extends ControllerCRUD {
     }
 
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-
+        const currentUser = req.currentUser
     }
+    
     async delete(req: Request, res: Response, next: NextFunction): Promise<void> { }
 }
 
