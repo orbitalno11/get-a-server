@@ -1,6 +1,8 @@
+import multer from "multer"
 import LearnerController from "../../controllers/v1/LearnerController"
 import Route from "../../core/Route"
 import { controllerHandler } from "../../middlewares/Controller"
+import UploadImageMiddleware from "../../middlewares/multer/UploadImage"
 
 class LearnerRouter extends Route {
     controller = new LearnerController()
@@ -11,7 +13,10 @@ class LearnerRouter extends Route {
     }
 
     initialRoute(): void {
-        this.router.route("/create").post((req, res, next) => controllerHandler(this.controller.create(req, res, next)))
+        const uploadMiddleware = new UploadImageMiddleware()
+        const uploader2MB = uploadMiddleware.uploadImage2Mb("learner")
+
+        this.router.route("/create").post(uploader2MB, (req, res, next) => controllerHandler(this.controller.create(req, res, next)))
         this.router.route("/:id")
             .get((req, res, next) => controllerHandler(this.controller.read(req, res, next)))
             .put((req, res, next) => controllerHandler(this.controller.update(req, res, next)))

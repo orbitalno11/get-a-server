@@ -1,5 +1,7 @@
 enum ErrorType {
-    UNEXPECTED_ERROR
+    UNEXPECTED_ERROR,
+
+    VALIDATE_DATA
 }
 
 export default ErrorType

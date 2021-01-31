@@ -1,13 +1,13 @@
-import LearnerForm from "../../../models/form/register/LearnerForm"
-import Learner from "../../../models/Learner"
+import Member from "../../../models/Member"
 
-const LearnerToArrayMapper = (from: Learner) => (
+const MemberToArrayMapper = (from: Member) => (
     [
         from.id,
         from.firstname,
         from.lastname,
         from.gender,
         from.dateOfBirth,
+        from.profileUrl,
         from.address1,
         from.address2,
         from.email,
@@ -17,4 +17,4 @@ const LearnerToArrayMapper = (from: Learner) => (
     ]
 )
 
-export default LearnerToArrayMapper
+export default MemberToArrayMapper

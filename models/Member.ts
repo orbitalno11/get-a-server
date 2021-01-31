@@ -6,6 +6,7 @@ interface Member extends User {
     lastname: string
     gender: string
     dateOfBirth: Date
+    profileUrl: string | null
     address1: Address | string | null
     address2: Address | string | null
     created: Date | null

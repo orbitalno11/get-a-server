@@ -3,7 +3,7 @@ import multer from "multer"
 import fs from "fs"
 import util from "util"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
-import UploadFileErrorType from "../../core/exceptions/model/UploadFileErrorType"
+import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 
 class UploadImageMiddleware {
@@ -11,7 +11,7 @@ class UploadImageMiddleware {
     private fileFilter(req:Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
         if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG)$/)) {
             cb(null, false)
-            return cb(new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", UploadFileErrorType.FILE_NOT_ALLOW))
+            return cb(new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", FileErrorType.FILE_NOT_ALLOW))
         } else {
             return cb(null, true)
         }
@@ -34,7 +34,7 @@ class UploadImageMiddleware {
         }
         
         if (stat && !stat.isDirectory()) {
-            throw new ErrorExceptions("Directory can not be created", UploadFileErrorType.CAN_NOT_CREATE_DIRECTORY)
+            throw new ErrorExceptions("Directory can not be created", FileErrorType.CAN_NOT_CREATE_DIRECTORY)
         }
 
         return location
@@ -64,7 +64,7 @@ class UploadImageMiddleware {
             fileFilter: this.fileFilter
         }).single("image")
 
-        return util.promisify(uploadImage2MbConfig)
+        return uploadImage2MbConfig
     }
 }
 
