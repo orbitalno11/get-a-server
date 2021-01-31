@@ -47,11 +47,13 @@ class UserManager {
         }
     }
 
-    public static async deleteUser(userId: string): Promise<void> {
+    public static async deleteUser(userId: string): Promise<boolean> {
         try {
-            return await authentication.deleteUser(userId)
+            await authentication.deleteUser(userId)
+            return true
         } catch (error) {
-            return error
+            logger.error(error)
+            throw new ErrorExceptions("Cannot delete user", UserErrorType.CANNOT_DELETE_USER)
         }
     }
 }

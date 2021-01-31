@@ -6,7 +6,8 @@ enum UserErrorType {
 
     CAN_NOT_FIND_USER,
 
-    CANNOT_UPDATE_USER_EMAIL
+    CANNOT_UPDATE_USER_EMAIL,
+    CANNOT_DELETE_USER
 }
 
 export default UserErrorType

@@ -1,4 +1,3 @@
-import multer from "multer"
 import LearnerController from "../../controllers/v1/LearnerController"
 import Route from "../../core/Route"
 import { controllerHandler } from "../../middlewares/Controller"
@@ -20,6 +19,7 @@ class LearnerRouter extends Route {
         this.router.route("/:id")
             .get((req, res, next) => controllerHandler(this.controller.read(req, res, next)))
             .put(uploader2MB, (req, res, next) => controllerHandler(this.controller.update(req, res, next)))
+            .delete((req, res, next) => controllerHandler(this.controller.delete(req, res, next)))
     }
 
 }

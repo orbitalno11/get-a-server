@@ -61,6 +61,21 @@ class LearnerRepository {
         }
     }
 
+    async deleteLearner(id: string) {
+        try {
+            const deleteMemberRoleRecord = `DELETE FROM ${DatabaseTable.MEMBER_ROLE_TABLE} WHERE member_id like ?`
+            const deleteMemberRecord = `DELETE FROM ${DatabaseTable.MEMBER_TABLE} WHERE member_id like ?`
+            this.connection.beginTransaction()
+            this.connection.query(deleteMemberRoleRecord, [id])
+            this.connection.query(deleteMemberRecord, [id])
+            this.connection.commit()
+        } catch (error) {
+            logger.error(error)
+            this.connection.rollback()
+            throw new ErrorExceptions("Can not delete learner", DatabaseErrorType.DELETE_ERROR)
+        }
+    }
+
 }
 
 export default LearnerRepository

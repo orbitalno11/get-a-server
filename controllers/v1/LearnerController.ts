@@ -22,6 +22,7 @@ import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import LearnerRepository from "../../data/LearnerRepostitory"
 import MemberUpdateForm from "../../models/member/MemberUpdateForm"
 import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
+import { isSafeNotNull } from "../../core/extension/StringExtension"
 
 class LearnerController extends ControllerCRUD {
     private readonly table: string = DatabaseTable.MEMBER_TABLE
@@ -76,7 +77,7 @@ class LearnerController extends ControllerCRUD {
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam = req.params.id
 
-        if (!idParam) return next(new FailureResponse("Can not find user id", 404))
+        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
@@ -134,7 +135,23 @@ class LearnerController extends ControllerCRUD {
         }
     }
 
-    async delete(req: Request, res: Response, next: NextFunction): Promise<void> { }
+    async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const idParam: string = req.params.id
+
+        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
+
+        try {
+            const result = await UserManager.deleteUser(idParam)
+            if (!result) return next(new FailureResponse("Cannot delete user from firebase"))
+            
+            await this.learnerRepository.deleteLearner(idParam)
+
+            return next(new SuccessResponse(null))
+        } catch (error) {
+            logger.error(error)
+            return next(new FailureResponse(error))
+        }
+     }
 }
 
 export default LearnerController
