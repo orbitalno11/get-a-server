@@ -4,7 +4,7 @@ class FailureResponse<T> extends Error {
     success: boolean
     statusCode: number
 
-    constructor(msg: string, code: number = 200, data: T | null = null, isSuccess: boolean = false) {
+    constructor(msg: string, code: number = 500, data: T | null = null, isSuccess: boolean = false) {
         super(msg)
         this.message = msg
         this.data = data

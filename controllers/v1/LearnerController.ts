@@ -16,8 +16,12 @@ import LearnerFormToLearnerMapper from "../../utils/mapper/register/LearnerFormT
 import TokenManager from "../../utils/token/TokenManager"
 import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFromValidator"
 import LearnerToArrayMapper from "../../utils/mapper/query/LearnerToArrayMapper"
-import UserErrorType from "../../core/exception/model/UserErrorType"
+import UserErrorType from "../../core/exceptions/model/UserErrorType"
 import { isEmpty } from "../../core/extension/CommonExtension"
+import UploadImageMiddleware from "../../middlewares/multer/UploadImage"
+import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import UploadFileErrorType from "../../core/exceptions/model/UploadFileErrorType"
+import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
 
 class LearnerController extends ControllerCRUD {
     private readonly table: string = DatabaseTable.MEMBER_TABLE
@@ -92,7 +96,21 @@ class LearnerController extends ControllerCRUD {
     }
 
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-        const currentUser = req.currentUser
+        try {
+            const uploadMiddleware = new UploadImageMiddleware()
+            const upload = uploadMiddleware.uploadImage2Mb("learner")
+            await upload(req, res)
+            if (req.file === undefined) {
+                return next(new FailureResponse("Please upload image file"))
+            }
+            return next(new SuccessResponse("Upload"))
+        } catch (err) {
+            logger.error(err)
+            if (err instanceof ErrorExceptions) {
+                return next(ErrorExceptionToFailureResponseMapper(err, 500))
+            }
+            return next(new FailureResponse(err["message"]))
+        }
     }
     
     async delete(req: Request, res: Response, next: NextFunction): Promise<void> { }

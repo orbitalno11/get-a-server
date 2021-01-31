@@ -6,3 +6,4 @@ package-lock.json
 /logs
 /configs/firebase/serviceAccountKey.json
 /configs/firebase/FirebaseClient.ts
+/uploads

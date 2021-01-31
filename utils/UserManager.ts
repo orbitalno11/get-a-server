@@ -1,7 +1,7 @@
 import { auth } from "firebase-admin"
 import DatabaseConnection from "../configs/DatabaseConnection"
 import { authentication } from "../configs/firebase/FirebaseConfig"
-import UserErrorType from "../core/exception/model/UserErrorType"
+import UserErrorType from "../core/exceptions/model/UserErrorType"
 import FailureResponse from "../core/response/FailureResponse"
 import { DatabaseTable } from "../models/constant/Database"
 import LearnerForm from "../models/form/register/LearnerForm"

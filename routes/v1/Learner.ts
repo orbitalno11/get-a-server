@@ -1,10 +1,9 @@
 import LearnerController from "../../controllers/v1/LearnerController"
-import Controller from "../../core/Controller"
 import Route from "../../core/Route"
 import { controllerHandler } from "../../middlewares/Controller"
 
 class LearnerRouter extends Route {
-    controller: Controller = new LearnerController()
+    controller = new LearnerController()
 
     constructor() {
         super()
@@ -15,6 +14,7 @@ class LearnerRouter extends Route {
         this.router.route("/create").post((req, res, next) => controllerHandler(this.controller.create(req, res, next)))
         this.router.route("/:id")
             .get((req, res, next) => controllerHandler(this.controller.read(req, res, next)))
+            .put((req, res, next) => controllerHandler(this.controller.update(req, res, next)))
     }
 
 }
