@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from "express"
+import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import FailureResponse from "../core/response/FailureResponse"
 import { logger } from "../utils/log/logger"
 import TokenManager from "../utils/token/TokenManager"
 import UserManager from "../utils/UserManager"
+import AuthenticationErrorType from "../core/exceptions/model/AuthenticationErrorType"
 
 class AuthenticationMiddleware {
 
@@ -25,7 +27,7 @@ class AuthenticationMiddleware {
             next()
         } catch (error) {
             logger.error(error)
-            return next(new FailureResponse("Unexpected error", 500))
+            return next(new ErrorExceptions("Unexpected error", AuthenticationErrorType.UNEXPECTED_ERROR))
         }
     }
 }

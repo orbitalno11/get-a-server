@@ -3,7 +3,7 @@ class ErrorExceptions<T> extends Error {
     type: T
 
     constructor(message: string, type: T) {
-        super()
+        super(message)
         this.message = message
         this.type = type
     }

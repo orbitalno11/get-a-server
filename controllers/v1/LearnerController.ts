@@ -63,8 +63,10 @@ class LearnerController extends ControllerCRUD {
             return next(new SuccessResponse<String | null>(token))
         } catch (err) {
             logger.error(err)
-            if (err['data'] === UserErrorType.EMAIL_ALREDY_EXITS) {
-                return next(new FailureResponse(err['message']['message'], 500))
+            if (err instanceof ErrorExceptions) {
+                if (err["type"] === UserErrorType.EMAIL_ALREDY_EXITS) {
+                    return next(ErrorExceptionToFailureResponseMapper(err, 500))
+                }
             }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
