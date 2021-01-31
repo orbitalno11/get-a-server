@@ -1,6 +1,6 @@
 import UserRole from "../../../models/constant/UserRole"
 import LearnerForm from "../../../models/form/register/LearnerForm"
-import Member from "../../../models/Member"
+import Member from "../../../models/member/Member"
 
 const LearnerFormToMemberMapper = (from: LearnerForm): Member => (
     {

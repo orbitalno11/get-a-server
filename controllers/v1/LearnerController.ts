@@ -8,32 +8,31 @@ import ControllerCRUD from "../../core/Controller"
 import { FailureResponse, SuccessResponse } from "../../core/response/ResponseHandler"
 import UserManager from "../../utils/UserManager"
 import { DatabaseTable } from "../../models/constant/Database"
-import UserRole from "../../models/constant/UserRole"
 import LearnerForm from "../../models/form/register/LearnerForm"
 import { logger } from "../../utils/log/logger"
 import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormToMemberMapper"
 import TokenManager from "../../utils/token/TokenManager"
 import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFromValidator"
-import MemberToArrayMapper from "../../utils/mapper/query/MemberToArrayMapper"
 import { isEmpty } from "../../core/extension/CommonExtension"
-import UploadImageMiddleware from "../../middlewares/multer/UploadImage"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
-import Member from "../../models/Member"
+import Member from "../../models/member/Member"
 import FileManager from "../../utils/FileManager"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
+import LearnerRepository from "../../data/LearnerRepostitory"
+import MemberUpdateForm from "../../models/member/MemberUpdateForm"
+import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
 
 class LearnerController extends ControllerCRUD {
     private readonly table: string = DatabaseTable.MEMBER_TABLE
+    private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
+    private readonly learnerRepository: LearnerRepository = new LearnerRepository(this.databaseConnection)
 
     async create(req: Request, res: Response, next: NextFunction) {
         const data: LearnerForm = req.body
         const validate = new LearnerRegisterFromValidator(data).validate()
 
         if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
-
-        // setup database connection
-        const connection = new DatabaseConnection()
 
         let userId
 
@@ -49,19 +48,15 @@ class LearnerController extends ControllerCRUD {
             userId = user["uid"]
 
             // insert learner data to database
-            const insertMemberCommand = `INSERT INTO ${DatabaseTable.MEMBER_TABLE} (member_id, firstname, lastname, gender, dateOfBirth, profileUrl, address1, address2, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            const insertMemberRoleCommand = `INSERT INTO ${DatabaseTable.MEMBER_ROLE_TABLE} (role_id, member_id) VALUES (?, ?)`
-            await connection.beginTransaction()
-            await connection.query(insertMemberCommand, MemberToArrayMapper(inputData))
-            await connection.query(insertMemberRoleCommand, [UserRole.LEARNER, userId])
-            await connection.commit()
+            await this.learnerRepository.insertLearner(inputData)
+            
             const token = TokenManager.generateSimpleProfileTokenData({
                 id: inputData["id"],
                 email: inputData["email"],
                 username: inputData["username"],
                 role: inputData["role"]
             })
-            return next(new SuccessResponse<String | null>(token))
+            return next(new SuccessResponse(token))
         } catch (err) {
             logger.error(err)
             if (err instanceof ErrorExceptions) {
@@ -74,7 +69,6 @@ class LearnerController extends ControllerCRUD {
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
             }
-            await connection.rollback()
             return next(new FailureResponse("Can not create user", 500, err))
         }
     }
@@ -85,38 +79,58 @@ class LearnerController extends ControllerCRUD {
         if (!idParam) return next(new FailureResponse("Can not find user id", 404))
 
         try {
-            const db = new DatabaseConnection()
-            const sqlCommand = `SELECT  member_id, firstname, lastname, gender, dateOfBirth, 
-                                address1, address2, email, username, created, updated, role_id 
-                                FROM ${DatabaseTable.MEMBER_TABLE} NATURAL JOIN ${DatabaseTable.MEMBER_ROLE_TABLE} 
-                                WHERE member_id like ?`
-            const memberData = await db.query(sqlCommand, idParam)
+            const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
 
-            if (isEmpty(memberData)) return next(new SuccessResponse("Can not find user"))
+            if (isEmpty(learnerData)) return next(new SuccessResponse("Can not find user"))
 
-            return next(new SuccessResponse(memberData))
+            return next(new SuccessResponse(learnerData))
         } catch (err) {
             return next(new FailureResponse("Can not get user from database", 500, err))
         }
     }
 
     async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+        const idParam: string = req.params.id
+        const data: LearnerForm = req.body
+        const validate = new LearnerRegisterFromValidator(data).validate()
+
+        if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
+
         try {
-            // const uploadMiddleware = new UploadImageMiddleware()
-            // const upload = uploadMiddleware.uploadImage2Mb("learner")
-            // await upload(req, res)
-            // if (req.file === undefined) {
-            //     return next(new FailureResponse("Please upload image file"))
-            // }
-            // const filename = req.file.path
-            FileManager.deleteFile("uploads\\img\\learner\\learner-1612084047727-560000007362407.jpg")
-            return next(new SuccessResponse("DELETED"))
+            const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
+            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", 400))
+            
+            const updateData: MemberUpdateForm = LearnerFormToUpdateMemberMapper(data, learnerData["profileUrl"])
+
+            const file = req.file
+
+            if (file !== undefined) {
+                updateData["profileUrl"] = file.path
+            }
+
+            // update user email if change email
+            if (learnerData["email"] !== updateData["email"]) {
+                await UserManager.editUserEmail(idParam, updateData["email"])
+            }
+
+            // update member data
+            await this.learnerRepository.editLearnerProfile(idParam, updateData)
+
+            const learner = await this.learnerRepository.getLearnerProfile(idParam)
+
+            const token = TokenManager.generateSimpleProfileTokenData({
+                id: learner["id"],
+                email: learner["email"],
+                username: learner["username"],
+                role: learner["role"]
+            })
+            return next(new SuccessResponse(token))
         } catch (err) {
             logger.error(err)
             if (err instanceof ErrorExceptions) {
                 return next(ErrorExceptionToFailureResponseMapper(err, 500))
             }
-            return next(new FailureResponse(err["message"]))
+            return next(new FailureResponse(err))
         }
     }
 

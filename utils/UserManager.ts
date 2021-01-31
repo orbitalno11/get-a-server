@@ -36,6 +36,17 @@ class UserManager {
         }
     }
 
+    public static async editUserEmail(userId: string, newEmail: string): Promise<auth.UserRecord> {
+        try {
+            return await authentication.updateUser(userId, {
+                email: newEmail
+            })
+        } catch (error) {
+            logger.error(error)
+            throw new ErrorExceptions("Cannot update user email", UserErrorType.CANNOT_UPDATE_USER_EMAIL)
+        }
+    }
+
     public static async deleteUser(userId: string): Promise<void> {
         try {
             return await authentication.deleteUser(userId)

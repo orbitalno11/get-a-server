@@ -12,8 +12,8 @@ create table `member` (
     `address2` varchar(255),
     `email` varchar(50) not null,
     `username` varchar(50) not null,
-    `created` timestamp not null,
     `updated` timestamp,
+    `created` timestamp,
     PRIMARY KEY (`member_id`),
     CONSTRAINT `MEMBER_UNIQUE_KEY` UNIQUE (`email`, `username`)
 );

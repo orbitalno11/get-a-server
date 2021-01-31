@@ -1,5 +1,5 @@
-import Address from "./Address"
-import User from "./User"
+import Address from "../Address"
+import User from "../User"
 
 interface Member extends User {
     firstname: string

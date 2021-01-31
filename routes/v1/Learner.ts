@@ -19,7 +19,7 @@ class LearnerRouter extends Route {
         this.router.route("/create").post(uploader2MB, (req, res, next) => controllerHandler(this.controller.create(req, res, next)))
         this.router.route("/:id")
             .get((req, res, next) => controllerHandler(this.controller.read(req, res, next)))
-            .put((req, res, next) => controllerHandler(this.controller.update(req, res, next)))
+            .put(uploader2MB, (req, res, next) => controllerHandler(this.controller.update(req, res, next)))
     }
 
 }
