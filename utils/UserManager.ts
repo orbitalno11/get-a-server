@@ -1,11 +1,10 @@
 import { auth } from "firebase-admin"
 import DatabaseConnection from "../configs/DatabaseConnection"
 import { authentication } from "../configs/firebase/FirebaseConfig"
-import UserErrorType from "../core/exception/model/UserErrorType"
-import FailureResponse from "../core/response/FailureResponse"
+import ErrorExceptions from "../core/exceptions/ErrorExceptions"
+import UserErrorType from "../core/exceptions/model/UserErrorType"
 import { DatabaseTable } from "../models/constant/Database"
 import LearnerForm from "../models/form/register/LearnerForm"
-import Member from "../models/Member"
 import User from "../models/User"
 import { logger } from "./log/logger"
 
@@ -18,9 +17,9 @@ class UserManager {
             })
         } catch (error) {
             if (error['code'] === 'auth/email-already-exists') {
-                throw new FailureResponse(error, 500, UserErrorType.EMAIL_ALREDY_EXITS)
+                throw new ErrorExceptions(error, UserErrorType.EMAIL_ALREDY_EXITS)
             }
-            throw new FailureResponse("Can not create user", 500, "Unexpected error")
+            throw new ErrorExceptions("Can not create user", UserErrorType.CAN_NOT_CREATE_USER)
         }
     }
 
@@ -32,16 +31,29 @@ class UserManager {
             const basicUser: User = record[0]
             return basicUser
         } catch (error) {
-            logger.error("Error SQL")
-            throw new FailureResponse("Can not find user", 400, error)
+            logger.error(error)
+            throw new ErrorExceptions("Can not find user", UserErrorType.CAN_NOT_FIND_USER)
         }
     }
 
-    public static async deleteUser(userId: string): Promise<void> {
+    public static async editUserEmail(userId: string, newEmail: string): Promise<auth.UserRecord> {
         try {
-            return await authentication.deleteUser(userId)
+            return await authentication.updateUser(userId, {
+                email: newEmail
+            })
         } catch (error) {
-            return error
+            logger.error(error)
+            throw new ErrorExceptions("Cannot update user email", UserErrorType.CANNOT_UPDATE_USER_EMAIL)
+        }
+    }
+
+    public static async deleteUser(userId: string): Promise<boolean> {
+        try {
+            await authentication.deleteUser(userId)
+            return true
+        } catch (error) {
+            logger.error(error)
+            throw new ErrorExceptions("Cannot delete user", UserErrorType.CANNOT_DELETE_USER)
         }
     }
 }

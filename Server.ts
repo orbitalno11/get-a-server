@@ -32,12 +32,12 @@ class Server {
     private initialServer(): void {
         this.app.use(cors())
         this.app.use(helmet())
-        this.app.use(bodyParser.json())
         this.app.use(
             bodyParser.urlencoded({
                 extended: true
             })
         )
+        this.app.use(bodyParser.json())
         this.app.use(httpLog)
     }
 

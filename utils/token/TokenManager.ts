@@ -2,8 +2,9 @@ import { Request } from "express"
 import { auth } from "firebase-admin"
 import jwt from "jsonwebtoken"
 import { authentication } from "../../configs/firebase/FirebaseConfig"
+import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import TokenErrorType from "../../core/exceptions/model/TokenErrorType"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
-import FailureResponse from "../../core/response/FailureResponse"
 import User from "../../models/User"
 import { logger } from "../log/logger"
 
@@ -25,7 +26,7 @@ class TokenManager {
             return isSafeNotNull(userId) && (tokenExp >= Date.now())
         } catch (error) {
             logger.error(error)
-            throw new FailureResponse("Unexpected error while verify token", 500, error)
+            throw new ErrorExceptions("Unexpected error while verify token", TokenErrorType.CAN_NOT_VERIFY_TOKEN)
         }
     }
 
@@ -34,7 +35,7 @@ class TokenManager {
             return await authentication.verifyIdToken(token, true)
         } catch (error) {
             logger.error(error)
-            throw new FailureResponse("Unexpected error while decode firebase token", 500, error)
+            throw new ErrorExceptions("Unexpected error while decode firebase token", TokenErrorType.CAN_NOT_DECODE_TOKEN)
         }
     }
 

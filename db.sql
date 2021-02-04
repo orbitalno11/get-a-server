@@ -7,12 +7,13 @@ create table `member` (
     `lastname` varchar(255) not null,
     `gender` varchar(10) not null,
     `dateOfBirth` date not null,
+    `profileUrl` varchar(255),
     `address1` varchar(255),
     `address2` varchar(255),
     `email` varchar(50) not null,
     `username` varchar(50) not null,
-    `created` timestamp not null,
     `updated` timestamp,
+    `created` timestamp,
     PRIMARY KEY (`member_id`),
     CONSTRAINT `MEMBER_UNIQUE_KEY` UNIQUE (`email`, `username`)
 );
