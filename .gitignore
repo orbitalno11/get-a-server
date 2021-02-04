@@ -1,0 +1,9 @@
+/node_modules
+package-lock.json
+.env
+/build
+/firebase-emulator
+/logs
+/configs/firebase/serviceAccountKey.json
+/configs/firebase/FirebaseClient.ts
+/uploads
