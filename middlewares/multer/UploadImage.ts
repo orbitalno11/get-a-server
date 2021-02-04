@@ -5,6 +5,8 @@ import util from "util"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import { logger } from "../../utils/log/logger"
+import ImageType from "../../core/ImageType"
 
 class UploadImageMiddleware {
 
@@ -42,9 +44,18 @@ class UploadImageMiddleware {
 
     private generateFileName(dest: string, file: Express.Multer.File): string {
         if (isSafeNotNull(dest)) {
-            return dest + "-" + Date.now().toString() + "-" + file.originalname
+            return dest + "-" + Date.now().toString() + this.getImageType(file)
         }
-        return "common" + "-" + Date.now().toString() + "-" + file.originalname
+        return "common" + "-" + Date.now().toString() + this.getImageType(file)
+    }
+
+    private getImageType(file: Express.Multer.File): string | null {
+        const mimetype = file.mimetype
+        switch (mimetype) {
+            case ImageType.JPEG_MIMETYPE: return ImageType.JPG_EXT
+            case ImageType.PNG_MIMETYPE: return ImageType.PNG_EXT
+            default: return null
+        }
     }
 
     public uploadImage2Mb(dest: string = "") {
