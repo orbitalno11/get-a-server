@@ -19,7 +19,7 @@ import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/Erro
 import Member from "../../models/member/Member"
 import FileManager from "../../utils/FileManager"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
-import LearnerRepository from "../../data/LearnerRepostitory"
+import LearnerRepository from "../../repository/LearnerRepostitory"
 import MemberUpdateForm from "../../models/member/MemberUpdateForm"
 import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
@@ -45,8 +45,12 @@ class LearnerController extends ControllerCRUD {
             // change register form to member detail
             const inputData: Member = LearnerFormToMemberMapper(data)
             inputData["id"] = user["uid"]
-            inputData["profileUrl"] = req.file.path
             userId = user["uid"]
+
+            // set profile image path
+            const fileManager = new FileManager()
+            const filePath = await fileManager.convertImageToProfile(req.file.path, userId)
+            inputData["profileUrl"] = filePath
 
             // insert learner data to database
             await this.learnerRepository.insertLearner(inputData)
@@ -63,14 +67,15 @@ class LearnerController extends ControllerCRUD {
             if (err instanceof ErrorExceptions) {
                 const type = err["type"]
                 if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
-                    FileManager.deleteFile(req.file.path)
+                    const fileManager = new FileManager()
+                    fileManager.deleteFile(req.file.path)
                 }
                 return next(ErrorExceptionToFailureResponseMapper(err, 500))
             }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
             }
-            return next(new FailureResponse("Can not create user", 500, err))
+            return next(new FailureResponse("Unexpected error while create learner account.", 500))
         }
     }
 
@@ -106,7 +111,9 @@ class LearnerController extends ControllerCRUD {
             const file = req.file
 
             if (file !== undefined) {
-                updateData["profileUrl"] = file.path
+                const fileManager = new FileManager()
+                const filePath = await fileManager.convertImageToProfile(file.path, idParam)
+                updateData["profileUrl"] = filePath
             }
 
             // update user email if change email
@@ -141,10 +148,19 @@ class LearnerController extends ControllerCRUD {
         if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
 
         try {
+            const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
+            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", 400))
+
+            // delete user from firebase
             const result = await UserManager.deleteUser(idParam)
             if (!result) return next(new FailureResponse("Cannot delete user from firebase"))
             
+            // delete user from database
             await this.learnerRepository.deleteLearner(idParam)
+
+            // delete user profile
+            const fileManager = new FileManager()
+            fileManager.deleteFile(learnerData["profileUrl"])
 
             return next(new SuccessResponse(null))
         } catch (error) {
