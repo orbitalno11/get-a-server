@@ -160,7 +160,10 @@ class LearnerController extends ControllerCRUD {
 
             // delete user profile
             const fileManager = new FileManager()
-            fileManager.deleteFile(learnerData["profileUrl"])
+            const userImageProfile = learnerData["profileUrl"]
+            if (userImageProfile !== null) {
+                fileManager.deleteFile(userImageProfile)
+            }
 
             return next(new SuccessResponse(null))
         } catch (error) {
