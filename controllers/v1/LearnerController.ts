@@ -7,8 +7,7 @@ import ControllerCRUD from "../../core/Controller"
 // handle result
 import { FailureResponse, SuccessResponse } from "../../core/response/ResponseHandler"
 import UserManager from "../../utils/UserManager"
-import { DatabaseTable } from "../../models/constant/Database"
-import LearnerForm from "../../models/form/register/LearnerForm"
+import LearnerForm from "../../models/register/LearnerForm"
 import { logger } from "../../utils/log/logger"
 import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormToMemberMapper"
 import TokenManager from "../../utils/token/TokenManager"
@@ -25,7 +24,6 @@ import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/Learner
 import { isSafeNotNull } from "../../core/extension/StringExtension"
 
 class LearnerController extends ControllerCRUD {
-    private readonly table: string = DatabaseTable.MEMBER_TABLE
     private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
     private readonly learnerRepository: LearnerRepository = new LearnerRepository(this.databaseConnection)
 

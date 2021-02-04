@@ -1,4 +1,4 @@
-import UserRole from "./constant/UserRole"
+import UserRole from "../core/constant/UserRole"
 
 interface CurrentUser {
     id: string | null

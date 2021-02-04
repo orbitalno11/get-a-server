@@ -1,5 +1,5 @@
 import express from "express"
-import RoutePath from "../../models/constant/RoutePath"
+import RoutePath from "../../core/constant/RoutePath"
 import AuthenticationRouter from "./Authentication"
 import LearnerRouter from "./Learner"
 

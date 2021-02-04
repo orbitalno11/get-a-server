@@ -1,4 +1,4 @@
-import LearnerForm from "../../../models/form/register/LearnerForm"
+import LearnerForm from "../../../models/register/LearnerForm"
 import MemberUpdateForm from "../../../models/member/MemberUpdateForm"
 
 const LearnerFormToUpdateMemberMapper = (from: LearnerForm, photoPath: string | null): MemberUpdateForm => (
