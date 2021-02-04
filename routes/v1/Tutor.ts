@@ -13,7 +13,6 @@ class TutorRouter extends Route {
     initialRoute(): void {
         this.router.route("/create").post((req, res, next) => controllerHandler(this.controller.create(req, res, next)))
     }
-    
 }
 
 export default TutorRouter
