@@ -1,4 +1,5 @@
 enum RoutePath {
+    AUTH_PATH = "auth",
     LEARNER_PATH = "learner"
 }
 

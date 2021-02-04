@@ -5,3 +5,5 @@ package-lock.json
 /firebase-emulator
 /logs
 /configs/firebase/serviceAccountKey.json
+/configs/firebase/FirebaseClient.ts
+/uploads

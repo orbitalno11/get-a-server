@@ -1,7 +1,7 @@
-import Address from "./Address"
+import Address from "../Address"
 
 interface Learner {
-    id: number | null
+    id: string | null
     firstname: string
     lastname: string
     gender: string

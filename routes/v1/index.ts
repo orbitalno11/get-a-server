@@ -1,10 +1,12 @@
 import express from "express"
 import RoutePath from "../../models/constant/RoutePath"
+import AuthenticationRouter from "./Authentication"
 import LearnerRouter from "./Learner"
 
 class APIsV1 {
     private router = express.Router()
 
+    private readonly authentication: AuthenticationRouter = new AuthenticationRouter()
     private readonly learner: LearnerRouter = new LearnerRouter()
 
     constructor() {
@@ -12,6 +14,7 @@ class APIsV1 {
     }
 
     private initialRoute() {
+        this.router.use(`/${RoutePath.AUTH_PATH}`, this.authentication.getRouter())
         this.router.use(`/${RoutePath.LEARNER_PATH}`, this.learner.getRouter())
     }
 
