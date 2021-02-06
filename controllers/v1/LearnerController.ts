@@ -48,6 +48,7 @@ class LearnerController extends ControllerCRUD {
             // set profile image path
             const fileManager = new FileManager()
             const filePath = await fileManager.convertImageToProfile(req.file.path, userId)
+            logger.info(filePath)
             inputData["profileUrl"] = filePath
 
             // insert learner data to database
@@ -159,7 +160,7 @@ class LearnerController extends ControllerCRUD {
             // delete user profile
             const fileManager = new FileManager()
             const userImageProfile = learnerData["profileUrl"]
-            if (userImageProfile !== null) {
+            if (userImageProfile !== null && userImageProfile !== undefined) {
                 fileManager.deleteFile(userImageProfile)
             }
 

@@ -8,8 +8,6 @@ const MemberToArrayMapper = (from: Member) => (
         from.gender,
         from.dateOfBirth,
         from.profileUrl,
-        from.address1,
-        from.address2,
         from.email,
         from.username,
         from.created,

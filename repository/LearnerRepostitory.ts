@@ -18,7 +18,7 @@ class LearnerRepository {
 
     async insertLearner(data: Member) {
         try {
-            const insertMemberCommand = `INSERT INTO ${Database.MEMBER_TABLE} (member_id, firstname, lastname, gender, dateOfBirth, profileUrl, address1, address2, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            const insertMemberCommand = `INSERT INTO ${Database.MEMBER_TABLE} (member_id, firstname, lastname, gender, dateOfBirth, profileUrl, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             const insertMemberRoleCommand = `INSERT INTO ${Database.MEMBER_ROLE_TABLE} (role_id, member_id) VALUES (?, ?)`
             await this.connection.beginTransaction()
             await this.connection.query(insertMemberCommand, MemberToArrayMapper(data))
@@ -33,12 +33,12 @@ class LearnerRepository {
     
     async getLearnerProfile(id: string): Promise<Member> {
         try {
-            const sqlCommand = `SELECT member_id, firstname, lastname, gender, dateOfBirth, 
-                                address1, address2, email, username, created, updated, role_id 
+            const sqlCommand = `SELECT member_id, firstname, lastname, gender, dateOfBirth, profileUrl,
+                                email, username, created, updated, role_id 
                                 FROM ${Database.MEMBER_TABLE} NATURAL JOIN ${Database.MEMBER_ROLE_TABLE} 
                                 WHERE member_id like ?`
             const memberData = await this.connection.query(sqlCommand, id)
-            return memberData
+            return memberData[0]
         } catch (err) {
             logger.error(err)
             throw new ErrorExceptions("Cannot get learner data", DatabaseErrorType.SELECT_ERROR)
