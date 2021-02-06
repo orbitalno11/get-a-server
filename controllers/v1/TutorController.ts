@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import DatabaseConnection from "../../configs/DatabaseConnection"
+import HttpStatusCode from "../../core/constant/HttpStatusCode"
 import ControllerCRUD from "../../core/Controller"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
@@ -32,12 +33,12 @@ class TutorController extends ControllerCRUD {
         const data: TutorForm = req.body
         const validate = new TutorRegisterFormValidator(data).validate()
 
-        if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
+        if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
         let userId
 
         try {
-            if (req.file === undefined) return next(new FailureResponse("Please upload image file", 404))
+            if (req.file === undefined) return next(new FailureResponse("Please upload image file", HttpStatusCode.HTTP_404_NOT_FOUND))
 
             // create firebase user
             const user = await UserManager.createUser(data)
@@ -70,19 +71,19 @@ class TutorController extends ControllerCRUD {
                     const fileManager = new FileManager()
                     fileManager.deleteFile(req.file.path)
                 }
-                return next(ErrorExceptionToFailureResponseMapper(error, 500))
+                return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
             }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
             }
-            return next(new FailureResponse("Unexpected error while create tutor account", 500))
+            return next(new FailureResponse("Unexpected error while create tutor account", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
     }
 
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
+        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
         try {
             const tutorData = await this.tutorRepository.getTutorProfile(idParam)
 
@@ -91,7 +92,7 @@ class TutorController extends ControllerCRUD {
             return next(new SuccessResponse(tutorData))
         } catch (error) {
             logger.error(error)
-            return next(new FailureResponse("Can not get user from database", 500, error))
+            return next(new FailureResponse("Can not get user from database", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
     }
 
@@ -100,11 +101,11 @@ class TutorController extends ControllerCRUD {
         const data: TutorUpdateForm = req.body
         const validate = new TutorUpdateFormValidator(data).validate()
 
-        if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
+        if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
         try {
             const tutorData = await this.tutorRepository.getTutorProfile(idParam)
-            if (isEmpty(tutorData)) return next(new FailureResponse("Can not find user", 400))
+            if (isEmpty(tutorData)) return next(new FailureResponse("Can not find user", HttpStatusCode.HTTP_400_BAD_REQUEST))
             
             const updateMemberData: MemberUpdateForm = TutorUpdateFormToMemberUpdateFormMapper(data, tutorData["profileUrl"])
             const updateContactData: Contact = TutorUpdateFormToContactMapper(data)
@@ -135,12 +136,9 @@ class TutorController extends ControllerCRUD {
                 role: tutor["role"]
             })
             return next(new SuccessResponse(token))
-        } catch (err) {
-            logger.error(err)
-            if (err instanceof ErrorExceptions) {
-                return next(ErrorExceptionToFailureResponseMapper(err, 500))
-            }
-            return next(new FailureResponse(err))
+        } catch (error) {
+            logger.error(error)
+            return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
     }
 
