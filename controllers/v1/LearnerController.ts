@@ -89,6 +89,7 @@ class LearnerController extends ControllerCRUD {
 
             return next(new SuccessResponse(learnerData))
         } catch (err) {
+            logger.error(err)
             return next(new FailureResponse("Can not get user from database", 500, err))
         }
     }
