@@ -7,9 +7,10 @@ import Database from "../core/constant/Database"
 import LearnerForm from "../models/register/LearnerForm"
 import User from "../models/User"
 import { logger } from "./log/logger"
+import Register from "../models/register/Register"
 
 class UserManager {
-    public static async createUser(registerData: LearnerForm): Promise<auth.UserRecord> {
+    public static async createUser(registerData: Register): Promise<auth.UserRecord> {
         try {
             return await authentication.createUser({
                 email: registerData.email,

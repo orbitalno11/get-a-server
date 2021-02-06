@@ -1,5 +1,4 @@
 import AuthenticationConroller from "../../controllers/v1/AuthenticationController"
-import ControllerCRUD from "../../core/Controller"
 import Route from "../../core/Route"
 import { controllerHandler } from "../../middlewares/Controller"
 

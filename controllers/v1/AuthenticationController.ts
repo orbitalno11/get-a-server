@@ -24,6 +24,22 @@ class AuthenticationConroller extends ControllerCRUD {
             return next(new FailureResponse("Unexpoected error while generate token", 500))
         }
     }
+
+    async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    }
+
+    async read(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    }
+
+    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    }
 }
 
 export default AuthenticationConroller

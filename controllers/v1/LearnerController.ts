@@ -11,7 +11,7 @@ import LearnerForm from "../../models/register/LearnerForm"
 import { logger } from "../../utils/log/logger"
 import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormToMemberMapper"
 import TokenManager from "../../utils/token/TokenManager"
-import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFromValidator"
+import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFormValidator"
 import { isEmpty } from "../../core/extension/CommonExtension"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
@@ -48,7 +48,6 @@ class LearnerController extends ControllerCRUD {
             // set profile image path
             const fileManager = new FileManager()
             const filePath = await fileManager.convertImageToProfile(req.file.path, userId)
-            logger.info(filePath)
             inputData["profileUrl"] = filePath
 
             // insert learner data to database
