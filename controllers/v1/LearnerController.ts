@@ -11,7 +11,7 @@ import LearnerForm from "../../models/register/LearnerForm"
 import { logger } from "../../utils/log/logger"
 import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormToMemberMapper"
 import TokenManager from "../../utils/token/TokenManager"
-import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFromValidator"
+import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFormValidator"
 import { isEmpty } from "../../core/extension/CommonExtension"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
@@ -22,6 +22,7 @@ import LearnerRepository from "../../repository/LearnerRepostitory"
 import MemberUpdateForm from "../../models/member/MemberUpdateForm"
 import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
+import HttpStatusCode from "../../core/constant/HttpStatusCode"
 
 class LearnerController extends ControllerCRUD {
     private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
@@ -31,12 +32,12 @@ class LearnerController extends ControllerCRUD {
         const data: LearnerForm = req.body
         const validate = new LearnerRegisterFromValidator(data).validate()
 
-        if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
+        if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
         let userId
 
         try {
-            if (req.file === undefined) return next(new FailureResponse("Please upload image file", 404))
+            if (req.file === undefined) return next(new FailureResponse("Please upload image file", HttpStatusCode.HTTP_404_NOT_FOUND))
 
             // create firebase user
             const user = await UserManager.createUser(data)
@@ -68,19 +69,19 @@ class LearnerController extends ControllerCRUD {
                     const fileManager = new FileManager()
                     fileManager.deleteFile(req.file.path)
                 }
-                return next(ErrorExceptionToFailureResponseMapper(err, 500))
+                return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
             }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
             }
-            return next(new FailureResponse("Unexpected error while create learner account.", 500))
+            return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
         }
     }
 
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
+        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
@@ -89,7 +90,8 @@ class LearnerController extends ControllerCRUD {
 
             return next(new SuccessResponse(learnerData))
         } catch (err) {
-            return next(new FailureResponse("Can not get user from database", 500, err))
+            logger.error(err)
+            return next(new FailureResponse("Can not get user from database", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))
         }
     }
 
@@ -98,11 +100,11 @@ class LearnerController extends ControllerCRUD {
         const data: LearnerForm = req.body
         const validate = new LearnerRegisterFromValidator(data).validate()
 
-        if (!validate.valid) return next(new FailureResponse("Register data is invalid", 400, validate.error))
+        if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
-            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", 400))
+            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", HttpStatusCode.HTTP_404_NOT_FOUND))
             
             const updateData: MemberUpdateForm = LearnerFormToUpdateMemberMapper(data, learnerData["profileUrl"])
 
@@ -134,20 +136,20 @@ class LearnerController extends ControllerCRUD {
         } catch (err) {
             logger.error(err)
             if (err instanceof ErrorExceptions) {
-                return next(ErrorExceptionToFailureResponseMapper(err, 500))
+                return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
             }
-            return next(new FailureResponse(err))
+            return next(new FailureResponse(err["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))
         }
     }
 
     async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam: string = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", 404))
+        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
-            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", 400))
+            if (isEmpty(learnerData)) return next(new FailureResponse("Can not find user", HttpStatusCode.HTTP_404_NOT_FOUND))
 
             // delete user from firebase
             const result = await UserManager.deleteUser(idParam)
@@ -159,14 +161,14 @@ class LearnerController extends ControllerCRUD {
             // delete user profile
             const fileManager = new FileManager()
             const userImageProfile = learnerData["profileUrl"]
-            if (userImageProfile !== null) {
+            if (userImageProfile !== null && userImageProfile !== undefined) {
                 fileManager.deleteFile(userImageProfile)
             }
 
             return next(new SuccessResponse(null))
         } catch (error) {
             logger.error(error)
-            return next(new FailureResponse(error))
+            return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
      }
 }
