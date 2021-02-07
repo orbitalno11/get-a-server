@@ -1,5 +1,5 @@
 enum AuthenticationErrorType {
-    UNEXPECTED_ERROR
+    UNEXPECTED_ERROR = "authentication-unexpected-error"
 }
 
 export default AuthenticationErrorType

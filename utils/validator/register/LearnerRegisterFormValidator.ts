@@ -1,9 +1,6 @@
 import validator from "validator"
-import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
-import ErrorType from "../../../core/exceptions/model/ErrorType"
 import { isEmpty } from "../../../core/extension/CommonExtension"
-import LearnerForm from "../../../models/form/register/LearnerForm"
-import { logger } from "../../log/logger"
+import LearnerForm from "../../../models/register/LearnerForm"
 import ValidateResult from "../ValidateResult"
 
 class LearnerRegisterFromValidator {

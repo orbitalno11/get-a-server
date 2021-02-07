@@ -3,13 +3,14 @@ import DatabaseConnection from "../configs/DatabaseConnection"
 import { authentication } from "../configs/firebase/FirebaseConfig"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import UserErrorType from "../core/exceptions/model/UserErrorType"
-import { DatabaseTable } from "../models/constant/Database"
-import LearnerForm from "../models/form/register/LearnerForm"
+import Database from "../core/constant/Database"
+import LearnerForm from "../models/register/LearnerForm"
 import User from "../models/User"
 import { logger } from "./log/logger"
+import Register from "../models/register/Register"
 
 class UserManager {
-    public static async createUser(registerData: LearnerForm): Promise<auth.UserRecord> {
+    public static async createUser(registerData: Register): Promise<auth.UserRecord> {
         try {
             return await authentication.createUser({
                 email: registerData.email,
@@ -26,7 +27,7 @@ class UserManager {
     public static async getUser(userId: string): Promise<User> {
         try {
             const db = new DatabaseConnection()
-            const sqlCommand = `SELECT member_id, username, email, role_id FROM ${DatabaseTable.MEMBER_TABLE} NATURAL JOIN ${DatabaseTable.MEMBER_ROLE_TABLE} WHERE member_id like ?`
+            const sqlCommand = `SELECT member_id, username, email, role_id FROM ${Database.MEMBER_TABLE} NATURAL JOIN ${Database.MEMBER_ROLE_TABLE} WHERE member_id like ?`
             const record = await db.query(sqlCommand, userId)
             const basicUser: User = record[0]
             return basicUser
