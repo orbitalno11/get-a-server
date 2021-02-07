@@ -20,7 +20,7 @@ class FileManager {
             const convertImagePath =  await this.convertImageToWebp(filePath, 300, 300)
             const fileLocation = filePath.split("-")[0] + "-" + userId + ImageType.WEBP_EXT
             await this.renameFile(convertImagePath, fileLocation)
-            return convertImagePath
+            return fileLocation
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions("Cannot create profile picture", FileErrorType.CANNOT_CONVERT_PROFILE_IMAGE)
