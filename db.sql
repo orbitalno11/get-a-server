@@ -32,7 +32,7 @@ create table subject(
 
 create table interested_subject(
     interested_subject_id int not null AUTO_INCREMENT,
-    rank smallint UNSIGNED not null,
+    subject_rank smallint UNSIGNED not null,
     member_id varchar(255) not null,
     subject_id smallint UNSIGNED not null,
     PRIMARY KEY (interested_subject_id),
@@ -260,7 +260,7 @@ create table course_rating_transaction(
 );
 
 create table course_learner_request(
-    request_id int null null AUTO_INCREMENT,
+    request_id int not null AUTO_INCREMENT,
     member_id varchar(255) not null,
     course_id varchar(255) not null,
     PRIMARY KEY(request_id),
