@@ -65,16 +65,16 @@ class TutorController extends ControllerCRUD {
 
         } catch (error) {
             logger.error(error)
-            if (error instanceof ErrorExceptions) {
-                const type = error["type"]
-                if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
-                    const fileManager = new FileManager()
-                    fileManager.deleteFile(req.file.path)
-                }
-                return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
-            }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
+            }
+            const type = error["type"]
+            if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
+                const fileManager = new FileManager()
+                fileManager.deleteFile(req.file.path)
+                return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            } else if (isNotEmpty(type)) {
+                return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
             }
             return next(new FailureResponse("Unexpected error while create tutor account", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
@@ -138,6 +138,9 @@ class TutorController extends ControllerCRUD {
             return next(new SuccessResponse(token))
         } catch (error) {
             logger.error(error)
+            if (isNotEmpty(error["type"])) {
+                return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            }
             return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
         }
     }

@@ -6,6 +6,15 @@ import ImageType from "../core/ImageType"
 import { logger } from "./log/logger"
 
 class FileManager {
+    public getProfileImagePath(name: string): string {
+        try {
+            return `uploads/img/profile/${name}`
+        } catch (error) {
+            logger.error(error)
+            throw new ErrorExceptions("Cannot get file", FileErrorType.FILE_NOT_FOUND)
+        }
+    }
+
     public deleteFile(path: string) {
         try {
             fs.unlinkSync(path)
@@ -20,7 +29,7 @@ class FileManager {
             const convertImagePath =  await this.convertImageToWebp(filePath, 300, 300)
             const fileLocation = filePath.split("-")[0] + "-" + userId + ImageType.WEBP_EXT
             await this.renameFile(convertImagePath, fileLocation)
-            return fileLocation
+            return fileLocation.split("\\")[3]
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions("Cannot create profile picture", FileErrorType.CANNOT_CONVERT_PROFILE_IMAGE)
@@ -51,10 +60,8 @@ class FileManager {
             return newFilePath
         } catch (err) {
             logger.error(err)
-            if (err instanceof ErrorExceptions) {
-                if (err["type"] == FileErrorType.CANNOT_DELETE_FILE) {
-                    throw new ErrorExceptions("Cannot delete original image", FileErrorType.CANNOT_DELETE_FILE)
-                }
+            if (err["type"] == FileErrorType.CANNOT_DELETE_FILE) {
+                throw new ErrorExceptions("Cannot delete original image", FileErrorType.CANNOT_DELETE_FILE)
             }
             throw new ErrorExceptions("Cannot convert image to wepb", FileErrorType.CANNOT_CONVERT_FILE_TO_WEBP)
         }
