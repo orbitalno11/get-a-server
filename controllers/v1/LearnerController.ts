@@ -21,7 +21,6 @@ import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import LearnerRepository from "../../repository/LearnerRepostitory"
 import MemberUpdateForm from "../../models/member/MemberUpdateForm"
 import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import HttpStatusCode from "../../core/constant/HttpStatusCode"
 
 class LearnerController extends ControllerCRUD {
@@ -81,7 +80,7 @@ class LearnerController extends ControllerCRUD {
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+        if (!idParam.isSafeNotNull()) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)
@@ -145,7 +144,7 @@ class LearnerController extends ControllerCRUD {
     async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam: string = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+        if (!idParam.isSafeNotNull()) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
 
         try {
             const learnerData = await this.learnerRepository.getLearnerProfile(idParam)

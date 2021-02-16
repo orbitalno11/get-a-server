@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken"
 import { authentication } from "../../configs/firebase/FirebaseConfig"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import TokenErrorType from "../../core/exceptions/model/TokenErrorType"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import User from "../../models/User"
 import { logger } from "../log/logger"
 
@@ -23,7 +22,7 @@ class TokenManager {
             const decodedToken = await this.decodeFirebaseToken(token)
             const userId = decodedToken.uid
             const tokenExp = decodedToken.exp
-            return isSafeNotNull(userId) && (tokenExp >= Date.now())
+            return userId.isSafeNotNull() && (tokenExp >= Date.now())
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions("Unexpected error while verify token", TokenErrorType.CAN_NOT_VERIFY_TOKEN)

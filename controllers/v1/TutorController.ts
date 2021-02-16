@@ -5,7 +5,6 @@ import ControllerCRUD from "../../core/Controller"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import { isEmpty, isNotEmpty } from "../../core/extension/CommonExtension"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FailureResponse from "../../core/response/FailureResponse"
 import SuccessResponse from "../../core/response/SuccessResponse"
 import Contact from "../../models/Contact"
@@ -83,7 +82,7 @@ class TutorController extends ControllerCRUD {
     async read(req: Request, res: Response, next: NextFunction): Promise<void> {
         const idParam = req.params.id
 
-        if (!isSafeNotNull(idParam)) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+        if (idParam.isSafeNotNull()) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
         try {
             const tutorData = await this.tutorRepository.getTutorProfile(idParam)
 
@@ -149,10 +148,10 @@ class TutorController extends ControllerCRUD {
     private getInterestedSubjectArray(params: TutorForm): Array<number> {
         let interestedSubject = [params["subject1"]]
         const subject2 = params["subject2"]
-        if (subject2 !== null && subject2 !== undefined && isNotEmpty(subject2)) {
+        if (subject2?.isSafeNumber()) {
             interestedSubject.push(subject2)
             const subject3 = params["subject3"]
-            if (subject3 != null && subject3 !== undefined && isNotEmpty(subject3)) {
+            if (subject3?.isSafeNumber()) {
                 interestedSubject.push(subject3)
             }
         }
