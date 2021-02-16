@@ -1,7 +1,6 @@
 import { Request } from "express"
 import multer from "multer"
 import fs from "fs"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ImageType from "../../core/ImageType"
@@ -19,7 +18,7 @@ class UploadImageMiddleware {
 
     private getFileDestination(dest: string): string {
         let location = "uploads/img/"
-        if (isSafeNotNull(dest)) {
+        if (dest.isSafeNotNull()) {
              location += dest
         }
 
@@ -41,7 +40,7 @@ class UploadImageMiddleware {
     }
 
     private generateFileName(dest: string, file: Express.Multer.File): string {
-        if (isSafeNotNull(dest)) {
+        if (dest.isSafeNotNull()) {
             return dest + "-" + Date.now().toString() + this.getImageType(file)
         }
         return "common" + "-" + Date.now().toString() + this.getImageType(file)

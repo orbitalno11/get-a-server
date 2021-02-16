@@ -4,7 +4,6 @@ import UserRole from "../core/constant/UserRole"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import DatabaseErrorType from "../core/exceptions/model/DatabaseErrorType"
 import { isEmpty } from "../core/extension/CommonExtension"
-import { isSafeNotNull } from "../core/extension/StringExtension"
 import Contact from "../models/Contact"
 import Member from "../models/member/Member"
 import MemberUpdateForm from "../models/member/MemberUpdateForm"
@@ -111,14 +110,14 @@ class TutorRepository {
     private async updateTutorIntroduction(id: string, introduction: string | null): Promise<void> {
         try {
             const introductionData = await this.getTutorIntroduction(id)
-            if (isEmpty(introductionData)) {
+            if (!introductionData.isSafeNotNull()) {
                 const sqlCommand = `INSERT INTO ${Database.SELF_INTRUDUCTION_TABLE} (member_id, introduction) VALUES (?, ?)`
-                if (isSafeNotNull(introduction)) {
+                if (introduction?.isSafeNotNull()) {
                     await this.connection.query(sqlCommand, [id, introduction])
                 }
             } else {
                 const updateIntroductionCommand = `UPDATE ${Database.SELF_INTRUDUCTION_TABLE} SET introduction =? WHERE member_id like ?`
-                if (isSafeNotNull(introduction)) {
+                if (introduction?.isSafeNotNull()) {
                     await this.connection.query(updateIntroductionCommand, [introduction, id])
                 }
             }
