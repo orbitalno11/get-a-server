@@ -12,7 +12,7 @@ import { logger } from "../../utils/log/logger"
 import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormToMemberMapper"
 import TokenManager from "../../utils/token/TokenManager"
 import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFormValidator"
-import { isEmpty } from "../../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../../core/extension/CommonExtension"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
 import Member from "../../models/member/Member"
@@ -23,6 +23,7 @@ import MemberUpdateForm from "../../models/member/MemberUpdateForm"
 import LearnerFormToUpdateMemberMapper from "../../utils/mapper/register/LearnerFromToUpdateMemberMapper"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
 import HttpStatusCode from "../../core/constant/HttpStatusCode"
+import UserErrorType from "../../core/exceptions/model/UserErrorType"
 
 class LearnerController extends ControllerCRUD {
     private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
@@ -63,18 +64,18 @@ class LearnerController extends ControllerCRUD {
             return next(new SuccessResponse(token))
         } catch (err) {
             logger.error(err)
-            if (err instanceof ErrorExceptions) {
-                const type = err["type"]
-                if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
-                    const fileManager = new FileManager()
-                    fileManager.deleteFile(req.file.path)
-                }
-                return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
-            }
             if (userId !== null && userId !== undefined) {
                 UserManager.deleteUser(userId)
             }
-            return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            const type = err["type"]
+            if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
+                const fileManager = new FileManager()
+                fileManager.deleteFile(req.file.path)
+                return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            } else if (isNotEmpty(type)) {
+                return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            }
+            return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))
         }
     }
 
@@ -135,7 +136,7 @@ class LearnerController extends ControllerCRUD {
             return next(new SuccessResponse(token))
         } catch (err) {
             logger.error(err)
-            if (err instanceof ErrorExceptions) {
+            if (isNotEmpty(err["type"])) {
                 return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
             }
             return next(new FailureResponse(err["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))

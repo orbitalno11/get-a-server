@@ -12,7 +12,10 @@ enum FileErrorType {
     CANNOT_CONVERT_FILE_TO_WEBP = "cannot-convert-file-to-webp",
 
     // rename file
-    CANNOT_RENAME_FILE = "cannot-rename-file"
+    CANNOT_RENAME_FILE = "cannot-rename-file",
+
+    // find file
+    FILE_NOT_FOUND = "file-not-found"
 }
 
 export default FileErrorType

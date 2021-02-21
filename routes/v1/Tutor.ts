@@ -13,7 +13,7 @@ class TutorRouter extends Route {
 
     initialRoute(): void {
         const uploadMiddleware = new UploadImageMiddleware()
-        const uploader2MB = uploadMiddleware.uploadImage2Mb("tutor")
+        const uploader2MB = uploadMiddleware.uploadImage2Mb("profile")
 
         this.router.route("/create").post(uploader2MB, (req, res, next) => controllerHandler(this.controller.create(req, res, next)))
         this.router.route("/:id")

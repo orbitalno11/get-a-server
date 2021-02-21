@@ -1,11 +1,9 @@
-import { Request, Response } from "express"
+import { Request } from "express"
 import multer from "multer"
 import fs from "fs"
-import util from "util"
 import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
-import { logger } from "../../utils/log/logger"
 import ImageType from "../../core/ImageType"
 
 class UploadImageMiddleware {

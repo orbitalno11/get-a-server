@@ -23,7 +23,7 @@ class TutorRepository {
         try {
             const insertMemberCommand = `INSERT INTO ${Database.MEMBER_TABLE} (member_id, firstname, lastname, gender, dateOfBirth, profileUrl, email, username, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             const insertMemberRoleCommand = `INSERT INTO ${Database.MEMBER_ROLE_TABLE} (role_id, member_id) VALUES (?, ?)`
-            const insertMemberInterestedSubject = `INSERT INTO ${Database.INTERESTED_SUBJECT_TABLE} (rank, member_id, subject_id) VALUES (?, ?, ?)`
+            const insertMemberInterestedSubject = `INSERT INTO ${Database.INTERESTED_SUBJECT_TABLE} (subject_rank, member_id, subject_id) VALUES (?, ?, ?)`
             await this.connection.beginTransaction()
             await this.connection.query(insertMemberCommand, MemberToArrayMapper(data))
             await this.connection.query(insertMemberRoleCommand, [UserRole.TUTOR, data["id"]])
