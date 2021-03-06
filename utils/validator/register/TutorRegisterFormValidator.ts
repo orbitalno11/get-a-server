@@ -49,7 +49,6 @@ class TutorRegisterFormValidator {
             this.errors["subject1"] = "subject1 is required"
         }
 
-
         if (isNotEmpty(this.form.subject2)) {
             if (this.form.subject2?.isSafeNumber() && !validator.isNumeric(this.form.subject2.toString())) this.errors["subject2"] = "subject2 is invalid"
         }

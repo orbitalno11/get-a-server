@@ -1,7 +1,9 @@
-interface String {
-    isSafeNotNull(): boolean
-    isBlank(): boolean
-    isNotBlank(): boolean
+declare global {
+    interface String {
+        isSafeNotNull(): boolean
+        isBlank(): boolean
+        isNotBlank(): boolean
+    }
 }
 
 String.prototype.isSafeNotNull = function(): boolean {
@@ -15,3 +17,5 @@ String.prototype.isBlank = function(): boolean {
 String.prototype.isNotBlank = function(): boolean {
     return !this.isBlank()
 }
+
+export {}

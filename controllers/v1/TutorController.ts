@@ -4,7 +4,7 @@ import HttpStatusCode from "../../core/constant/HttpStatusCode"
 import ControllerCRUD from "../../core/Controller"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
-import { isEmpty, isNotEmpty } from "../../core/extension/CommonExtension"
+import { isEmpty } from "../../core/extension/CommonExtension"
 import FailureResponse from "../../core/response/FailureResponse"
 import SuccessResponse from "../../core/response/SuccessResponse"
 import Contact from "../../models/Contact"
@@ -53,7 +53,7 @@ class TutorController extends ControllerCRUD {
 
             // insert learner data to database
             await this.tutorRepository.insertTutor(inputData, this.getInterestedSubjectArray(data))
-            
+
             const token = TokenManager.generateSimpleProfileTokenData({
                 id: inputData["id"],
                 email: inputData["email"],
@@ -105,7 +105,7 @@ class TutorController extends ControllerCRUD {
         try {
             const tutorData = await this.tutorRepository.getTutorProfile(idParam)
             if (isEmpty(tutorData)) return next(new FailureResponse("Can not find user", HttpStatusCode.HTTP_400_BAD_REQUEST))
-            
+
             const updateMemberData: MemberUpdateForm = TutorUpdateFormToMemberUpdateFormMapper(data, tutorData["profileUrl"])
             const updateContactData: Contact = TutorUpdateFormToContactMapper(data)
             const introductionText: string | null = data["introduction"]

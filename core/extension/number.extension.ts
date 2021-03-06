@@ -1,12 +1,15 @@
-interface Number {
-    isSafeNumber(): boolean
-    isPositiveValue(): boolean
-    isNegativeValue(): boolean
-    isZeroValue(): boolean
+declare global {
+    interface Number {
+        isSafeNumber(): boolean
+        isPositiveValue(): boolean
+        isNegativeValue(): boolean
+        isZeroValue(): boolean
+    }
 }
 
+
 Number.prototype.isSafeNumber = function(): boolean {
-    return this !== null && this !== undefined
+    return this !== null && this !== undefined && this !== NaN
 }
 
 Number.prototype.isPositiveValue = function(): boolean {
@@ -20,3 +23,5 @@ Number.prototype.isNegativeValue = function(): boolean {
 Number.prototype.isZeroValue = function(): boolean {
     return this.isSafeNumber() && this === 0
 }
+
+export {}
