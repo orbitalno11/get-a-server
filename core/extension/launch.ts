@@ -3,7 +3,7 @@ import { logger } from "../../utils/log/logger"
 import HttpStatusCode from "../constant/HttpStatusCode"
 import FailureResponse from "../response/FailureResponse"
 
-export const launch = (fx: any, next: NextFunction) => {
+export const launch = (fx: () => void, next: NextFunction) => {
     Promise.resolve(fx()).catch(error => {
         logger.error("launch function error")
         logger.error(error)
