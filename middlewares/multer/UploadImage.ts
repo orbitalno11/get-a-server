@@ -3,7 +3,6 @@ import multer from "multer"
 import fs from "fs"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
-import { logger } from "../../utils/log/logger"
 import ImageType from "../../core/ImageType"
 
 class UploadImageMiddleware {
@@ -11,7 +10,7 @@ class UploadImageMiddleware {
     private fileFilter(req:Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
         if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG)$/)) {
             cb(null, false)
-            return cb(new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", FileErrorType.FILE_NOT_ALLOW))
+            return new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", FileErrorType.FILE_NOT_ALLOW)
         } else {
             return cb(null, true)
         }
