@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import { authentication } from "../../configs/firebase/FirebaseConfig"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import TokenErrorType from "../../core/exceptions/model/TokenErrorType"
-import User from "../../models/User"
+import User from "../../models/common/User"
 import { logger } from "../log/logger"
 
 class TokenManager {

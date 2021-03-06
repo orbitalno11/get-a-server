@@ -5,7 +5,7 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import UserErrorType from "../core/exceptions/model/UserErrorType"
 import Database from "../core/constant/Database"
 import LearnerForm from "../models/register/LearnerForm"
-import User from "../models/User"
+import User from "../models/common/User"
 import { logger } from "./log/logger"
 import Register from "../models/register/Register"
 
