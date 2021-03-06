@@ -1,4 +1,4 @@
-import Contact from "../../../models/Contact"
+import Contact from "../../../models/common/Contact"
 import TutorUpdateForm from "../../../models/tutor/TutorUpdateForm"
 
 const TutorUpdateFormToContactMapper = (from: TutorUpdateForm): Contact => (

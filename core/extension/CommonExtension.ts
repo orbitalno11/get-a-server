@@ -10,7 +10,17 @@ const isNotEmpty = (data: any): boolean => (
     !isEmpty(data)
 )
 
+const isNotNull = (data: any): boolean => (
+    data !== null
+)
+
+const isSafeNotNull = (data: any): boolean => (
+    isNotNull(data) && data !== undefined
+)
+
 export {
     isEmpty,
-    isNotEmpty
+    isNotEmpty,
+    isNotNull,
+    isSafeNotNull
 }

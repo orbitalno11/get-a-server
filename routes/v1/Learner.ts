@@ -1,6 +1,6 @@
 import LearnerController from "../../controllers/v1/LearnerController"
 import Route from "../../core/Route"
-import { controllerHandler } from "../../middlewares/Controller"
+import { controllerHandler } from "../../middlewares/ControllerHandler"
 import UploadImageMiddleware from "../../middlewares/multer/UploadImage"
 
 class LearnerRouter extends Route {

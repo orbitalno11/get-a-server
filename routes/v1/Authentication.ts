@@ -1,6 +1,6 @@
 import AuthenticationConroller from "../../controllers/v1/AuthenticationController"
 import Route from "../../core/Route"
-import { controllerHandler } from "../../middlewares/Controller"
+import { controllerHandler } from "../../middlewares/ControllerHandler"
 
 class AuthenticationRouter extends Route {
     controller = new AuthenticationConroller()

@@ -10,7 +10,7 @@ class UploadImageMiddleware {
     private fileFilter(req:Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
         if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG)$/)) {
             cb(null, false)
-            return cb(new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", FileErrorType.FILE_NOT_ALLOW))
+            return new ErrorExceptions("Only .png, .jpg and .jpeg format allowed!", FileErrorType.FILE_NOT_ALLOW)
         } else {
             return cb(null, true)
         }

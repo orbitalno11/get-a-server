@@ -1,22 +1,20 @@
 import validator from "validator"
-import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
+import TutorUpdateFormModel from "../../../models/tutor/data/TutorUpdateFormModel"
 import TutorUpdateForm from "../../../models/tutor/TutorUpdateForm"
+import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
 
-class TutorUpdateFormValidator {
-    private form: TutorUpdateForm
-    private errors = {} as any
-    private isValid: boolean = false
-
+class TutorUpdateFormValidator extends AbstractValidator<TutorUpdateFormModel> {
     constructor(data: TutorUpdateForm) {
-        this.form = data
+        super(data)
     }
 
-    validate(): ValidateResult<any> {
+    validator(): ValidateResult<any> {
         if (isEmpty(this.form.firstname)) this.errors['firstname'] = "firstname is required"
         if (isEmpty(this.form.lastname)) this.errors['lastname'] = "lastname is required"
         if (isEmpty(this.form.gender)) this.errors['gender'] = "gender is required"
-        if (isEmpty(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
+        if (!isSafeNotNull(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
         if (!isEmpty(this.form.email)) {
             if (!validator.isEmail(this.form.email)) this.errors['email'] = "email is in valid"
         } else {
