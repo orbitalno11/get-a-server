@@ -76,7 +76,7 @@ class LearnerController extends ControllerCRUD {
                 if (userId !== null && userId !== undefined) {
                     UserManager.deleteUser(userId)
                 }
-                return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+                return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))
             }
         }, next)
     }
