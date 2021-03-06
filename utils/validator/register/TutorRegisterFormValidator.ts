@@ -1,5 +1,5 @@
 import validator from "validator"
-import { isEmpty, isNotEmpty, isNotNull } from "../../../core/extension/CommonExtension"
+import { isEmpty, isNotNull } from "../../../core/extension/CommonExtension"
 import TutorForm from "../../../models/register/TutorForm"
 import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
@@ -49,10 +49,14 @@ class TutorRegisterFormValidator extends AbstractValidator<TutorForm> {
 
         if (this.form.subject2?.isSafeNumber()) {
             if (!validator.isNumeric(this.form.subject2.toString())) this.errors["subject2"] = "subject2 is invalid"
+        } else {
+            this.errors["subject2"] = "subject2 is invalid"
         }
 
         if (this.form.subject3?.isSafeNumber()) {
             if (!validator.isNumeric(this.form.subject3.toString())) this.errors["subject3"] = "subject3 is invalid"
+        } else {
+            this.errors["subject2"] = "subject2 is invalid"
         }
 
         this.isValid = isEmpty(this.errors)

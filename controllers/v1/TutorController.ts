@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express"
 import DatabaseConnection from "../../configs/DatabaseConnection"
 import HttpStatusCode from "../../core/constant/HttpStatusCode"
 import ControllerCRUD from "../../core/Controller"
-import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import FileErrorType from "../../core/exceptions/model/FileErrorType"
 import { isEmpty } from "../../core/extension/CommonExtension"
 import { launch } from "../../core/extension/launch"
@@ -68,18 +67,15 @@ class TutorController extends ControllerCRUD {
 
             } catch (error) {
                 logger.error(error)
-                if (error instanceof ErrorExceptions) {
-                    const type = error["type"]
-                    if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
-                        const fileManager = new FileManager()
-                        fileManager.deleteFile(req.file.path)
-                    }
+                if (Object.values(FileErrorType).includes(error["type"])) {
+                    const fileManager = new FileManager()
+                    fileManager.deleteFile(req.file.path)
                     return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
                 }
                 if (userId !== null && userId !== undefined) {
                     UserManager.deleteUser(userId)
                 }
-                return next(new FailureResponse("Unexpected error while create tutor account", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
+                return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
             }
         }, next)
     }
