@@ -9,7 +9,7 @@ declare global {
 
 
 Number.prototype.isSafeNumber = function(): boolean {
-    return this !== null && this !== undefined && this !== NaN
+    return this !== null && this !== undefined && !Number.isNaN(this)
 }
 
 Number.prototype.isPositiveValue = function(): boolean {
