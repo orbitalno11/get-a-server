@@ -9,15 +9,31 @@ import UserManager from "../../utils/UserManager"
 
 
 class AuthenticationConroller extends ControllerCRUD {
-    async getTokenProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    getTokenProfile(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
-            const currentUser = req.currentUser
+            const token: string = req.query.token as string
             try {
-                if (!currentUser) return next(new FailureResponse("Can not find user from token", HttpStatusCode.HTTP_404_NOT_FOUND))
-                if (!currentUser["id"]) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+                if (token.isNotSafeNull()) {
+                    logger.error("Can not found token")
+                    return next(new FailureResponse("Can not found token", HttpStatusCode.HTTP_404_NOT_FOUND))
+                }
 
-                const user = await UserManager.getUser(currentUser["id"])
-                const generateToken = TokenManager.generateSimpleProfileTokenData(user)
+                const validToken = await TokenManager.verifyFirebaseToken(token)
+                if (!validToken) return next(new FailureResponse("Yout token is invalid", HttpStatusCode.HTTP_401_UNAUTHORIZED))
+
+                const firebaseUser = await TokenManager.decodeFirebaseToken(token)
+                const userData = await UserManager.getUser(firebaseUser["uid"])
+
+                if (!userData) {
+                    logger.error("Can not find user from token")
+                    return next(new FailureResponse("Can not find user from token", HttpStatusCode.HTTP_404_NOT_FOUND))
+                }
+                if (!userData["id"]) {
+                    logger.error("Can not find user id")
+                    return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+                }
+
+                const generateToken = TokenManager.generateToken(userData)
 
                 return next(new SuccessResponse(generateToken))
             } catch (err) {
@@ -27,21 +43,13 @@ class AuthenticationConroller extends ControllerCRUD {
         }, next)
     }
 
-    async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    create(req: Request, res: Response, next: NextFunction) {}
 
-    }
+    read(req: Request, res: Response, next: NextFunction) {}
 
-    async read(req: Request, res: Response, next: NextFunction): Promise<void> {
+    update(req: Request, res: Response, next: NextFunction) {}
 
-    }
-
-    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-
-    }
-
-    async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-
-    }
+    delete(req: Request, res: Response, next: NextFunction) {}
 }
 
 export default AuthenticationConroller

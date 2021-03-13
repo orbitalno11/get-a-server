@@ -11,3 +11,4 @@ package-lock.json
 /myScript
 jwtRS256.key
 jwtRS256.key.pub
+/coverage

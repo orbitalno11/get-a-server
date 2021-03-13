@@ -1,6 +1,5 @@
 import Address from "../../common/Address"
 import Member from "../Member"
-
 class MemberModel implements Member {
     firstname: string
     lastname: string

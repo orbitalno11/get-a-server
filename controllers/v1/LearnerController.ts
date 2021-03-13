@@ -24,7 +24,7 @@ class LearnerController extends ControllerCRUD {
     private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
     private readonly learnerRepository: LearnerRepository = new LearnerRepository(this.databaseConnection)
 
-    async create(req: Request, res: Response, next: NextFunction) {
+    create(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const data: LearnerForm = new LearnerFormModel(req.body)
             const validate = new LearnerRegisterFromValidator(data).validate()
@@ -51,7 +51,7 @@ class LearnerController extends ControllerCRUD {
                 // insert learner data to database
                 await this.learnerRepository.insertLearner(inputData)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateToken({
                     id: inputData["id"],
                     email: inputData["email"],
                     username: inputData["username"],
@@ -73,7 +73,7 @@ class LearnerController extends ControllerCRUD {
         }, next)
     }
 
-    async read(req: Request, res: Response, next: NextFunction): Promise<void> {
+    read(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const idParam = req.params.id
 
@@ -92,7 +92,7 @@ class LearnerController extends ControllerCRUD {
         }, next)
     }
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    update(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const idParam: string = req.params.id
             const data: LearnerForm = new LearnerFormModel(req.body)
@@ -124,7 +124,7 @@ class LearnerController extends ControllerCRUD {
 
                 const learner = await this.learnerRepository.getLearnerProfile(idParam)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateToken({
                     id: learner["id"],
                     email: learner["email"],
                     username: learner["username"],
@@ -138,7 +138,7 @@ class LearnerController extends ControllerCRUD {
         }, next)
     }
 
-    async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    delete(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const idParam: string = req.params.id
 
