@@ -18,7 +18,7 @@ class MediaController extends ControllerCRUD {
         launch(async () => {
             const name = req.params.name
 
-            if (!name.isSafeNotNull()) return next(new FailureResponse("Cannot found file", HttpStatusCode.HTTP_400_BAD_REQUEST))
+            if (name.isSafeNotNull()) return next(new FailureResponse("Cannot found file", HttpStatusCode.HTTP_400_BAD_REQUEST))
 
             try {
                 const fileManager = new FileManager()
