@@ -1,6 +1,6 @@
 import TutorController from "../../controllers/v1/TutorController"
 import Route from "../../core/Route"
-import { controllerHandler } from "../../middlewares/Controller"
+import { controllerHandler } from "../../middlewares/ControllerHandler"
 import UploadImageMiddleware from "../../middlewares/multer/UploadImage"
 
 class TutorRouter extends Route {

@@ -7,3 +7,4 @@ package-lock.json
 /configs/firebase/serviceAccountKey.json
 /configs/firebase/FirebaseClient.ts
 /uploads
+.vscode
