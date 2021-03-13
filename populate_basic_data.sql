@@ -11,7 +11,7 @@ insert into exam_type (exam_name) values ('O-NET');
 -- insert into branch()
 
 -- exchange rate
-insert into exchange_rate(exchange_name, exchange_baht, exchange_coin, exchange_type, start_date) values ('standard', 10, 5, 'std', '01-01-1998');
+insert into exchange_rate(exchange_name, exchange_baht, exchange_coin, exchange_type, start_date) values ('standard', 10, 5, 'std', '1998-01-01');
 
 -- course
 insert into course_type (course_type_id, course_type_name) values (1, 'เดี่ยว'), (2, 'กลุ่ม');

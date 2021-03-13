@@ -3,7 +3,6 @@ import HttpStatusCode from "../../core/constant/HttpStatusCode"
 
 // controller
 import ControllerCRUD from "../../core/Controller"
-import { isSafeNotNull } from "../../core/extension/StringExtension"
 import FailureResponse from "../../core/response/FailureResponse"
 import FileManager from "../../utils/FileManager"
 import { logger } from "../../utils/log/logger"
@@ -17,7 +16,7 @@ class MediaController extends ControllerCRUD {
     async getImage(req: Request, res: Response, next: NextFunction): Promise<void> {
         const name = req.params.name
 
-        if (!isSafeNotNull(name)) return next(new FailureResponse("Cannot found file", HttpStatusCode.HTTP_400_BAD_REQUEST))
+        if (!name.isSafeNotNull()) return next(new FailureResponse("Cannot found file", HttpStatusCode.HTTP_400_BAD_REQUEST))
 
         try {
             const fileManager = new FileManager()
