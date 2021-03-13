@@ -1,6 +1,6 @@
 import MediaController from "../../controllers/v1/MediaController"
 import Route from "../../core/Route"
-import { controllerHandler } from "../../middlewares/Controller"
+import { controllerHandler } from "../../middlewares/ControllerHandler"
 
 class MediaRouter extends Route {
     controller = new MediaController()
