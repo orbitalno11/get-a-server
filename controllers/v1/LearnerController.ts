@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import DatabaseConnection from "../../configs/DatabaseConnection"
-
-// controller
 import ControllerCRUD from "../../core/Controller"
-
-// handle result
 import { FailureResponse, SuccessResponse } from "../../core/response/ResponseHandler"
 import UserManager from "../../utils/UserManager"
 import LearnerForm from "../../models/register/LearnerForm"
@@ -13,7 +9,6 @@ import LearnerFormToMemberMapper from "../../utils/mapper/register/LearnerFormTo
 import TokenManager from "../../utils/token/TokenManager"
 import LearnerRegisterFromValidator from "../../utils/validator/register/LearnerRegisterFormValidator"
 import { isEmpty } from "../../core/extension/CommonExtension"
-import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import ErrorExceptionToFailureResponseMapper from "../../utils/mapper/error/ErrorExceptionsToFailureResponseMapper"
 import Member from "../../models/member/Member"
 import FileManager from "../../utils/FileManager"
@@ -63,20 +58,17 @@ class LearnerController extends ControllerCRUD {
                     role: inputData["role"]
                 })
                 return next(new SuccessResponse(token))
-            } catch (err) {
-                logger.error(err)
-                if (err instanceof ErrorExceptions) {
-                    const type = err["type"]
-                    if (type !== FileErrorType.CAN_NOT_CREATE_DIRECTORY || type !== FileErrorType.FILE_NOT_ALLOW || type !== FileErrorType.FILE_SIZE_IS_TOO_LARGE) {
-                        const fileManager = new FileManager()
-                        fileManager.deleteFile(req.file.path)
-                    }
-                    return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+            } catch (error) {
+                logger.error(error)
+                if (Object.values(FileErrorType).includes(error["type"])) {
+                    const fileManager = new FileManager()
+                    fileManager.deleteFile(req.file.path)
+                    return next(ErrorExceptionToFailureResponseMapper(error, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
                 }
                 if (userId !== null && userId !== undefined) {
                     UserManager.deleteUser(userId)
                 }
-                return next(new FailureResponse("Unexpected error while create learner account.", HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
+                return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, error))
             }
         }, next)
     }
@@ -141,9 +133,6 @@ class LearnerController extends ControllerCRUD {
                 return next(new SuccessResponse(token))
             } catch (err) {
                 logger.error(err)
-                if (err instanceof ErrorExceptions) {
-                    return next(ErrorExceptionToFailureResponseMapper(err, HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR))
-                }
                 return next(new FailureResponse(err["message"], HttpStatusCode.HTTP_500_INTERNAL_SERVER_ERROR, err))
             }
         }, next)
