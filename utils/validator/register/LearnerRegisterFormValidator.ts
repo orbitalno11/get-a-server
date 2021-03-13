@@ -1,18 +1,16 @@
 import validator from "validator"
-import { isEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import LearnerForm from "../../../models/register/LearnerForm"
+import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
 
-class LearnerRegisterFromValidator {
-    private form: LearnerForm
-    private errors = {} as any
-    private isValid: boolean = false
+class LearnerRegisterFromValidator extends AbstractValidator<LearnerForm> {
 
     constructor(data: LearnerForm) {
-        this.form = data
+        super(data)
     }
 
-    validate(): ValidateResult<any> {
+    validator(): ValidateResult<any> {
         const passwordOptions = {
             minLength: 8,
             minLowercase: 1,
@@ -25,7 +23,7 @@ class LearnerRegisterFromValidator {
         if (isEmpty(this.form.firstname)) this.errors['firstname'] = "firstname is required"
         if (isEmpty(this.form.lastname)) this.errors['lastname'] = "lastname is required"
         if (isEmpty(this.form.gender)) this.errors['gender'] = "gender is required"
-        if (isEmpty(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
+        if (!isSafeNotNull(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
         if (!isEmpty(this.form.email)) {
             if (!validator.isEmail(this.form.email)) this.errors['email'] = "email is in valid"
         } else {
@@ -43,9 +41,7 @@ class LearnerRegisterFromValidator {
             if (!validator.isStrongPassword(this.form.confirmPassword, passwordOptions) && (this.form.password !== this.form.confirmPassword)) this.errors['confirmPassword'] = "confirmPassword is not match with password"
         }
 
-        if (isEmpty(this.form.grade)) {
-            this.errors['grade'] = "grade is required"
-        } else {
+        if (this.form.grade.isSafeNumber()) {
             if (!validator.isNumeric(this.form.grade.toString())) this.errors['grade'] = "grade is invalid"
         }
         
