@@ -51,7 +51,7 @@ class LearnerController extends ControllerCRUD {
                 // insert learner data to database
                 await this.learnerRepository.insertLearner(inputData)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateTokenData({
                     id: inputData["id"],
                     email: inputData["email"],
                     username: inputData["username"],
@@ -124,7 +124,7 @@ class LearnerController extends ControllerCRUD {
 
                 const learner = await this.learnerRepository.getLearnerProfile(idParam)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateTokenData({
                     id: learner["id"],
                     email: learner["email"],
                     username: learner["username"],

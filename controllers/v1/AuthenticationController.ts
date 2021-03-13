@@ -13,11 +13,17 @@ class AuthenticationConroller extends ControllerCRUD {
         launch(async () => {
             const currentUser = req.currentUser
             try {
-                if (!currentUser) return next(new FailureResponse("Can not find user from token", HttpStatusCode.HTTP_404_NOT_FOUND))
-                if (!currentUser["id"]) return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+                if (!currentUser) {
+                    logger.error("Can not find user from token")
+                    return next(new FailureResponse("Can not find user from token", HttpStatusCode.HTTP_404_NOT_FOUND))
+                }
+                if (!currentUser["id"]) {
+                    logger.error("Can not find user id")
+                    return next(new FailureResponse("Can not find user id", HttpStatusCode.HTTP_404_NOT_FOUND))
+                }
 
                 const user = await UserManager.getUser(currentUser["id"])
-                const generateToken = TokenManager.generateSimpleProfileTokenData(user)
+                const generateToken = TokenManager.generateTokenData(user)
 
                 return next(new SuccessResponse(generateToken))
             } catch (err) {

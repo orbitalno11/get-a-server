@@ -6,6 +6,7 @@ import TokenManager from "../utils/token/TokenManager"
 import UserManager from "../utils/UserManager"
 import AuthenticationErrorType from "../core/exceptions/model/AuthenticationErrorType"
 import HttpStatusCode from "../core/constant/HttpStatusCode"
+import CurrentUser from "../models/common/CurrentUser"
 
 class AuthenticationMiddleware {
 
@@ -20,11 +21,15 @@ class AuthenticationMiddleware {
 
             const firebaseUser = await TokenManager.decodeFirebaseToken(token)
             const userData = await UserManager.getUser(firebaseUser["uid"])
-            
-            req["currentUser"]["id"] = userData["id"]
-            req["currentUser"]["token"] = token
-            req["currentUser"]["role"] = userData["role"]
-            
+
+            const currentUser: CurrentUser = {
+                id: userData["id"],
+                token: token,
+                role: userData["role"]
+            }
+
+            req["currentUser"] = currentUser
+
             next()
         } catch (error) {
             logger.error(error)

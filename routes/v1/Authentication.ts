@@ -11,7 +11,7 @@ class AuthenticationRouter extends Route {
     }
 
     initialRoute(): void {
-        this.router.route("/getTokenProfile").get(this.auth.isSignin, (req, res, next) => controllerHandler(this.controller.getTokenProfile(req, res, next)))
+        this.router.route("/get-profile-token").get(this.auth.isSignin, (req, res, next) => controllerHandler(this.controller.getTokenProfile(req, res, next)))
     }
 }
 

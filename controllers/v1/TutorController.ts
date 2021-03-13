@@ -57,7 +57,7 @@ class TutorController extends ControllerCRUD {
                 // insert learner data to database
                 await this.tutorRepository.insertTutor(inputData, this.getInterestedSubjectArray(data))
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateTokenData({
                     id: inputData["id"],
                     email: inputData["email"],
                     username: inputData["username"],
@@ -132,7 +132,7 @@ class TutorController extends ControllerCRUD {
 
                 const tutor = await this.tutorRepository.getTutorProfile(idParam)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateTokenData({
                     id: tutor["id"],
                     email: tutor["email"],
                     username: tutor["username"],

@@ -4,10 +4,10 @@ import { authentication } from "../configs/firebase/FirebaseConfig"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import UserErrorType from "../core/exceptions/model/UserErrorType"
 import Database from "../core/constant/Database"
-import LearnerForm from "../models/register/LearnerForm"
 import User from "../models/common/User"
 import { logger } from "./log/logger"
 import Register from "../models/register/Register"
+import IMemberToUserMapper from "./mapper/query/IMemberToUser"
 
 class UserManager {
     public static async createUser(registerData: Register): Promise<auth.UserRecord> {
@@ -29,7 +29,7 @@ class UserManager {
             const db = new DatabaseConnection()
             const sqlCommand = `SELECT member_id, username, email, role_id FROM ${Database.MEMBER_TABLE} NATURAL JOIN ${Database.MEMBER_ROLE_TABLE} WHERE member_id like ?`
             const record = await db.query(sqlCommand, userId)
-            const basicUser: User = record[0]
+            const basicUser: User = IMemberToUserMapper(record[0])
             return basicUser
         } catch (error) {
             logger.error(error)
