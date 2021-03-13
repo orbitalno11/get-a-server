@@ -22,8 +22,8 @@ class TutorFormModel implements TutorForm {
         this.password = data.password
         this.confirmPassword = data.confirmPassword
         this.subject1 = Number(data.subject1)
-        this.subject2 = Number(data.subject2)
-        this.subject3 = Number(data.subject3)
+        this.subject2 = data.subject2?.isNotNull() ? Number(data.subject2) : null
+        this.subject3 = data.subject3?.isNotNull() ? Number(data.subject3) : null
     }
 }
 
