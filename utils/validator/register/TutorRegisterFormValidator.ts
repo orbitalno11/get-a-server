@@ -1,18 +1,16 @@
 import validator from "validator"
-import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isNotNull } from "../../../core/extension/CommonExtension"
 import TutorForm from "../../../models/register/TutorForm"
+import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
 
-class TutorRegisterFormValidator {
-    private form: TutorForm
-    private errors = {} as any
-    private isValid: boolean = false
+class TutorRegisterFormValidator extends AbstractValidator<TutorForm> {
 
     constructor(data: TutorForm) {
-        this.form = data
+        super(data)
     }
 
-    validate(): ValidateResult<any> {
+    validator(): ValidateResult<any> {
         const passwordOptions = {
             minLength: 8,
             minLowercase: 1,
@@ -25,7 +23,7 @@ class TutorRegisterFormValidator {
         if (!this.form.firstname.isSafeNotNull()) this.errors['firstname'] = "firstname is required"
         if (!this.form.lastname.isSafeNotNull()) this.errors['lastname'] = "lastname is required"
         if (!this.form.gender.isSafeNotNull()) this.errors['gender'] = "gender is required"
-        if (isEmpty(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
+        if (!isNotNull(this.form.dateOfBirth)) this.errors['dateOfBirth'] = "dateOfBirth is required"
         if (this.form.email.isSafeNotNull()) {
             if (!validator.isEmail(this.form.email)) this.errors['email'] = "email is in valid"
         } else {
@@ -43,18 +41,18 @@ class TutorRegisterFormValidator {
             this.errors['confirmPassword'] = "confirm-password is required"
         }
 
-        if (isNotEmpty(this.form.subject1)) {
+        if (this.form.subject1.isSafeNumber()) {
             if (!validator.isNumeric(this.form.subject1.toString())) this.errors["subject1"] = "subject1 is invalid"
         } else {
             this.errors["subject1"] = "subject1 is required"
         }
 
-        if (isNotEmpty(this.form.subject2)) {
-            if (this.form.subject2?.isSafeNumber() && !validator.isNumeric(this.form.subject2.toString())) this.errors["subject2"] = "subject2 is invalid"
+        if (this.form.subject2?.isSafeNotNull()) {
+            if (!this.form.subject2?.isSafeNumber()) this.errors["subject2"] = "subject2 is invalid"
         }
 
-        if (this.form.subject3?.isSafeNumber()) {
-            if (!validator.isNumeric(this.form.subject3.toString())) this.errors["subject3"] = "subject3 is invalid"
+        if (this.form.subject3?.isSafeNotNull()) {
+            if (!this.form.subject3.isSafeNumber()) this.errors["subject3"] = "subject3 is invalid"
         }
 
         this.isValid = isEmpty(this.errors)
