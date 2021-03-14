@@ -32,10 +32,10 @@ jobs:
       run: |
         cd ..
         git clone https://${{secrets.MY_GITHUB_TOKEN}}@github.com/orbitalno11/${{secrets.SECRET_FILE_REPOSITORY}}.git
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./server/configs/firebase
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./server/configs/firebase
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key ./server
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key.pub ./server
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./get-a-server/configs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./get-a-server/configs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key ./get-a-server
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key.pub ./get-a-server
         cd ./server
     - name: Build app
       run: npm run build --if-present
