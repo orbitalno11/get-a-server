@@ -4,14 +4,14 @@ import { logger } from "../log/logger"
 import ValidateResult from "./ValidateResult"
 
 abstract class AbstractValidator<T> {
-    form: T
+    protected form: T | null = null
     errors = {} as any
     isValid: boolean = false
 
-    constructor(data: T) {
+    setData(data: T) {
         this.form = data
     }
-
+    
     abstract validator(): ValidateResult<any>
 
     validate(): ValidateResult<any>  {

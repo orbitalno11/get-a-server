@@ -1,12 +1,3 @@
-declare global {
-    interface String {
-        isSafeNotNull(): boolean
-        isNotSafeNull(): boolean
-        isBlank(): boolean
-        isNotBlank(): boolean
-    }
-}
-
 String.prototype.isSafeNotNull = function(): boolean {
     return this !== null && String && this !== undefined && this.isNotBlank()
 }
@@ -22,5 +13,3 @@ String.prototype.isBlank = function(): boolean {
 String.prototype.isNotBlank = function(): boolean {
     return !this.isBlank()
 }
-
-export {}

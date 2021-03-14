@@ -27,7 +27,9 @@ class OfflineCourseController extends ControllerCRUD {
             }
 
             const data: OfflineCourseForm = OfflineCourseFormModel.create(req.body)
-            const validate = new OfflineCourseFormValidator(data).validate()
+            const validator = new OfflineCourseFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
 
             if (!validate.valid) {
                 logger.error("data is invalid")

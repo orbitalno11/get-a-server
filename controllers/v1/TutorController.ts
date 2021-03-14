@@ -33,7 +33,9 @@ class TutorController extends ControllerCRUD {
     create(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const data: TutorForm = new TutorFormModel(req.body)
-            const validate = new TutorRegisterFormValidator(data).validate()
+            const validator = new TutorRegisterFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
 
             if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
@@ -102,7 +104,9 @@ class TutorController extends ControllerCRUD {
         launch(async () => {
             const idParam: string = req.params.id
             const data: TutorUpdateForm = new TutorUpdateFormModel(req.body)
-            const validate = new TutorUpdateFormValidator(data).validate()
+            const validator = new TutorUpdateFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
 
             if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 

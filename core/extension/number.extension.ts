@@ -1,17 +1,3 @@
-declare global {
-    interface Number {
-        isNotNull(): boolean
-        isSafe(): boolean
-        isSafeNotNull(): boolean
-        isSafeNumber(): boolean
-        isPositiveValue(): boolean
-        isNegativeValue(): boolean
-        isZeroValue(): boolean
-        isNaN(): boolean
-        isBewteen(min: number, max: number): boolean
-    }
-}
-
 Number.prototype.isNotNull = function(): boolean {
     return this !== null
 }
@@ -47,5 +33,3 @@ Number.prototype.isNaN = function(): boolean {
 Number.prototype.isBewteen = function(min: number, max: number): boolean {
     return this >= min && this <= max
 }
-
-export {}

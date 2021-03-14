@@ -27,7 +27,9 @@ class LearnerController extends ControllerCRUD {
     create(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const data: LearnerForm = new LearnerFormModel(req.body)
-            const validate = new LearnerRegisterFromValidator(data).validate()
+            const validator = new LearnerRegisterFromValidator()
+            validator.setData(data)
+            const validate = validator.validate()
 
             if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
@@ -96,7 +98,9 @@ class LearnerController extends ControllerCRUD {
         launch(async () => {
             const idParam: string = req.params.id
             const data: LearnerForm = new LearnerFormModel(req.body)
-            const validate = new LearnerRegisterFromValidator(data).validate()
+            const validator = new LearnerRegisterFromValidator()
+            validator.setData(data)
+            const validate = validator.validate()
 
             if (!validate.valid) return next(new FailureResponse("Register data is invalid", HttpStatusCode.HTTP_400_BAD_REQUEST, validate.error))
 
