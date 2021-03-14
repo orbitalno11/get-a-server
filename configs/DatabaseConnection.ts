@@ -10,7 +10,10 @@ class DatabaseConnection {
             password: process.env.db_password,
             database: process.env.db_name
         })
-        this.conn.connect()
+    }
+
+    connect() {
+        return util.promisify(this.conn.connect).call(this.conn)
     }
 
     query(sqlCommand: string, args?: any): Promise<any> {

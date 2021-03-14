@@ -27,9 +27,11 @@ class UserManager {
     public static async getUser(userId: string): Promise<User> {
         try {
             const db = new DatabaseConnection()
+            db.connect()
             const sqlCommand = `SELECT member_id, username, email, role_id FROM ${Database.MEMBER_TABLE} NATURAL JOIN ${Database.MEMBER_ROLE_TABLE} WHERE member_id like ?`
             const record = await db.query(sqlCommand, userId)
             const basicUser: User = IMemberToUserMapper(record[0])
+            db.close()
             return basicUser
         } catch (error) {
             logger.error(error)
