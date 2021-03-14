@@ -16,7 +16,7 @@ class AuthenticationMiddleware {
 
             if (!token) return next(new FailureResponse("Can not found token", HttpStatusCode.HTTP_401_UNAUTHORIZED))
 
-            const validToken = await TokenManager.verifyToken(token)
+            const validToken = await TokenManager.verifyFirebaseToken(token)
             if (!validToken) return next(new FailureResponse("Yout token is invalid", HttpStatusCode.HTTP_401_UNAUTHORIZED))
 
             const firebaseUser = await TokenManager.decodeFirebaseToken(token)
@@ -33,7 +33,7 @@ class AuthenticationMiddleware {
             next()
         } catch (error) {
             logger.error(error)
-            return next(new ErrorExceptions("Unexpected error", AuthenticationErrorType.UNEXPECTED_ERROR))
+            return next(new FailureResponse(error["message"], HttpStatusCode.HTTP_403_FORBIDDEN, error["type"]))
         }
     }
 }

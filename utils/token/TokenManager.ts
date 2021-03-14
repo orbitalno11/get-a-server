@@ -19,7 +19,7 @@ class TokenManager {
         }
     }
 
-    public static async verifyToken(token: string): Promise<boolean> {
+    public static async verifyFirebaseToken(token: string): Promise<boolean> {
         try {
             const decodedToken = await this.decodeFirebaseToken(token)
             const userId = decodedToken.uid
@@ -41,21 +41,21 @@ class TokenManager {
         }
     }
 
-    public static generateTokenData(userTokenData: User): string {
+    public static generateToken(userTokenData: User): string {
         try {
             const privateKey = fs.readFileSync("jwtRS256.key", "utf-8")
             const token = jwt.sign(userTokenData, privateKey, {
                 algorithm: "RS256",
                 expiresIn: 3600
             })
-            return `Bearer ${token}`
+            return token
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions("Error while generate token", ErrorType.UNEXPECTED_ERROR)
         }
     }
 
-    public static verifyTokenData(token: string): User {
+    public static verifyToken(token: string): User {
         try {
             const publicKey = fs.readFileSync("jwtRS256.key.pub", "utf-8")
             const decoded = jwt.verify(token, publicKey, {
