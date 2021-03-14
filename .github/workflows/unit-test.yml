@@ -29,13 +29,13 @@ jobs:
         db_name: ${{secrets.DB_NAME_DEV}}
         db_user:  ${{secrets.DB_USER_DEV}}
         db_password: ${{secrets.DB_PASSWORD_DEV}}
-      run:
-        cd .. &&
-        git clone https://${{secrets.MY_GITHUB_TOKEN}}@github.com/${{secrets.SECRET_FILE_REPOSITORY}}.git &&
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./server/configs/firebase &&
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./server/configs/firebase &&
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key ./server &&
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key.pub ./server &&
+      run: |
+        cd ..
+        git clone https://${{secrets.MY_GITHUB_TOKEN}}@github.com/${{secrets.SECRET_FILE_REPOSITORY}}.git
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./server/configs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./server/configs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key ./server
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key.pub ./server
         cd ./server
     - name: Build app
       run: npm run build --if-present
