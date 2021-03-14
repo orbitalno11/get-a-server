@@ -1,4 +1,3 @@
-import validator from "validator"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import { isDayOfWeek } from "../../../core/utils/DateTime"
 import { CourseTypeValue } from "../../../models/course/CourseType"

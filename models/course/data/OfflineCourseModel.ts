@@ -61,7 +61,7 @@ class OfflineCourseModel implements OfflineCourse {
             data.startTime,
             data.endTime,
             Number(data.cost),
-            "test",
+            "status",
             0
         )
     }
