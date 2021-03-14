@@ -32,8 +32,8 @@ jobs:
       run:
         cd ..
         git clone https://${{secrets.MY_GITHUB_TOKEN}}@github.com/${{secrets.SECRET_FILE_REPOSITORY}}.git
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./server/confligs/firebase
-        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./server/confligs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/FirebaseClient.ts ./server/configs/firebase
+        cp ./${{secrets.SECRET_FILE_REPOSITORY}}/serviceAccountKey.json ./server/configs/firebase
         cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key ./server
         cp ./${{secrets.SECRET_FILE_REPOSITORY}}/jwtRS256.key.pub ./server
         cd ./server
