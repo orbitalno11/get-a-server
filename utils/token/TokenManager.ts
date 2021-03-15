@@ -1,8 +1,10 @@
 import { Request } from "express"
 import { auth } from "firebase-admin"
+import fs from "fs"
 import jwt from "jsonwebtoken"
 import { authentication } from "../../configs/firebase/FirebaseConfig"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import ErrorType from "../../core/exceptions/model/ErrorType"
 import TokenErrorType from "../../core/exceptions/model/TokenErrorType"
 import User from "../../models/common/User"
 import { logger } from "../log/logger"
@@ -17,12 +19,13 @@ class TokenManager {
         }
     }
 
-    public static async verifyToken(token: string): Promise<boolean> {
+    public static async verifyFirebaseToken(token: string): Promise<boolean> {
         try {
             const decodedToken = await this.decodeFirebaseToken(token)
             const userId = decodedToken.uid
             const tokenExp = decodedToken.exp
-            return userId.isSafeNotNull() && (tokenExp >= Date.now())
+            const currentTime = Math.floor(Date.now() / 1000)
+            return userId.isSafeNotNull() && (tokenExp >= currentTime)
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions("Unexpected error while verify token", TokenErrorType.CAN_NOT_VERIFY_TOKEN)
@@ -38,14 +41,31 @@ class TokenManager {
         }
     }
 
-    public static generateSimpleProfileTokenData(userTokenData: User): string | null {
-        const secretKey = process.env.auth_secret_key
-        if (secretKey == null && secretKey == undefined) return null
-        const token = jwt.sign(userTokenData, secretKey , {
-            algorithm: 'HS256',
-            expiresIn: 3600
-        })
-        return `Bearer ${token}`
+    public static generateToken(userTokenData: User): string {
+        try {
+            const privateKey = fs.readFileSync("jwtRS256.key", "utf-8")
+            const token = jwt.sign(userTokenData, privateKey, {
+                algorithm: "RS256",
+                expiresIn: 3600
+            })
+            return token
+        } catch (error) {
+            logger.error(error)
+            throw new ErrorExceptions("Error while generate token", ErrorType.UNEXPECTED_ERROR)
+        }
+    }
+
+    public static verifyToken(token: string): User {
+        try {
+            const publicKey = fs.readFileSync("jwtRS256.key.pub", "utf-8")
+            const decoded = jwt.verify(token, publicKey, {
+                algorithms: ["RS256"]
+            })
+            return decoded as User
+        } catch (error) {
+            logger.error(error)
+            throw new ErrorExceptions("Error while verify token data", TokenErrorType.CAN_NOT_VERIFY_TOKEN)
+        }
     }
 }
 

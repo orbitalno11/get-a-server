@@ -8,3 +8,7 @@ package-lock.json
 /configs/firebase/FirebaseClient.ts
 /uploads
 .vscode
+/myScript
+jwtRS256.key
+jwtRS256.key.pub
+/coverage

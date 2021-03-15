@@ -30,7 +30,7 @@ class TutorController extends ControllerCRUD {
     private readonly databaseConnection: DatabaseConnection = new DatabaseConnection()
     private readonly tutorRepository: TutorRepository = new TutorRepository(this.databaseConnection)
 
-    async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    create(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const data: TutorForm = new TutorFormModel(req.body)
             const validate = new TutorRegisterFormValidator(data).validate()
@@ -57,7 +57,7 @@ class TutorController extends ControllerCRUD {
                 // insert learner data to database
                 await this.tutorRepository.insertTutor(inputData, this.getInterestedSubjectArray(data))
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateToken({
                     id: inputData["id"],
                     email: inputData["email"],
                     username: inputData["username"],
@@ -80,7 +80,7 @@ class TutorController extends ControllerCRUD {
         }, next)
     }
 
-    async read(req: Request, res: Response, next: NextFunction): Promise<void> {
+    read(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const idParam = req.params.id
 
@@ -98,7 +98,7 @@ class TutorController extends ControllerCRUD {
         }, next)
     }
 
-    async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    update(req: Request, res: Response, next: NextFunction) {
         launch(async () => {
             const idParam: string = req.params.id
             const data: TutorUpdateForm = new TutorUpdateFormModel(req.body)
@@ -132,7 +132,7 @@ class TutorController extends ControllerCRUD {
 
                 const tutor = await this.tutorRepository.getTutorProfile(idParam)
 
-                const token = TokenManager.generateSimpleProfileTokenData({
+                const token = TokenManager.generateToken({
                     id: tutor["id"],
                     email: tutor["email"],
                     username: tutor["username"],
@@ -146,7 +146,7 @@ class TutorController extends ControllerCRUD {
         }, next)
     }
 
-    async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    delete(req: Request, res: Response, next: NextFunction) {
 
     }
 
