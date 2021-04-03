@@ -13,6 +13,9 @@ export class OfflineCourseRatingTransactionEntity {
   @Column()
   review: string
 
+  @Column()
+  reviewDate: Date
+
   // entity relation
   @ManyToOne(() => LearnerEntity, (learner) => learner.offlineCourseReview)
   @JoinColumn({ name: 'learnerId' })

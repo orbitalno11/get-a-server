@@ -18,7 +18,7 @@ import UserManager from "../../../utils/UserManager"
 import { TutorEntity } from "../../../entity/profile/tutor.entity"
 import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { UserRoleKey } from "../../../core/constant/UserRole"
-import { Subject } from "../../../model/common/Subject"
+import { Subject } from "../../../model/common/data/Subject"
 import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 
 @Injectable()

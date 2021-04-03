@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { OfflineCourseEntity } from './offline/offlineCourse.entity'
-import { CourseType } from "../../model/course/CourseType"
+import { CourseType } from "../../model/course/data/CourseType"
 
 @Entity('course_type')
 export class CourseTypeEntity {

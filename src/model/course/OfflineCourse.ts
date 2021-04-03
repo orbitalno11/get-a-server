@@ -1,9 +1,7 @@
 import TutorProfile from "../profile/TutorProfile"
-import { DateTimeValue } from "../../core/constant/DateTime"
-import { Subject } from "../common/Subject"
-import { Grade } from "../common/Grade"
-import { CourseType } from "./CourseType"
-import { CourseStatus } from "./CourseStatus"
+import {CourseType} from "./data/CourseType";
+import Subject from "../common/Subject";
+import Grade from "../common/Grade";
 
 class OfflineCourse {
   id: string
@@ -13,11 +11,15 @@ class OfflineCourse {
   subject: Subject
   grade: Grade
   type: CourseType
-  dayOfWeek: DateTimeValue
+  dayOfWeek: number
   startTime: string
   endTime: string
+  timeText: string
   cost: number
-  status: CourseStatus
+  costText: string
+  rating: number
+  review: Review[]
+  status: string
   requestNumber: number
 }
 

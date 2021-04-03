@@ -2,7 +2,7 @@ import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
 import OfflineCourseForm from "../../../model/course/OfflineCourseForm"
 import { isEmpty } from "../../../core/extension/CommonExtension"
-import { CourseType } from "../../../model/course/CourseType"
+import { CourseType } from "../../../model/course/data/CourseType"
 import { isDayOfWeek } from "../../DateTime"
 
 class OfflineCourseFormValidator extends AbstractValidator<OfflineCourseForm> {

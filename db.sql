@@ -255,6 +255,7 @@ create table course_rating_transaction(
     courseId varchar(255) not null,
     rating float(3,1) not null,
     review text not null,
+    reviewDate timestamp not null default current_timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_RATING_BY_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_COURSE_RATING_TRANSACTION_COURSE` FOREIGN KEY(courseId) REFERENCES course (id)
@@ -329,6 +330,7 @@ create table online_clip_rating_transaction(
     clipId varchar(255) not null,
     rating float(3,1) not null,
     review text not null,
+    reviewDate timestamp not null default current_timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_RATING_BY_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_ONLINE_CLIP_RATING_TRANSACTION_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)

@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm"
 import { OfflineCourseEntity } from '../course/offline/offlineCourse.entity'
-import { Grade } from "../../model/common/Grade"
+import { Grade } from "../../model/common/data/Grade"
 
 @Entity('grade')
 export class GradeEntity {
