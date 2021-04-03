@@ -102,11 +102,11 @@ export class TutorService {
       return token
     } catch (error) {
       logger.error(error)
-      if (filePath) {
-        await firebaseStorageUtils.deleteImage(filePath)
-      }
       if (userId) {
         await this.userManager.deleteUser(userId)
+      }
+      if (filePath) {
+        await firebaseStorageUtils.deleteImage(filePath)
       }
       throw error
     }

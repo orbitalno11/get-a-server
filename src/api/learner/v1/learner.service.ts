@@ -17,6 +17,7 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import FailureResponse from "../../../core/response/FailureResponse"
 import { MemberEntity } from "../../../entity/member/member.entitiy"
 import LearnerUpdateForm from "../../../model/form/update/LearnerUpdateForm"
+import {FirebaseStorageUtils} from "../../../utils/files/FirebaseStorageUtils";
 
 @Injectable()
 export class LearnerService {
@@ -31,7 +32,9 @@ export class LearnerService {
     data: LearnerForm,
     file: Express.Multer.File
   ): Promise<string> {
+    const firebaseStorageUtils = new FirebaseStorageUtils()
     let userId: string
+    let filePath: string
     try {
       // create firebase user
       const user = await this.userManager.createUser(data)
@@ -39,11 +42,7 @@ export class LearnerService {
       userId = user.uid
 
       // set profile image path
-      const fileManager = new FileManager()
-      const filePath = await fileManager.convertImageToProfile(
-        file.path,
-        userId
-      )
+      filePath = await firebaseStorageUtils.uploadImage("profile" ,userId, file)
 
       // create entity
       const member = LearnerFormToMemberEntityMapper(data)
@@ -96,12 +95,11 @@ export class LearnerService {
       return token
     } catch (error) {
       logger.error(error)
-      if (Object.values(FileErrorType).includes(error["type"])) {
-        const fileManager = new FileManager()
-        fileManager.deleteFile(file.path)
-      }
-      if (userId !== null && userId !== undefined) {
+      if (userId) {
         this.userManager.deleteUser(userId)
+      }
+      if (filePath) {
+        await firebaseStorageUtils.deleteImage(filePath)
       }
       throw error
     }
@@ -123,11 +121,20 @@ export class LearnerService {
   }
 
   async updateProfile(id: string, data: LearnerUpdateForm, file: Express.Multer.File | null): Promise<string> {
+    const firebaseStorageUtils = new FirebaseStorageUtils()
+    let newFileUrl: string
+    let oldFileUrl: string
     try {
       const learnerProfile = await this.getProfileById(id)
       if (isEmpty(learnerProfile)) {
         logger.error("Can not find user data")
         throw FailureResponse.create("Can not find user", HttpStatus.BAD_REQUEST)
+      }
+
+      if (file !== undefined && file !== null) {
+        oldFileUrl = learnerProfile.member.profileUrl
+        newFileUrl = await firebaseStorageUtils.uploadImage("profile", id, file)
+        data.profileUrl = newFileUrl
       }
 
       // update user email if change email
@@ -188,6 +195,9 @@ export class LearnerService {
       return token
     } catch (error) {
       logger.error(error)
+      if (newFileUrl) {
+        await firebaseStorageUtils.deleteImage(newFileUrl)
+      }
       throw error
     }
   }

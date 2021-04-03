@@ -185,9 +185,9 @@ create table exchange_rate(
     baht float(10,3) not null,
     coin float(10,3) not null,
     type varchar(20) not null,
-    startDate date not null DEFAULT CURRENT_TIMESTAMP,
-    endDate date,
-    updated date DEFAULT CURRENT_TIMESTAMP,
+    startDate timestamp not null DEFAULT CURRENT_TIMESTAMP,
+    endDate timestamp,
+    updated timestamp DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id) 
 );
 
@@ -195,7 +195,7 @@ create table coin(
     id int not null AUTO_INCREMENT,
     memberId varchar(255) not null,
     amount float(10,3) not null,
-    updated date DEFAULT CURRENT_TIMESTAMP,
+    updated timestamp DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
     CONSTRAINT `FK_MEMBER_COIN` FOREIGN KEY(memberId) REFERENCES member (id)
 );
@@ -204,9 +204,9 @@ create table exchange_transaction(
     id int not null AUTO_INCREMENT,
     memberId varchar(255) not null,
     exchangeRateId int not null,
-    requestDate date not null,
-    approveDate date,
-    transferDate date,
+    requestDate timestamp not null default current_timestamp,
+    approveDate timestamp,
+    transferDate timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(memberId) REFERENCES member (id),
     CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
@@ -339,7 +339,7 @@ create table clip_transaction(
     learnerId varchar(255) not null,
     clipId varchar(255) not null,
     amount float(10,3) not null,
-    paidDate date not null,
+    paidDate timestamp not null default current_timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)
