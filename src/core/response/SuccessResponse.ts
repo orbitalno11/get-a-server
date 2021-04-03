@@ -1,4 +1,6 @@
-class SuccessResponse<T> {
+import IResponse from "./IResponse";
+
+class SuccessResponse<T> implements IResponse<T>{
   message: string;
   data: T;
   success: boolean;

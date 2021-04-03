@@ -1,5 +1,5 @@
 import Register from './Register'
-import { Subject } from "../../common/Subject"
+import { Subject } from "../../common/data/Subject"
 
 class TutorForm extends Register {
   subject1: Subject

@@ -3,8 +3,8 @@ import { isEmpty, isNotNull } from '../../../core/extension/CommonExtension'
 import TutorForm from '../../../model/form/register/TutorForm'
 import AbstractValidator from '../AbstractValidator'
 import ValidateResult from '../ValidateResult'
-import { Subject } from "../../../model/common/Subject"
-import { Gender } from "../../../model/common/Gender"
+import { Subject } from "../../../model/common/data/Subject"
+import { Gender } from "../../../model/common/data/Gender"
 
 class TutorRegisterFormValidator extends AbstractValidator<TutorForm> {
   validator(): ValidateResult<any> {

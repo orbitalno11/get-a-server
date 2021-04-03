@@ -26,7 +26,7 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import TutorUpdateForm from "../../../model/form/update/TutorUpdateForm"
 import TutorUpdateFormValidator from "../../../utils/validator/update-profile/TutorUpdateFormValidator"
 import TutorProfile from "../../../model/profile/TutorProfile"
-import { TutorEntityToTutorProfile } from "../mapper/TutorEntityToTutorProfileMapper"
+import { TutorEntityToTutorProfile } from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 
 @Controller("v1/tutor")
@@ -85,7 +85,7 @@ export class TutorController {
         return SuccessResponse.create("Can not find user")
       }
 
-      return SuccessResponse.create(TutorEntityToTutorProfile(tutorData))
+      return SuccessResponse.create(new TutorEntityToTutorProfile().map(tutorData))
     } catch (error) {
       logger.error(error)
       if (error instanceof FailureResponse) throw error

@@ -3,7 +3,7 @@ import {CoreModule} from "../../../core/core.module"
 import {UtilityModule} from "../../../utils/utility.module"
 import {LearnerController} from "./learner.controller"
 import {LearnerService} from "./learner.service"
-import Authenticated from "../../../middleware/auth/Authenticated.middleware"
+import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware";
 
 @Module({
     imports: [CoreModule, UtilityModule],
@@ -13,7 +13,7 @@ import Authenticated from "../../../middleware/auth/Authenticated.middleware"
 export class LearnerModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
-            .apply(Authenticated)
+            .apply(LearnerAuthenticated)
             .exclude("v1/learner/create")
             .forRoutes(
                 {path: "v1/learner/:id", method: RequestMethod.ALL}

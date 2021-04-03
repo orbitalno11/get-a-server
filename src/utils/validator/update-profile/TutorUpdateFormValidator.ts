@@ -3,7 +3,7 @@ import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import TutorUpdateForm from "../../../model/form/update/TutorUpdateForm"
 import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
-import { Gender } from "../../../model/common/Gender"
+import { Gender } from "../../../model/common/data/Gender"
 
 class TutorUpdateFormValidator extends AbstractValidator<TutorUpdateForm> {
 
