@@ -44,6 +44,9 @@ export class OfflineCourseEntity {
   @Column()
   requestNumber: number
 
+  @Column()
+  studentNumber: number
+
   // entity relation attribute
   @ManyToOne(() => TutorEntity, (tutor) => tutor.offlineCourse)
   @JoinColumn({ name: "ownerId" })

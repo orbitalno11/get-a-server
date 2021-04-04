@@ -20,9 +20,10 @@ export const OfflineCourseEntityToOfflineCourseMapper = (from: OfflineCourseEnti
     course.timeText = `${getDayOfWeekTh(from.day)} ${course.startTime}น. - ${course.endTime}น.`
     course.subject = new Subject(from.subject.code, from.subject.title)
     course.grade = new Grade(from.grade.grade, from.grade.title)
-    course.rating = from.rating?.rating ? from.rating?.rating : 0.0
     course.status = from.status
-    course.requestNumber = from.requestList?.length ? from.requestList.length : 0.0
+    course.requestNumber = from.requestList?.length ? from.requestList.length : 0
+    course.studentNumber = from.studentNumber ? from.studentNumber : 0
+    course.rating = from.rating?.rating ? from.rating?.rating : 0.0
     course.review = toReviewArray(from.courseReview)
     course.owner = TutorEntityToTutorProfile(from.owner)
     return course

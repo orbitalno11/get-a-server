@@ -233,6 +233,7 @@ create table course(
     endTime varchar(6) not null,
     status varchar(10) not null,
     requestNumber int UNSIGNED not null,
+    studentNumber int UNSIGNED not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_COURSE_TYPE` FOREIGN KEY(courseTypeId) REFERENCES course_type (id),

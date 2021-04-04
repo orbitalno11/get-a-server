@@ -21,6 +21,7 @@ class OfflineCourse {
   review: Review[]
   status: string
   requestNumber: number
+  studentNumber: number
 }
 
 export default OfflineCourse
