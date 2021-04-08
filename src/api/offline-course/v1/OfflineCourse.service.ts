@@ -70,7 +70,6 @@ export class OfflineCourseService {
                 .leftJoinAndSelect("course.rating", "rating")
                 .leftJoinAndSelect("course.courseReview", "review")
                 .leftJoinAndSelect("owner.member", "member")
-                .leftJoinAndSelect("owner.contact", "contact")
                 .where("course.id like :id")
                 .setParameter("id", courseId)
                 .getOne()

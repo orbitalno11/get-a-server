@@ -10,7 +10,7 @@ import { MemberEntity } from "../entity/member/member.entitiy"
 import { MemberRoleEntity } from "../entity/member/memberRole.entitiy"
 import Register from "../model/form/register/Register"
 import User from "../model/User"
-import MemberEntityToUserMapper from "./mapper/MemberEnityToUserMapper"
+import MemberEntityToUserMapper from "./mapper/member/MemberEnityToUserMapper"
 
 @Injectable()
 class UserManager {

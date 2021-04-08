@@ -1,5 +1,5 @@
-import { MemberEntity } from '../../entity/member/member.entitiy'
-import Member from '../../model/Member'
+import { MemberEntity } from '../../../entity/member/member.entitiy'
+import Member from '../../../model/Member'
 
 const MemberEntityToMemberMapper = (from: MemberEntity): Member => {
   const member = new Member()

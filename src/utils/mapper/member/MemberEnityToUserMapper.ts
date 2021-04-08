@@ -1,6 +1,6 @@
-import { UserRoleKey } from '../../core/constant/UserRole';
-import { MemberEntity } from '../../entity/member/member.entitiy';
-import User from '../../model/User';
+import { UserRoleKey } from '../../../core/constant/UserRole';
+import { MemberEntity } from '../../../entity/member/member.entitiy';
+import User from '../../../model/User';
 
 const getUserRole = (roleId: number): UserRoleKey => {
   switch (roleId) {
