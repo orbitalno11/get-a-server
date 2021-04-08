@@ -6,8 +6,15 @@ import Grade from "../../../../model/common/Grade";
 import {OfflineCourseReviewToReviewMapper} from "./OfflineCourseReviewToReviewMapper";
 import {TutorEntityToTutorProfile} from "../../tutor/TutorEntityToTutorProfileMapper";
 import Mapper from "../../../../core/common/Mapper";
+import {TutorEntityToTutorProfilePublicMapper} from "../../tutor/TutorEntityToTutorProfilePublicMapper";
 
 export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineCourseEntity, OfflineCourse> {
+    private readonly isOwner: boolean
+
+    constructor(isOwner: boolean) {
+        this.isOwner = isOwner
+    }
+
     map(from: OfflineCourseEntity): OfflineCourse {
         const course = new OfflineCourse()
         course.id = from.id
@@ -22,11 +29,15 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.subject = new Subject(from.subject.code, from.subject.title)
         course.grade = new Grade(from.grade.grade, from.grade.title)
         course.status = from.status
-        course.requestNumber = from.requestList?.length ? from.requestList.length : 0
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
+        if (this.isOwner) {
+            course.requestNumber = from.requestList?.length ? from.requestList.length : 0
+        }
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
         course.review = new OfflineCourseReviewToReviewMapper().toReviewArray(from.courseReview)
-        course.owner = new TutorEntityToTutorProfile().map(from.owner)
+        course.owner = TutorEntityToTutorProfilePublicMapper.getTutorSimpleDetail(from.owner)
+
+
         return course
     }
 }

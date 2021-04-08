@@ -11,7 +11,6 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import {CurrentUser} from "../../../decorator/CurrentUser.decorator";
 import OfflineCourse from "../../../model/course/OfflineCourse";
 import {OfflineCourseEntityToOfflineCourseMapper} from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper";
-import {OfflineCourseEntityToOfflineCoursePublicMapper} from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCoursePublicMapper";
 
 @Controller("v1/offline-course")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -49,16 +48,11 @@ export class OfflineCourseController {
     }
 
     @Get("/:id")
-    async getOfflineCourseDetail(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<OfflineCourse>> {
+    async getOfflineCourseDetail(@Param("id") courseId: string, @CurrentUser("id") currentUserId?: string): Promise<SuccessResponse<OfflineCourse>> {
         try {
             const courseData = await this.service.getOfflineCourseDetail(courseId)
-            if (currentUserId === courseData.owner.member.id) {
-                const data = new OfflineCourseEntityToOfflineCourseMapper().map(courseData)
-                return SuccessResponse.create(data)
-            } else {
-                const data = new OfflineCourseEntityToOfflineCoursePublicMapper().map(courseData)
-                return SuccessResponse.create(data)
-            }
+            const data = new OfflineCourseEntityToOfflineCourseMapper(currentUserId === courseData.owner.member.id).map(courseData)
+            return SuccessResponse.create(data)
         } catch (error) {
             logger.error(error)
             if (error instanceof FailureResponse) throw error

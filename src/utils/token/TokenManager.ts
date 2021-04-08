@@ -82,7 +82,7 @@ class TokenManager {
     } catch (error) {
       logger.error(error)
       throw new ErrorExceptions(
-        error.message,
+        "Can not verify token",
         TokenErrorType.CAN_NOT_VERIFY_TOKEN
       )
     }
@@ -98,7 +98,7 @@ class TokenManager {
     } catch (error) {
       logger.error(error)
       throw new ErrorExceptions(
-        error.message,
+        "Can nor decode token",
         TokenErrorType.CAN_NOT_VERIFY_TOKEN
       )
     }
