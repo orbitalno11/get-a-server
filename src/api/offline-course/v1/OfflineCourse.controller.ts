@@ -172,6 +172,20 @@ export class OfflineCourseController {
         }
     }
 
+    @Get(":id/enroll")
+    async getEnrollList(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string) {
+        try {
+            this.checkCourseId(courseId)
+            this.checkCurrentUser(currentUserId)
+
+
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof FailureResponse) throw error
+            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     /**
      * Tutor manage a learner enroll course request
      * @param courseId

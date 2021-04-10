@@ -234,6 +234,15 @@ export class OfflineCourseService {
         }
     }
 
+    async getEnrollOfflineCourseList(courseId: string) {
+        try {
+
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
     /**
      * Tutor manage a leaner enroll course request
      * @param course
