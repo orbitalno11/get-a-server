@@ -183,7 +183,7 @@ export class OfflineCourseController {
         @Param("id") courseId: string,
         @CurrentUser("id") currentUserId: string,
         @Query("learnerId") learnerId: string
-    ) {
+    ): Promise<IResponse<string>> {
         try {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
