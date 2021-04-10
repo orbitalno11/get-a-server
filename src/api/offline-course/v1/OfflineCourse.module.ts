@@ -16,7 +16,8 @@ export class OfflineCourseModule implements NestModule {
         consumer
             .apply(TutorAuthenticated)
             .forRoutes(
-                {path: "v1/offline-course/create", method: RequestMethod.POST}
+                {path: "v1/offline-course/create", method: RequestMethod.POST},
+                {path: "v1/offline-course/:id", method: RequestMethod.PUT}
             )
             .apply(AuthenticatedRequest)
             .forRoutes(
