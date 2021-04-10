@@ -172,6 +172,12 @@ export class OfflineCourseController {
         }
     }
 
+    /**
+     * Tutor accept a learner enroll course request
+     * @param courseId
+     * @param currentUserId
+     * @param learnerId
+     */
     @Get(":id/accept")
     async acceptEnrollRequest(
         @Param("id") courseId: string,

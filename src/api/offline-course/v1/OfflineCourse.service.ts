@@ -232,6 +232,12 @@ export class OfflineCourseService {
         }
     }
 
+    /**
+     * Tutor accept a leaner enroll course request
+     * @param course
+     * @param tutorId
+     * @param learnerId
+     */
     async acceptEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string) {
         try {
             await this.userManager.getTutor(tutorId)
@@ -243,7 +249,7 @@ export class OfflineCourseService {
                 return "Can not find enrolled learner with id " + learnerId
             } else if (enrolled.status !== EnrollStatus.WAITING_FOR_APPROVE) {
                 logger.error("Learner with id " + learnerId + " already enroll your course")
-                return "Learner with id " + learnerId + " already enroll your course"
+                return "You already have action with this request"
             }
 
             course.requestNumber--
