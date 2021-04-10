@@ -11,16 +11,16 @@ import {CourseStatus} from "../../../model/course/data/CourseStatus"
 import {GradeEntity} from "../../../entity/common/grade.entity"
 import {SubjectEntity} from "../../../entity/common/subject.entity"
 import {CourseTypeEntity} from "../../../entity/course/courseType.entity"
-import {TutorEntity} from "../../../entity/profile/tutor.entity"
 import TutorProfile from "../../../model/profile/TutorProfile";
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
 import {CourseError} from "../../../model/course/data/CourseError";
 import {isEmpty} from "../../../core/extension/CommonExtension";
 import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
 import {LearnerEntity} from "../../../entity/profile/learner.entity";
-import LearnerProfile from "../../../model/profile/LearnerProfile";
 import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
-import SuccessResponse from "../../../core/response/SuccessResponse";
+import UserManager from "../../../utils/UserManager";
+import UserErrorType from "../../../core/exceptions/model/UserErrorType";
+import {TutorEntity} from "../../../entity/profile/tutor.entity";
 
 /**
  * Service for manage offline course data
@@ -28,7 +28,10 @@ import SuccessResponse from "../../../core/response/SuccessResponse";
  */
 @Injectable()
 export class OfflineCourseService {
-    constructor(private readonly connection: Connection) {
+    constructor(
+        private readonly connection: Connection,
+        private readonly userManager: UserManager
+    ) {
     }
 
     /**
@@ -43,22 +46,6 @@ export class OfflineCourseService {
     }
 
     /**
-     * Get a simple tutor profile data
-     * (tutor id, introduction)
-     * @param id
-     * @private
-     */
-    private async getTutor(id: string): Promise<TutorEntity> {
-        try {
-            const tutorId = TutorProfile.getTutorId(id)
-            return await this.connection.getRepository(TutorEntity).findOne(tutorId)
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
-    }
-
-    /**
      * Create an offline course
      * @param tutorId
      * @param data
@@ -66,6 +53,8 @@ export class OfflineCourseService {
     async createOfflineCourse(tutorId: string, data: OfflineCourseForm): Promise<string> {
         try {
             const courseId = this.generateCourseId(data.type, data.subject, data.grade)
+            const tutor = await this.userManager.getTutor(tutorId)
+
             const offlineCourse = new OfflineCourseEntity()
             offlineCourse.id = courseId
             offlineCourse.name = data.name
@@ -79,7 +68,7 @@ export class OfflineCourseService {
             offlineCourse.grade = GradeEntity.createFromGrade(data.grade)
             offlineCourse.subject = SubjectEntity.createFromCode(data.subject)
             offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
-            offlineCourse.owner = await this.getTutor(tutorId)
+            offlineCourse.owner = tutor
 
             await this.connection.getRepository(OfflineCourseEntity).save(offlineCourse)
 
@@ -141,6 +130,8 @@ export class OfflineCourseService {
      */
     async updateOfflineCourse(courseId: string, userId: string, data: OfflineCourseForm): Promise<OfflineCourseEntity> {
         try {
+            await this.userManager.getTutor(userId)
+
             const offlineCourseEntity = new OfflineCourseEntity()
             offlineCourseEntity.id = courseId
             offlineCourseEntity.name = data.name
@@ -186,12 +177,11 @@ export class OfflineCourseService {
      * @param learner
      * @private
      */
-    private async checkEnrolledOfflineCourse(courseId: string, learner: LearnerEntity): Promise<boolean> {
+    private async checkEnrolledOfflineCourse(courseId: string, learner: LearnerEntity): Promise<OfflineCourseLeanerRequestEntity> {
         try {
-            const result = await this.connection.getRepository(OfflineCourseLeanerRequestEntity).findOne({
+            return await this.connection.getRepository(OfflineCourseLeanerRequestEntity).findOne({
                 where: {course: courseId, learner: learner}
             })
-            return !!result
         } catch (error) {
             logger.error(error)
             throw error
@@ -205,16 +195,14 @@ export class OfflineCourseService {
      */
     async enrollOfflineCourse(course: OfflineCourseEntity, userId: string): Promise<string> {
         try {
-            const learnerEntity = new LearnerEntity()
-            learnerEntity.id = LearnerProfile.getLearnerId(userId)
-
+            const learnerEntity = await this.userManager.getLearner(userId)
             const enrolled = await this.checkEnrolledOfflineCourse(course.id, learnerEntity)
 
-            if (enrolled) {
+            if (!!enrolled) {
                 return "Sorry, You already sent a request for enroll this course. Please, waiting for tutor approve your request."
             }
 
-            course.requestNumber += 1
+            course.requestNumber++
 
             const requestCourseEntity = new OfflineCourseLeanerRequestEntity()
             requestCourseEntity.learner = learnerEntity
@@ -238,6 +226,47 @@ export class OfflineCourseService {
             }
 
             return "Successfully, You sent a request for enroll this course."
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    async acceptEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string) {
+        try {
+            await this.userManager.getTutor(tutorId)
+            const learner = await this.userManager.getLearner(learnerId)
+            const enrolled = await this.checkEnrolledOfflineCourse(course.id, learner)
+
+            if (!enrolled) {
+                logger.error("Can not find enrolled learner with id " + learnerId)
+                return "Can not find enrolled learner with id " + learnerId
+            } else if (enrolled.status !== EnrollStatus.WAITING_FOR_APPROVE) {
+                logger.error("Learner with id " + learnerId + " already enroll your course")
+                return "Learner with id " + learnerId + " already enroll your course"
+            }
+
+            course.requestNumber--
+            course.studentNumber++
+            enrolled.status = EnrollStatus.APPROVE
+
+            // update entity
+            const queryRunner = this.connection.createQueryRunner()
+            try {
+                await queryRunner.connect()
+                await queryRunner.startTransaction()
+                await queryRunner.manager.save(enrolled)
+                await queryRunner.manager.save(course)
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                logger.error(error)
+                await queryRunner.rollbackTransaction()
+                throw ErrorExceptions.create("Can accept this request", CourseError.CAN_NOT_ENROLL_COURSE)
+            } finally {
+                await queryRunner.release()
+            }
+
+            return "Successfully, Learner with ID: " + learnerId + " enrolled to your course."
         } catch (error) {
             logger.error(error)
             throw error

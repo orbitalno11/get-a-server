@@ -171,4 +171,36 @@ export class OfflineCourseController {
             throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+
+    @Get(":id/accept")
+    async acceptEnrollRequest(
+        @Param("id") courseId: string,
+        @CurrentUser("id") currentUserId: string,
+        @Query("learnerId") learnerId: string
+    ) {
+        try {
+            this.checkCourseId(courseId)
+            this.checkCurrentUser(currentUserId)
+
+            if (!learnerId?.isSafeNotNull()) {
+                logger.error("Can not found learner id")
+                throw FailureResponse.create("Can not found learner id", HttpStatus.NOT_FOUND)
+            }
+
+            const availableCourse = await this.service.checkOfflineCourseAvailable(courseId)
+            const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
+            if (!isOwner) {
+                logger.error("You are not a course owner.")
+                throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
+            }
+
+            const result = await this.service.acceptEnrollRequest(availableCourse, currentUserId, learnerId)
+
+            return SuccessResponse.create(result)
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof FailureResponse) throw error
+            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
 }

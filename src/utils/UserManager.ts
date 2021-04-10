@@ -10,12 +10,21 @@ import {MemberEntity} from "../entity/member/member.entitiy"
 import Register from "../model/form/register/Register"
 import User from "../model/User"
 import {MemberEntityToUserMapper} from "./mapper/member/MemberEnityToUserMapper"
+import {TutorEntity} from "../entity/profile/tutor.entity";
+import {LearnerEntity} from "../entity/profile/learner.entity";
+import {isEmpty} from "../core/extension/CommonExtension";
+import TutorProfile from "../model/profile/TutorProfile";
+import LearnerProfile from "../model/profile/LearnerProfile";
 
 @Injectable()
 class UserManager {
     constructor(
         @InjectRepository(MemberEntity)
-        private readonly memberRepository: Repository<MemberEntity>
+        private readonly memberRepository: Repository<MemberEntity>,
+        @InjectRepository(TutorEntity)
+        private readonly tutorRepository: Repository<TutorEntity>,
+        @InjectRepository(LearnerEntity)
+        private readonly learnerRepository: Repository<LearnerEntity>
     ) {
     }
 
@@ -88,6 +97,48 @@ class UserManager {
                 "Cannot delete user",
                 UserErrorType.CANNOT_DELETE_USER
             )
+        }
+    }
+
+    public async getTutor(userId: string): Promise<TutorEntity> {
+        try {
+            if(!userId?.isSafeNotNull()) {
+                logger.error("Can not found user id")
+                throw ErrorExceptions.create("Can not find user id", UserErrorType.CAN_NOT_FOUND_USER_ID)
+            }
+
+            const tutorProfile = await this.tutorRepository.findOne(TutorProfile.getTutorId(userId))
+
+            if (isEmpty(tutorProfile)) {
+                throw ErrorExceptions.create("Can not find user", UserErrorType.CAN_NOT_FIND_USER)
+            }
+
+            return tutorProfile
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof ErrorExceptions) throw error
+            throw error
+        }
+    }
+
+    public async getLearner(userId: string): Promise<LearnerEntity> {
+        try {
+            if(!userId?.isSafeNotNull()) {
+                logger.error("Can not found user id")
+                throw ErrorExceptions.create("Can not find user id", UserErrorType.CAN_NOT_FOUND_USER_ID)
+            }
+
+            const learnerProfile = await this.learnerRepository.findOne(LearnerProfile.getLearnerId(userId))
+
+            if (isEmpty(learnerProfile)) {
+                throw ErrorExceptions.create("Can not find user", UserErrorType.CAN_NOT_FIND_USER)
+            }
+
+            return learnerProfile
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof ErrorExceptions) throw error
+            throw error
         }
     }
 }
