@@ -149,6 +149,11 @@ export class OfflineCourseController {
         }
     }
 
+    /**
+     * Enroll an offline course for a learner
+     * @param courseId
+     * @param currentUserId
+     */
     @Get(":id/enroll")
     async learnerRequestOfflineCourse(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<string>> {
         try {
