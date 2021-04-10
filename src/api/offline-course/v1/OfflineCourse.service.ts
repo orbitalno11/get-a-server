@@ -21,6 +21,7 @@ import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
 import UserManager from "../../../utils/UserManager";
 import UserErrorType from "../../../core/exceptions/model/UserErrorType";
 import {TutorEntity} from "../../../entity/profile/tutor.entity";
+import {EnrollAction} from "../../../model/course/data/EnrollAction";
 
 /**
  * Service for manage offline course data
@@ -196,25 +197,26 @@ export class OfflineCourseService {
     async enrollOfflineCourse(course: OfflineCourseEntity, userId: string): Promise<string> {
         try {
             const learnerEntity = await this.userManager.getLearner(userId)
-            const enrolled = await this.checkEnrolledOfflineCourse(course.id, learnerEntity)
+            let enrolled = await this.checkEnrolledOfflineCourse(course.id, learnerEntity)
 
-            if (!!enrolled) {
+            if (enrolled === undefined) {
+                enrolled = new OfflineCourseLeanerRequestEntity()
+            } else if (enrolled.status === EnrollStatus.WAITING_FOR_APPROVE || enrolled.status === EnrollStatus.APPROVE) {
                 return "Sorry, You already sent a request for enroll this course. Please, waiting for tutor approve your request."
             }
 
             course.requestNumber++
 
-            const requestCourseEntity = new OfflineCourseLeanerRequestEntity()
-            requestCourseEntity.learner = learnerEntity
-            requestCourseEntity.course = course
-            requestCourseEntity.status = EnrollStatus.WAITING_FOR_APPROVE
+            enrolled.learner = learnerEntity
+            enrolled.course = course
+            enrolled.status = EnrollStatus.WAITING_FOR_APPROVE
 
             // update entity
             const queryRunner = this.connection.createQueryRunner()
             try {
                 await queryRunner.connect()
                 await queryRunner.startTransaction()
-                await queryRunner.manager.save(requestCourseEntity)
+                await queryRunner.manager.save(enrolled)
                 await queryRunner.manager.save(course)
                 await queryRunner.commitTransaction()
             } catch (error) {
@@ -233,12 +235,13 @@ export class OfflineCourseService {
     }
 
     /**
-     * Tutor accept a leaner enroll course request
+     * Tutor manage a leaner enroll course request
      * @param course
      * @param tutorId
      * @param learnerId
+     * @param action - param for manage action "approve" or "denied"
      */
-    async acceptEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string) {
+    async manageEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string, action: string) {
         try {
             await this.userManager.getTutor(tutorId)
             const learner = await this.userManager.getLearner(learnerId)
@@ -252,9 +255,20 @@ export class OfflineCourseService {
                 return "You already have action with this request"
             }
 
-            course.requestNumber--
-            course.studentNumber++
-            enrolled.status = EnrollStatus.APPROVE
+            switch (action) {
+                case EnrollAction.APPROVE:
+                    enrolled.status = EnrollStatus.APPROVE
+                    course.requestNumber--
+                    course.studentNumber++
+                    break
+                case EnrollAction.DENIED:
+                    enrolled.status = EnrollStatus.DENIED
+                    course.requestNumber--
+                    break
+                default:
+                    enrolled.status = EnrollStatus.WAITING_FOR_APPROVE
+                    break
+            }
 
             // update entity
             const queryRunner = this.connection.createQueryRunner()
@@ -267,12 +281,12 @@ export class OfflineCourseService {
             } catch (error) {
                 logger.error(error)
                 await queryRunner.rollbackTransaction()
-                throw ErrorExceptions.create("Can accept this request", CourseError.CAN_NOT_ENROLL_COURSE)
+                throw ErrorExceptions.create("Can not make action with this request", CourseError.CAN_NOT_ENROLL_COURSE)
             } finally {
                 await queryRunner.release()
             }
 
-            return "Successfully, Learner with ID: " + learnerId + " enrolled to your course."
+            return "Successfully, Learner with ID: " + learnerId + " was " + action + "."
         } catch (error) {
             logger.error(error)
             throw error

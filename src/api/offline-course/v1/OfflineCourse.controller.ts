@@ -154,7 +154,7 @@ export class OfflineCourseController {
      * @param courseId
      * @param currentUserId
      */
-    @Get(":id/enroll")
+    @Post(":id/enroll")
     async learnerRequestOfflineCourse(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<string>> {
         try {
             this.checkCourseId(courseId)
@@ -173,16 +173,18 @@ export class OfflineCourseController {
     }
 
     /**
-     * Tutor accept a learner enroll course request
+     * Tutor manage a learner enroll course request
      * @param courseId
      * @param currentUserId
      * @param learnerId
+     * @param action - param for manage action "approve" or "denied"
      */
     @Get(":id/accept")
-    async acceptEnrollRequest(
+    async deniedEnrollRequest(
         @Param("id") courseId: string,
         @CurrentUser("id") currentUserId: string,
-        @Query("learnerId") learnerId: string
+        @Query("learnerId") learnerId: string,
+        @Query("action") action: string
     ): Promise<IResponse<string>> {
         try {
             this.checkCourseId(courseId)
@@ -200,7 +202,7 @@ export class OfflineCourseController {
                 throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
             }
 
-            const result = await this.service.acceptEnrollRequest(availableCourse, currentUserId, learnerId)
+            const result = await this.service.manageEnrollRequest(availableCourse, currentUserId, learnerId, action)
 
             return SuccessResponse.create(result)
         } catch (error) {
@@ -208,14 +210,5 @@ export class OfflineCourseController {
             if (error instanceof FailureResponse) throw error
             throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
-    }
-
-    @Get(":id/denied")
-    async deniedEnrollRequest(
-        @Param("id") courseId: string,
-        @CurrentUser("id") currentUserId: string,
-        @Query("learnerId") learnerId: string
-    ) {
-
     }
 }

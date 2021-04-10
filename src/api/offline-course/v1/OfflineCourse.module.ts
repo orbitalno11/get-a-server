@@ -27,7 +27,7 @@ export class OfflineCourseModule implements NestModule {
             )
             .apply(LearnerAuthenticated)
             .forRoutes(
-                {path: "v1/offline-course/:id/enroll", method: RequestMethod.GET}
+                {path: "v1/offline-course/:id/enroll", method: RequestMethod.POST}
             )
     }
 }
