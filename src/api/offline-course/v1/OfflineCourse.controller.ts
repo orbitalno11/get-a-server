@@ -24,6 +24,7 @@ import {CurrentUser} from "../../../decorator/CurrentUser.decorator";
 import OfflineCourse from "../../../model/course/OfflineCourse";
 import {OfflineCourseEntityToOfflineCourseMapper} from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper";
 import IResponse from "../../../core/response/IResponse";
+import {EnrollListMapper} from "../../../utils/mapper/course/offline/EnrollListMapper";
 
 /**
  * Controller for offline course
@@ -172,13 +173,27 @@ export class OfflineCourseController {
         }
     }
 
+    /**
+     * Get learner enroll list
+     * @param courseId
+     * @param currentUserId
+     */
     @Get(":id/enroll")
     async getEnrollList(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string) {
         try {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
 
+            const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
+            if (!isOwner) {
+                logger.error("You are not a course owner.")
+                throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
+            }
 
+            const result = await this.service.getEnrollOfflineCourseList(courseId)
+            const enrollList = new EnrollListMapper().map(result)
+
+            return SuccessResponse.create(enrollList)
         } catch (error) {
             logger.error(error)
             if (error instanceof FailureResponse) throw error

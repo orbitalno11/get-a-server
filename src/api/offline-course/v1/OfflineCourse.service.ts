@@ -19,8 +19,6 @@ import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/o
 import {LearnerEntity} from "../../../entity/profile/learner.entity";
 import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
 import UserManager from "../../../utils/UserManager";
-import UserErrorType from "../../../core/exceptions/model/UserErrorType";
-import {TutorEntity} from "../../../entity/profile/tutor.entity";
 import {EnrollAction} from "../../../model/course/data/EnrollAction";
 
 /**
@@ -234,9 +232,18 @@ export class OfflineCourseService {
         }
     }
 
-    async getEnrollOfflineCourseList(courseId: string) {
+    /**
+     * Get learner enroll list
+     * @param courseId
+     */
+    async getEnrollOfflineCourseList(courseId: string): Promise<OfflineCourseLeanerRequestEntity[]> {
         try {
-
+            return await this.connection.createQueryBuilder(OfflineCourseLeanerRequestEntity, "courseRequest")
+                .leftJoinAndSelect("courseRequest.learner", "learner")
+                .leftJoinAndSelect("learner.member", "member")
+                .where("courseRequest.course.id like :id", {id: courseId})
+                .andWhere("courseRequest.status in (:status)", {status: [EnrollStatus.WAITING_FOR_APPROVE, EnrollStatus.APPROVE]})
+                .getMany()
         } catch (error) {
             logger.error(error)
             throw error
