@@ -209,4 +209,13 @@ export class OfflineCourseController {
             throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+
+    @Get(":id/denied")
+    async deniedEnrollRequest(
+        @Param("id") courseId: string,
+        @CurrentUser("id") currentUserId: string,
+        @Query("learnerId") learnerId: string
+    ) {
+
+    }
 }
