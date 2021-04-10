@@ -5,6 +5,7 @@ import {OfflineCourseController} from "./OfflineCourse.controller"
 import {OfflineCourseService} from "./OfflineCourse.service"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
 import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware";
+import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware";
 
 @Module({
     imports: [CoreModule, UtilityModule],
@@ -14,14 +15,18 @@ import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.
 export class OfflineCourseModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
+            .apply(AuthenticatedRequest)
+            .forRoutes(
+                {path: "v1/offline-course/:id", method: RequestMethod.GET}
+            )
             .apply(TutorAuthenticated)
             .forRoutes(
                 {path: "v1/offline-course/create", method: RequestMethod.POST},
                 {path: "v1/offline-course/:id", method: RequestMethod.PUT}
             )
-            .apply(AuthenticatedRequest)
+            .apply(LearnerAuthenticated)
             .forRoutes(
-                {path: "v1/offline-course/:id", method: RequestMethod.GET}
+                {path: "v1/offline-course/:id/enroll", method: RequestMethod.GET}
             )
     }
 }

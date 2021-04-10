@@ -31,7 +31,7 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.status = from.status
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
         if (this.isOwner) {
-            course.requestNumber = from.requestList?.length ? from.requestList.length : 0
+            course.requestNumber = from.requestNumber ? from.requestNumber : 0
         }
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
         course.review = new OfflineCourseReviewToReviewMapper().toReviewArray(from.courseReview)

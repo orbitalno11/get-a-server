@@ -1,4 +1,16 @@
-import {Body, Controller, Get, HttpStatus, Param, Post, Put, Req, UseFilters, UseInterceptors} from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Req,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import {OfflineCourseService} from "./OfflineCourse.service"
 import {FailureResponseExceptionFilter} from "../../../core/exceptions/filters/FailureResponseException.filter"
 import {ErrorExceptionFilter} from "../../../core/exceptions/filters/ErrorException.filter"
@@ -25,6 +37,30 @@ export class OfflineCourseController {
     }
 
     /**
+     * Check current user id is valid
+     * @param userId
+     * @private
+     */
+    private checkCurrentUser(userId?: string) {
+        if (!userId?.isSafeNotNull()) {
+            logger.error("user is invalid")
+            throw FailureResponse.create("Can not found user", HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    /**
+     * Check received course id is valid
+     * @param courseId
+     * @private
+     */
+    private checkCourseId(courseId?: string) {
+        if (!courseId?.isSafeNotNull()) {
+            logger.error("Can not found course id")
+            throw FailureResponse.create("Can not found course id", HttpStatus.NOT_FOUND)
+        }
+    }
+
+    /**
      * Create am offline course
      * @param currentUserId
      * @param body
@@ -32,10 +68,7 @@ export class OfflineCourseController {
     @Post("create")
     async createOfflineCourse(@CurrentUser("id") currentUserId: string, @Body() body: OfflineCourseForm): Promise<IResponse<string>> {
         try {
-            if (!currentUserId?.isSafeNotNull()) {
-                logger.error("user is invalid")
-                throw FailureResponse.create("Can not found user", HttpStatus.BAD_REQUEST)
-            }
+            this.checkCurrentUser(currentUserId)
 
             const data = OfflineCourseForm.createFromBody(body)
             const validator = new OfflineCourseFormValidator()
@@ -62,7 +95,7 @@ export class OfflineCourseController {
      * @param courseId
      * @param currentUserId
      */
-    @Get("/:id")
+    @Get(":id")
     async getOfflineCourseDetail(@Param("id") courseId: string, @CurrentUser("id") currentUserId?: string): Promise<IResponse<OfflineCourse>> {
         try {
             const courseData = await this.service.getOfflineCourseDetail(courseId)
@@ -87,15 +120,8 @@ export class OfflineCourseController {
         @CurrentUser("id") currentUserId: string,
         @Body() body: OfflineCourseForm): Promise<IResponse<OfflineCourse>> {
         try {
-            if (!courseId?.isSafeNotNull()) {
-                logger.error("Can not found course id")
-                throw FailureResponse.create("Can not found course id", HttpStatus.NOT_FOUND)
-            }
-
-            if (!currentUserId?.isSafeNotNull()) {
-                logger.error("user is invalid")
-                throw FailureResponse.create("Can not found user", HttpStatus.NOT_FOUND)
-            }
+            this.checkCourseId(courseId)
+            this.checkCurrentUser(currentUserId)
 
             const data = OfflineCourseForm.createFromBody(body)
             const validator = new OfflineCourseFormValidator()
@@ -116,6 +142,24 @@ export class OfflineCourseController {
             const updatedCourseData = await this.service.updateOfflineCourse(courseId, currentUserId, data)
             const offlineCourseData = new OfflineCourseEntityToOfflineCourseMapper(isOwner).map(updatedCourseData)
             return SuccessResponse.create(offlineCourseData)
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof FailureResponse) throw error
+            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @Get(":id/enroll")
+    async learnerRequestOfflineCourse(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<string>> {
+        try {
+            this.checkCourseId(courseId)
+            this.checkCurrentUser(currentUserId)
+
+            const availableCourse = await this.service.checkOfflineCourseAvailable(courseId)
+
+            const result = await this.service.enrollOfflineCourse(availableCourse, currentUserId)
+
+            return SuccessResponse.create(result)
         } catch (error) {
             logger.error(error)
             if (error instanceof FailureResponse) throw error

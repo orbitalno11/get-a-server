@@ -13,6 +13,14 @@ import {SubjectEntity} from "../../../entity/common/subject.entity"
 import {CourseTypeEntity} from "../../../entity/course/courseType.entity"
 import {TutorEntity} from "../../../entity/profile/tutor.entity"
 import TutorProfile from "../../../model/profile/TutorProfile";
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
+import {CourseError} from "../../../model/course/data/CourseError";
+import {isEmpty} from "../../../core/extension/CommonExtension";
+import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
+import {LearnerEntity} from "../../../entity/profile/learner.entity";
+import LearnerProfile from "../../../model/profile/LearnerProfile";
+import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
+import SuccessResponse from "../../../core/response/SuccessResponse";
 
 /**
  * Service for manage offline course data
@@ -115,8 +123,8 @@ export class OfflineCourseService {
         try {
             const course = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
-                .where("course.id like :courseId", { "courseId": courseId})
-                .andWhere("owner.id like :ownerId", { "ownerId": TutorProfile.getTutorId(userId)})
+                .where("course.id like :courseId", {"courseId": courseId})
+                .andWhere("owner.id like :ownerId", {"ownerId": TutorProfile.getTutorId(userId)})
                 .getOne()
             return !!course
         } catch (error) {
@@ -149,6 +157,87 @@ export class OfflineCourseService {
             await this.connection.getRepository(OfflineCourseEntity).save(offlineCourseEntity)
 
             return await this.getOfflineCourseDetail(courseId)
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    /**
+     * Check a selected course is available (course status is "open")
+     * @param courseId
+     */
+    async checkOfflineCourseAvailable(courseId: string): Promise<OfflineCourseEntity> {
+        try {
+            const offlineCourse = await this.connection.getRepository(OfflineCourseEntity).findOne(courseId)
+            if (isEmpty(offlineCourse) || offlineCourse.status !== CourseStatus.OPEN) {
+                throw ErrorExceptions.create("The selected course is not available", CourseError.COURSE_NOT_AVAILABLE)
+            }
+            return offlineCourse
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("The selected course is not available", CourseError.COURSE_NOT_AVAILABLE)
+        }
+    }
+
+    /**
+     * Check user already send the enroll request for course
+     * @param courseId
+     * @param learner
+     * @private
+     */
+    private async checkEnrolledOfflineCourse(courseId: string, learner: LearnerEntity): Promise<boolean> {
+        try {
+            const result = await this.connection.getRepository(OfflineCourseLeanerRequestEntity).findOne({
+                where: {course: courseId, learner: learner}
+            })
+            return !!result
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    /**
+     * Enroll offline course
+     * @param course
+     * @param userId
+     */
+    async enrollOfflineCourse(course: OfflineCourseEntity, userId: string): Promise<string> {
+        try {
+            const learnerEntity = new LearnerEntity()
+            learnerEntity.id = LearnerProfile.getLearnerId(userId)
+
+            const enrolled = await this.checkEnrolledOfflineCourse(course.id, learnerEntity)
+
+            if (enrolled) {
+                return "Sorry, You already sent a request for enroll this course. Please, waiting for tutor approve your request."
+            }
+
+            course.requestNumber += 1
+
+            const requestCourseEntity = new OfflineCourseLeanerRequestEntity()
+            requestCourseEntity.learner = learnerEntity
+            requestCourseEntity.course = course
+            requestCourseEntity.status = EnrollStatus.WAITING_FOR_APPROVE
+
+            // update entity
+            const queryRunner = this.connection.createQueryRunner()
+            try {
+                await queryRunner.connect()
+                await queryRunner.startTransaction()
+                await queryRunner.manager.save(requestCourseEntity)
+                await queryRunner.manager.save(course)
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                logger.error(error)
+                await queryRunner.rollbackTransaction()
+                throw ErrorExceptions.create("Can not enroll this course", CourseError.CAN_NOT_ENROLL_COURSE)
+            } finally {
+                await queryRunner.release()
+            }
+
+            return "Successfully, You sent a request for enroll this course."
         } catch (error) {
             logger.error(error)
             throw error

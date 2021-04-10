@@ -266,6 +266,7 @@ create table course_learner_request(
     id int not null AUTO_INCREMENT,
     learnerId varchar(255) not null,
     courseId varchar(255) not null,
+    status smallint UNSIGNED not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_LEARNER_REQUEST` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_COURSE_LEARNER_REQUEST_COURSE` FOREIGN KEY(courseId) REFERENCES course (id)

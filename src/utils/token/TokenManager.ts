@@ -58,7 +58,7 @@ class TokenManager {
   public generateToken(userTokenData: User): string {
     try {
       const privateKey = fs.readFileSync("jwtRS256.key", "utf-8")
-      const token = jwt.sign(userTokenData, privateKey, {
+      const token = jwt.sign(JSON.parse(JSON.stringify(userTokenData)), privateKey, {
         algorithm: "RS256",
         expiresIn: 3600
       })
