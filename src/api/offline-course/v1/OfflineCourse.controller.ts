@@ -180,7 +180,7 @@ export class OfflineCourseController {
      * @param action - param for manage action "approve" or "denied"
      */
     @Get(":id/accept")
-    async deniedEnrollRequest(
+    async menageEnrollRequest(
         @Param("id") courseId: string,
         @CurrentUser("id") currentUserId: string,
         @Query("learnerId") learnerId: string,

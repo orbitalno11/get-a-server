@@ -241,7 +241,7 @@ export class OfflineCourseService {
      * @param learnerId
      * @param action - param for manage action "approve" or "denied"
      */
-    async manageEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string, action: string) {
+    async manageEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string, action: string): Promise<string> {
         try {
             await this.userManager.getTutor(tutorId)
             const learner = await this.userManager.getLearner(learnerId)
