@@ -11,3 +11,8 @@
  - [ ] มีไฟล์เปลี่ยนไม่เกิน 10 ไฟล์
  - [ ] มี code เปลี่ยนแปลงไม่เกิน 300 บรรทัด
  - [ ] code มีคุณตะภาพ
+
+**Response Form**
+```
+<-- Insert the example of response to client here -->
+```
