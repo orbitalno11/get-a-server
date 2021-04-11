@@ -68,7 +68,7 @@ export class TutorController {
   @Get(":id")
   async getProfileById(@Param("id") id: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<TutorProfile | string>> {
     try {
-      if (!id.isSafeNotNull()) {
+      if (!id?.isSafeNotNull()) {
         logger.error("Can not found user id")
         throw FailureResponse.create("Can not found user id", HttpStatus.NOT_FOUND)
       }

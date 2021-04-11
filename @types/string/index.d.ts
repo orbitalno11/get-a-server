@@ -1,5 +1,9 @@
 interface String {
-  isSafeNotNull(): boolean;
-  isBlank(): boolean;
-  isNotBlank(): boolean;
+    isSafeNotNull(): boolean
+
+    isSafeNotBlank(): boolean
+
+    isBlank(): boolean
+
+    isNotBlank(): boolean
 }

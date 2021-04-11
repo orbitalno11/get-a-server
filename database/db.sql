@@ -98,7 +98,9 @@ create table member_address(
     districtId varchar(100) not null,
     provinceId varchar(100) not null,
     postcode varchar(10) not null,
-    type varchar(10) not null, -- type for contact address or teaching address
+    type smallint UNSIGNED not null, -- type for contact address or teaching address
+    lat double not null,
+    lng double not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_ADDRESS_MEMBER` FOREIGN KEY(memberId) REFERENCES member (id),
     CONSTRAINT `FK_ADDRESS_SUB_DISTICT` FOREIGN KEY(subdistrictId) REFERENCES sub_district (id),

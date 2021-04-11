@@ -1,4 +1,4 @@
-import Address from "./Address"
+import Address from "./location/Address"
 import User from "./User"
 import { Gender } from "./common/data/Gender"
 
