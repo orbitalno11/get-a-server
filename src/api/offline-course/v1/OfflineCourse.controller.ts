@@ -23,8 +23,8 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import {CurrentUser} from "../../../decorator/CurrentUser.decorator";
 import OfflineCourse from "../../../model/course/OfflineCourse";
 import {OfflineCourseEntityToOfflineCourseMapper} from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper";
-import IResponse from "../../../core/response/IResponse";
 import {EnrollListMapper} from "../../../utils/mapper/course/offline/EnrollListMapper";
+import IResponse from "../../../core/response/IResponse"
 
 /**
  * Controller for offline course

@@ -22,7 +22,7 @@ const getDayofWeekValue = (day: number): DateTimeValue => {
 }
 
 const isDayOfWeek = (day: number): boolean => {
-    if (Number.isInteger(day) && day.isBewteen(DateTimeValue.SUN, DateTimeValue.SAT)) {
+    if (Number.isInteger(day) && day.isBetween(DateTimeValue.SUN, DateTimeValue.SAT)) {
         return true
     } else {
         return false

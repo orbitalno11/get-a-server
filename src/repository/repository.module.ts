@@ -1,7 +1,8 @@
 import {Module} from "@nestjs/common"
 import {CoreModule} from "../core/core.module"
-import MeRepository from "./MeRepository"
 import {UtilityModule} from "../utils/utility.module"
+import MeRepository from "./MeRepository"
+import CoinRepository from "./CoinRepository"
 
 /**
  * Class for Repository module
@@ -9,7 +10,7 @@ import {UtilityModule} from "../utils/utility.module"
  */
 @Module({
     imports: [CoreModule, UtilityModule],
-    providers: [MeRepository],
-    exports: [MeRepository]
+    providers: [MeRepository, CoinRepository],
+    exports: [MeRepository, CoinRepository]
 })
 export class RepositoryModule{}

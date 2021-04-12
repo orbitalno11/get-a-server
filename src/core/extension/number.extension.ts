@@ -15,21 +15,21 @@ Number.prototype.isSafeNumber = function (): boolean {
 };
 
 Number.prototype.isPositiveValue = function (): boolean {
-  return this.isSafeNotNull() && this > 0;
+  return this.isSafeNumber() && this > 0;
 };
 
 Number.prototype.isNegativeValue = function (): boolean {
-  return this.isSafeNotNull() && this < 0;
+  return this.isSafeNumber() && this < 0;
 };
 
 Number.prototype.isZeroValue = function (): boolean {
-  return this.isSafeNotNull() && this === 0;
+  return this.isSafeNumber() && this === 0;
 };
 
 Number.prototype.isNaN = function (): boolean {
   return Number.isNaN(this);
 };
 
-Number.prototype.isBewteen = function (min: number, max: number): boolean {
-  return this >= min && this <= max;
+Number.prototype.isBetween = function (min: number, max: number): boolean {
+    return this >= min && this <= max;
 };

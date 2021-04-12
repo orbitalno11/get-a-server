@@ -1,4 +1,4 @@
-import IResponse from "./IResponse";
+import IResponse from "./IResponse"
 
 class CommonResponse<T> implements IResponse<T>{
   message: string;
