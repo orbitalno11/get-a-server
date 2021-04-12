@@ -7,9 +7,10 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import ErrorType from "../core/exceptions/model/ErrorType"
 import {UserRoleKey} from "../core/constant/UserRole"
 import UserManager from "../utils/UserManager"
-import { CoinTransactionEntity } from "../entity/coins/coinTransaction.entity"
-import { PaymentStatus } from "../model/payment/data/PaymentStatus"
 import { PaymentError } from "../model/payment/data/PaymentError"
+import { MemberEntity } from "../entity/member/member.entitiy"
+import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
+import CoinPayment from "../model/payment/CoinPayment"
 
 /**
  * Repository for "v1/coin"
@@ -72,26 +73,27 @@ class CoinRepository {
 
     /**
      * Buy coin
-     * @param transactionId
-     * @param paymentId
-     * @param userId
-     * @param rateDetail
+     * @param orderDetail
+     * @param exchangeRate
      */
-    async buyCoin(transactionId: string, paymentId: number, userId: string, rateDetail: ExchangeRateEntity): Promise<CoinTransactionEntity> {
+    async buyCoin(orderDetail: CoinPayment, exchangeRate: ExchangeRateEntity): Promise<void> {
         try {
-            const memberData = await this.userManager.getMember(userId)
-            const coinTransaction = new CoinTransactionEntity()
-            coinTransaction.transactionId = transactionId
-            coinTransaction.paymentId = paymentId
-            coinTransaction.member = memberData
-            coinTransaction.exchangeRate = rateDetail
-            coinTransaction.paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT
-            coinTransaction.transactionDate = new Date()
+            const paymentTransaction = new PaymentTransactionEntity()
+            const memberData = new MemberEntity()
+            memberData.id = orderDetail.userId
+            paymentTransaction.transactionId = orderDetail.transactionId
+            paymentTransaction.member = memberData
+            paymentTransaction.exchangeRate = exchangeRate
+            paymentTransaction.amount = orderDetail.amount
+            paymentTransaction.created = orderDetail.created
+            paymentTransaction.refNo1 = orderDetail.refNo1
+            paymentTransaction.refNo2 = orderDetail.refNo2
+            paymentTransaction.refNo3 = orderDetail.refNo3
 
             const queryRunner = this.connection.createQueryRunner()
             try {
                 await queryRunner.startTransaction()
-                await queryRunner.manager.save(coinTransaction)
+                await queryRunner.manager.save(paymentTransaction)
                 await queryRunner.commitTransaction()
             } catch (error) {
                 logger.error(error)
@@ -100,7 +102,6 @@ class CoinRepository {
             } finally {
                 await queryRunner.release()
             }
-            return coinTransaction
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not create transaction", ErrorType.UNEXPECTED_ERROR)

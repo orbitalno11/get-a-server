@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { LearnerEntity } from '../../profile/learner.entity'
 import { OfflineCourseEntity } from './offlineCourse.entity'
 
