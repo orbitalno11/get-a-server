@@ -1,19 +1,19 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { MemberEntity } from '../member/member.entitiy'
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm"
+import { MemberEntity } from "../member/member.entitiy"
 
-@Entity('coin')
+@Entity("coin")
 export class CoinEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  amount: number
+    @Column()
+    amount: number
 
-  @Column({ default: new Date() })
-  updated: Date
+    @Column({ default: new Date() })
+    updated: Date
 
-  // entity relation
-  @OneToOne(() => MemberEntity)
-  @JoinColumn({ name: 'memberId' })
-  member: MemberEntity
+    // entity relation
+    @OneToOne(() => MemberEntity)
+    @JoinColumn({ name: "memberId" })
+    member: MemberEntity
 }

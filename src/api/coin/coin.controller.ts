@@ -1,16 +1,17 @@
-import {Body, Controller, Get, HttpStatus, Post, Query, UseFilters, UseInterceptors} from "@nestjs/common"
-import {FailureResponseExceptionFilter} from "../../core/exceptions/filters/FailureResponseException.filter";
-import {ErrorExceptionFilter} from "../../core/exceptions/filters/ErrorException.filter";
-import {TransformSuccessResponse} from "../../interceptors/TransformSuccessResponse.interceptor";
-import {CoinService} from "./coin.service";
-import CoinRate from "../../model/coin/CoinRate";
-import {logger} from "../../core/logging/Logger";
-import FailureResponse from "../../core/response/FailureResponse";
-import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
-import {CreateCoinRateFormValidator} from "../../utils/validator/coin/CreateCoinRateFormValidator";
-import SuccessResponse from "../../core/response/SuccessResponse";
+import { Body, Controller, Get, HttpStatus, Post, Query, UseFilters, UseInterceptors } from "@nestjs/common"
+import { FailureResponseExceptionFilter } from "../../core/exceptions/filters/FailureResponseException.filter"
+import { ErrorExceptionFilter } from "../../core/exceptions/filters/ErrorException.filter"
+import { TransformSuccessResponse } from "../../interceptors/TransformSuccessResponse.interceptor"
+import { CoinService } from "./coin.service"
+import CoinRate from "../../model/coin/CoinRate"
+import { logger } from "../../core/logging/Logger"
+import FailureResponse from "../../core/response/FailureResponse"
+import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import { CreateCoinRateFormValidator } from "../../utils/validator/coin/CreateCoinRateFormValidator"
+import SuccessResponse from "../../core/response/SuccessResponse"
 import IResponse from "../../core/response/IResponse"
-import {launch} from "../../core/common/launch"
+import { launch } from "../../core/common/launch"
+import { CurrentUser } from "../../decorator/CurrentUser.decorator"
 
 /**
  * Class for coin api controller
@@ -57,6 +58,19 @@ export class CoinController {
     async getCoinRateList(@Query("user") userRole: number): Promise<IResponse<CoinRate[]>> {
         return launch(async () => {
             const result = await this.service.getCoinRateList(Number(userRole))
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Buy coin
+     * @param currentUserId
+     * @param coinRateId
+     */
+    @Post()
+    async buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
+        return launch(async () => {
+            const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)
         })
     }

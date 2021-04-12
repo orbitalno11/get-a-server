@@ -3,6 +3,7 @@ import {CoreModule} from "../core/core.module"
 import {UtilityModule} from "../utils/utility.module"
 import MeRepository from "./MeRepository"
 import CoinRepository from "./CoinRepository"
+import PaymentRepository from "./PaymentRepository"
 
 /**
  * Class for Repository module
@@ -10,7 +11,7 @@ import CoinRepository from "./CoinRepository"
  */
 @Module({
     imports: [CoreModule, UtilityModule],
-    providers: [MeRepository, CoinRepository],
-    exports: [MeRepository, CoinRepository]
+    providers: [MeRepository, CoinRepository, PaymentRepository],
+    exports: [MeRepository, CoinRepository, PaymentRepository]
 })
 export class RepositoryModule{}
