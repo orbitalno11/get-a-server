@@ -1,3 +1,7 @@
+/**
+ * Data class for coin rate form
+ * @author orbitalno11 2021 A.D.
+ */
 class CoinRateForm {
     title: string
     baht: number

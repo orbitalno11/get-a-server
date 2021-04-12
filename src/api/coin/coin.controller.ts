@@ -10,6 +10,10 @@ import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
 import {CreateCoinRateFormValidator} from "../../utils/validator/coin/CreateCoinRateFormValidator";
 import SuccessResponse from "../../core/response/SuccessResponse";
 
+/**
+ * Class for coin api controller
+ * @author orbitalno11 2021 A.D.
+ */
 @Controller("v1/coin")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
@@ -17,6 +21,10 @@ export class CoinController {
     constructor(private readonly service: CoinService) {
     }
 
+    /**
+     * Create exchange rate
+     * @param body
+     */
     @Post("rate")
     async createCoinRate(@Body() body: CoinRateForm): Promise<IResponse<string>> {
         try {

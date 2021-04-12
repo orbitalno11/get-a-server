@@ -7,11 +7,19 @@ import {CoinRateFormToExchangeRateEntityMapper} from "../../utils/mapper/coin/Co
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
 import {CoinError} from "../../core/exceptions/model/CoinError";
 
+/**
+ * Class for coin api service
+ * @author orbitalno11 2021 A.D.
+ */
 @Injectable()
 export class CoinService {
     constructor(private readonly connection: Connection) {
     }
 
+    /**
+     * Create a exchange coin rate data
+     * @param form
+     */
     async createCoinRate(form: CoinRateForm): Promise<string> {
         try {
             const exchangeRate = CoinRateFormToExchangeRateEntityMapper(form)

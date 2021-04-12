@@ -1,6 +1,12 @@
 import CoinRateForm from "../../../model/coin/CoinRateForm";
 import {ExchangeRateEntity} from "../../../entity/coins/exchangeRate.entity";
 
+/**
+ * Mapper function for transform CoinRateForm to ExchangeRateEntity
+ * @author oribitalno11 2021 A.D.
+ * @param from
+ * @constructor
+ */
 export const CoinRateFormToExchangeRateEntityMapper = (from: CoinRateForm): ExchangeRateEntity => {
     const out = new ExchangeRateEntity()
     out.title = from.title
