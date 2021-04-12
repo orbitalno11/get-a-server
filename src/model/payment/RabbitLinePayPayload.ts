@@ -3,12 +3,29 @@
  * @author orbitalno11 2021 A.D.
  */
 class RabbitLinePayPayload {
-    productName: string
     amount: number
-    orderId: string
     currency: string = "THB"
-    confirmUrl: string
-    confirmUrlType: string = "SERVER"
+    orderId: string
+    packages: {
+        id: string,
+        amount: number,
+        name: string,
+        products: {
+            name: string,
+            quantity: number,
+            price: number
+        }[]
+    }[]
+    redirectUrls: {
+        confirmUrl: string,
+        cancelUrl: string
+    }
+    // productName: string
+    // amount: number
+    // orderId: string
+    // currency = "THB"
+    // confirmUrl: string
+    // confirmUrlType = "SERVER"
 
     toJson(): string {
         return JSON.stringify(this)

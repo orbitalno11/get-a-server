@@ -11,7 +11,12 @@ class RabbitLinePayResponse {
             app: string
         },
         transactionId: number
-        paymentAccessToken: string
+        paymentAccessToken: string,
+        orderId: string,
+        payInfo: {
+            method: string,
+            amount: number
+        }[]
     }
 }
 
