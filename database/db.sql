@@ -214,6 +214,18 @@ create table exchange_transaction(
     CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
 );
 
+create table coin_transaction(
+    transaction_id varchar(255) not null,
+    paymentId int UNSIGNED not null,
+    memberId varchar(255) not null,
+    exchangeRateId int not null,
+    transactionDate timestamp not null default current_timestamp,
+    paymentStatus smallint UNSIGNED not null,
+    PRIMARY KEY(transaction_id),
+    CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(memberId) REFERENCES member (id),
+    CONSTRAINT `FK_MEMBER_COIN_RATE_TRANSACTION` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
+);
+
 -- offline course
 create table course_type(
     id smallint not null,

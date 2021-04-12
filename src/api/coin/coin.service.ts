@@ -1,15 +1,17 @@
 import {Injectable} from "@nestjs/common"
 import {Connection} from "typeorm"
+import {v4 as uuidV4} from "uuid"
 import CoinRate from "../../model/coin/CoinRate"
 import {logger} from "../../core/logging/Logger"
-import {ExchangeRateEntity} from "../../entity/coins/exchangeRate.entity"
 import {CoinRateFormToExchangeRateEntityMapper} from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import {CoinError} from "../../core/exceptions/model/CoinError"
-import {CoinRateType} from "../../model/coin/data/CoinRateType"
 import CoinRepository from "../../repository/CoinRepository"
 import {ExchangeRateEntityToCoinRateMapper} from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
 import {UserRoleKey} from "../../core/constant/UserRole"
+import {launch} from "../../core/common/launch"
+import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
+import PaymentManager from "../../payment/PaymentManager"
 
 /**
  * Class for coin api service
@@ -19,7 +21,8 @@ import {UserRoleKey} from "../../core/constant/UserRole"
 export class CoinService {
     constructor(
         private readonly connection: Connection,
-        private readonly repository: CoinRepository
+        private readonly repository: CoinRepository,
+        private readonly paymentManager: PaymentManager
     ) {
     }
 
@@ -63,5 +66,26 @@ export class CoinService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Buy coin from exchange rate id
+     * @param userId
+     * @param rateId
+     */
+    async buyCoin(userId: string, rateId: number): Promise<string> {
+        return launch(async () => {
+            const transactionId = "GET-A" + uuidV4() + userId
+            const rateDetail = await this.repository.getCoinRate(rateId)
+
+            const paymentDetail = new CoinPaymentTransaction()
+            paymentDetail.transactionId = transactionId
+            paymentDetail.paymentDetail = ExchangeRateEntityToCoinRateMapper(rateDetail)
+
+            const reserved = await this.paymentManager.linePayReservedPayment(paymentDetail)
+
+            await this.repository.buyCoin(transactionId, reserved.info.transactionId, userId, rateDetail)
+            return reserved.info.paymentUrl.web
+        })
     }
 }
