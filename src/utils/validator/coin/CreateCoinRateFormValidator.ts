@@ -1,12 +1,12 @@
 import AbstractValidator from "../AbstractValidator";
-import CoinRateForm from "../../../model/coin/CoinRateForm";
+import CoinRate from "../../../model/coin/CoinRate";
 import ValidateResult from "../ValidateResult";
 import {isEmpty} from "../../../core/extension/CommonExtension";
 import {CoinRateType} from "../../../model/coin/data/CoinRateType";
 
-export class CreateCoinRateFormValidator extends AbstractValidator<CoinRateForm> {
+export class CreateCoinRateFormValidator extends AbstractValidator<CoinRate> {
 
-    constructor(form: CoinRateForm) {
+    constructor(form: CoinRate) {
         super();
         this.setData(form)
     }

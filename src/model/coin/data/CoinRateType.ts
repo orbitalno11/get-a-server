@@ -5,5 +5,6 @@
 export enum CoinRateType {
     STANDARD = "std",
     PROMOTION = "promo",
-    HOT_DEAL = "deal"
+    HOT_DEAL = "deal",
+    TRANSFER = "transfer"
 }

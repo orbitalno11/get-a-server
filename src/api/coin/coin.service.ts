@@ -1,11 +1,15 @@
-import {Injectable} from "@nestjs/common";
-import {Connection} from "typeorm";
-import CoinRateForm from "../../model/coin/CoinRateForm";
-import {logger} from "../../core/logging/Logger";
-import {ExchangeRateEntity} from "../../entity/coins/exchangeRate.entity";
-import {CoinRateFormToExchangeRateEntityMapper} from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper";
-import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
-import {CoinError} from "../../core/exceptions/model/CoinError";
+import {Injectable} from "@nestjs/common"
+import {Connection} from "typeorm"
+import CoinRate from "../../model/coin/CoinRate"
+import {logger} from "../../core/logging/Logger"
+import {ExchangeRateEntity} from "../../entity/coins/exchangeRate.entity"
+import {CoinRateFormToExchangeRateEntityMapper} from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
+import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import {CoinError} from "../../core/exceptions/model/CoinError"
+import {CoinRateType} from "../../model/coin/data/CoinRateType"
+import CoinRepository from "../../repository/CoinRepository"
+import {ExchangeRateEntityToCoinRateMapper} from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
+import {UserRoleKey} from "../../core/constant/UserRole"
 
 /**
  * Class for coin api service
@@ -13,14 +17,17 @@ import {CoinError} from "../../core/exceptions/model/CoinError";
  */
 @Injectable()
 export class CoinService {
-    constructor(private readonly connection: Connection) {
+    constructor(
+        private readonly connection: Connection,
+        private readonly repository: CoinRepository
+    ) {
     }
 
     /**
-     * Create a exchange coin rate data
+     * Create an exchange coin rate data
      * @param form
      */
-    async createCoinRate(form: CoinRateForm): Promise<string> {
+    async createCoinRate(form: CoinRate): Promise<string> {
         try {
             const exchangeRate = CoinRateFormToExchangeRateEntityMapper(form)
 
@@ -38,6 +45,20 @@ export class CoinService {
             }
 
             return "Successfully, Exchange rate was created"
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    /**
+     * Get coin rate depend on user role
+     * @param userRole
+     */
+    async getCoinRateList(userRole: UserRoleKey): Promise<CoinRate[]> {
+        try {
+            const result = await this.repository.getCoinRateList(userRole)
+            return result.map(data => ExchangeRateEntityToCoinRateMapper(data))
         } catch (error) {
             logger.error(error)
             throw error

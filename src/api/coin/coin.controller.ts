@@ -1,15 +1,16 @@
-import {Body, Controller, HttpStatus, Post, UseFilters, UseInterceptors} from "@nestjs/common";
+import {Body, Controller, Get, HttpStatus, Post, Query, UseFilters, UseInterceptors} from "@nestjs/common"
 import {FailureResponseExceptionFilter} from "../../core/exceptions/filters/FailureResponseException.filter";
 import {ErrorExceptionFilter} from "../../core/exceptions/filters/ErrorException.filter";
 import {TransformSuccessResponse} from "../../interceptors/TransformSuccessResponse.interceptor";
 import {CoinService} from "./coin.service";
-import CoinRateForm from "../../model/coin/CoinRateForm";
+import CoinRate from "../../model/coin/CoinRate";
 import {logger} from "../../core/logging/Logger";
 import FailureResponse from "../../core/response/FailureResponse";
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
 import {CreateCoinRateFormValidator} from "../../utils/validator/coin/CreateCoinRateFormValidator";
 import SuccessResponse from "../../core/response/SuccessResponse";
 import IResponse from "../../core/response/IResponse"
+import {launch} from "../../core/common/launch"
 
 /**
  * Class for coin api controller
@@ -27,9 +28,9 @@ export class CoinController {
      * @param body
      */
     @Post("rate")
-    async createCoinRate(@Body() body: CoinRateForm): Promise<IResponse<string>> {
+    async createCoinRate(@Body() body: CoinRate): Promise<IResponse<string>> {
         try {
-            const data = CoinRateForm.createFormBody(body)
+            const data = CoinRate.createFormBody(body)
             const validator = new CreateCoinRateFormValidator(data)
             const validate = validator.validate()
 
@@ -46,5 +47,17 @@ export class CoinController {
             if (error instanceof FailureResponse || error instanceof ErrorExceptions) throw error
             throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
+
+    /**
+     * Get coin rate depend on user role and view page
+     * @param userRole
+     */
+    @Get("rates")
+    async getCoinRateList(@Query("user") userRole: number): Promise<IResponse<CoinRate[]>> {
+        return launch(async () => {
+            const result = await this.service.getCoinRateList(Number(userRole))
+            return SuccessResponse.create(result)
+        })
     }
 }
