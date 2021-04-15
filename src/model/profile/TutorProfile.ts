@@ -1,4 +1,4 @@
-import Address from '../Address'
+import Address from '../location/Address'
 import Contact from '../Contact'
 import {Gender} from "../common/data/Gender"
 import Education from "../education/Education";

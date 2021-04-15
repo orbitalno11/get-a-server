@@ -100,6 +100,26 @@ class UserManager {
         }
     }
 
+    public async getMember(userId: string): Promise<MemberEntity> {
+        try {
+            if (!userId?.isSafeNotBlank()) {
+                logger.error("Can not found user id")
+                throw ErrorExceptions.create("Can not find user id", UserErrorType.CAN_NOT_FOUND_USER_ID)
+            }
+
+            const member = await this.memberRepository.findOne(userId)
+
+            if (isEmpty(member)) {
+                throw ErrorExceptions.create("Can not find user", UserErrorType.CAN_NOT_FIND_USER)
+            }
+
+            return member
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
     public async getTutor(userId: string): Promise<TutorEntity> {
         try {
             if(!userId?.isSafeNotNull()) {

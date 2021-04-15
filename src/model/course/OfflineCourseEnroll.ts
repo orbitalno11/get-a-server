@@ -1,5 +1,5 @@
-import Address from "../Address";
 import {EnrollStatus} from "./data/EnrollStatus";
+import Address from "../location/Address";
 
 /**
  * @author oribitalno11 2021 A.D.

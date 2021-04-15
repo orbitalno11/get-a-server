@@ -1,42 +1,48 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { DistrictEntity } from '../contact/district.entity'
-import { ProvinceEntity } from '../contact/province.entity'
-import { SubDistrictEntity } from '../contact/subDistrict.entity'
-import { MemberEntity } from './member.entitiy'
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn} from 'typeorm'
+import {DistrictEntity} from '../contact/district.entity'
+import {ProvinceEntity} from '../contact/province.entity'
+import {SubDistrictEntity} from '../contact/subDistrict.entity'
+import {MemberEntity} from './member.entitiy'
 
 @Entity('member_address')
 export class MemberAddressEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  address: string
+    @Column()
+    address: string
 
-  @Column()
-  hintAddress: string | null
+    @Column()
+    hintAddress: string | null
 
-  @Column()
-  road: string | null
+    @Column()
+    road: string | null
 
-  @Column({ name: 'postCode' })
-  postCode: string
+    @Column({name: 'postCode'})
+    postCode: string
 
-  @Column()
-  type: string
+    @Column()
+    type: number
 
-  // entity relation
-  @ManyToOne(() => MemberEntity, (member) => member.memberAddress)
-  member: MemberEntity
+    @Column({name: "lat"})
+    latitude: number
 
-  @OneToOne(() => SubDistrictEntity)
-  @JoinColumn({ name: 'subdistrictId' })
-  subDistrict: SubDistrictEntity
+    @Column({name: "lng"})
+    longitude: number
 
-  @OneToOne(() => DistrictEntity)
-  @JoinColumn({ name: 'districtId' })
-  district: DistrictEntity
+    // entity relation
+    @ManyToOne(() => MemberEntity, (member) => member.memberAddress)
+    member: MemberEntity
 
-  @OneToOne(() => ProvinceEntity)
-  @JoinColumn({ name: 'provinceId' })
-  provice: ProvinceEntity
+    @OneToOne(() => SubDistrictEntity)
+    @JoinColumn({name: 'subdistrictId'})
+    subDistrict: SubDistrictEntity
+
+    @OneToOne(() => DistrictEntity)
+    @JoinColumn({name: 'districtId'})
+    district: DistrictEntity
+
+    @OneToOne(() => ProvinceEntity)
+    @JoinColumn({name: 'provinceId'})
+    province: ProvinceEntity
 }

@@ -1,6 +1,6 @@
 import Contact from "../Contact"
-import Address from "../Address"
 import {Gender} from "../common/data/Gender"
+import Address from "../location/Address";
 
 class LearnerProfile {
     firstname: string
