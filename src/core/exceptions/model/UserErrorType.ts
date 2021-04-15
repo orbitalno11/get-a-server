@@ -8,6 +8,8 @@ enum UserErrorType {
 
   CANNOT_UPDATE_USER_EMAIL = 'cannot-update-user-email',
   CANNOT_DELETE_USER = 'cannot-delete-user',
+
+  CAN_NOT_FOUND_USER_ID = "can-not-found-user-id",
 }
 
 export default UserErrorType;

@@ -2,9 +2,9 @@ import validator from "validator"
 import AbstractValidator from "../AbstractValidator"
 import LearnerUpdateForm from "../../../model/form/update/LearnerUpdateForm"
 import ValidateResult from "../ValidateResult"
-import { Gender } from "../../../model/common/Gender"
+import { Gender } from "../../../model/common/data/Gender"
 import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
-import { Grade } from "../../../model/common/Grade"
+import { Grade } from "../../../model/common/data/Grade"
 
 class LearnerUpdateFormValidator extends AbstractValidator<LearnerUpdateForm> {
   validator(): ValidateResult<any> {

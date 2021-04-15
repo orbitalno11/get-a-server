@@ -3,8 +3,8 @@ import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import LearnerForm from '../../../model/form/register/LearnerForm'
 import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
-import { Gender } from "../../../model/common/Gender"
-import { Grade } from "../../../model/common/Grade"
+import { Gender } from "../../../model/common/data/Gender"
+import { Grade } from "../../../model/common/data/Grade"
 
 class LearnerRegisterFromValidator extends AbstractValidator<LearnerForm> {
 

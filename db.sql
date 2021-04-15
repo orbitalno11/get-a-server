@@ -233,6 +233,7 @@ create table course(
     endTime varchar(6) not null,
     status varchar(10) not null,
     requestNumber int UNSIGNED not null,
+    studentNumber int UNSIGNED not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_COURSE_TYPE` FOREIGN KEY(courseTypeId) REFERENCES course_type (id),
@@ -255,6 +256,7 @@ create table course_rating_transaction(
     courseId varchar(255) not null,
     rating float(3,1) not null,
     review text not null,
+    reviewDate timestamp not null default current_timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_RATING_BY_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_COURSE_RATING_TRANSACTION_COURSE` FOREIGN KEY(courseId) REFERENCES course (id)
@@ -264,6 +266,7 @@ create table course_learner_request(
     id int not null AUTO_INCREMENT,
     learnerId varchar(255) not null,
     courseId varchar(255) not null,
+    status smallint UNSIGNED not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_COURSE_LEARNER_REQUEST` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_COURSE_LEARNER_REQUEST_COURSE` FOREIGN KEY(courseId) REFERENCES course (id)
@@ -329,6 +332,7 @@ create table online_clip_rating_transaction(
     clipId varchar(255) not null,
     rating float(3,1) not null,
     review text not null,
+    reviewDate timestamp not null default current_timestamp,
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_RATING_BY_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_ONLINE_CLIP_RATING_TRANSACTION_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)

@@ -1,8 +1,11 @@
-export enum Grade {
-  M6 = 12,
-  M5 = 11,
-  M4 = 10,
-  M3 = 9,
-  M2 = 8,
-  M1 = 7
+class Grade {
+    key: number
+    value: string
+
+    constructor(key: number, value: string) {
+        this.key = key
+        this.value = value
+    }
 }
+
+export default Grade

@@ -58,7 +58,7 @@ class TokenManager {
   public generateToken(userTokenData: User): string {
     try {
       const privateKey = fs.readFileSync("jwtRS256.key", "utf-8")
-      const token = jwt.sign(userTokenData, privateKey, {
+      const token = jwt.sign(JSON.parse(JSON.stringify(userTokenData)), privateKey, {
         algorithm: "RS256",
         expiresIn: 3600
       })
@@ -82,7 +82,7 @@ class TokenManager {
     } catch (error) {
       logger.error(error)
       throw new ErrorExceptions(
-        error.message,
+        "Can not verify token",
         TokenErrorType.CAN_NOT_VERIFY_TOKEN
       )
     }
@@ -98,7 +98,7 @@ class TokenManager {
     } catch (error) {
       logger.error(error)
       throw new ErrorExceptions(
-        error.message,
+        "Can nor decode token",
         TokenErrorType.CAN_NOT_VERIFY_TOKEN
       )
     }

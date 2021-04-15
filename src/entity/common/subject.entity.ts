@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm"
 import { OfflineCourseEntity } from '../course/offline/offlineCourse.entity'
 import { InterestedSubjectEntity } from '../member/interestedSubject.entity'
-import { Subject } from "../../model/common/Subject"
+import { Subject } from "../../model/common/data/Subject"
 
 @Entity('subject')
 export class SubjectEntity {

@@ -1,4 +1,4 @@
-import { Gender } from "../../common/Gender"
+import { Gender } from "../../common/data/Gender"
 
 class TutorUpdateForm {
   firstname: string

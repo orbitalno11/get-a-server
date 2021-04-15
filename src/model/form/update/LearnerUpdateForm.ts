@@ -1,5 +1,5 @@
-import { Grade } from "../../common/Grade"
-import { Gender } from "../../common/Gender"
+import { Grade } from "../../common/data/Grade"
+import { Gender } from "../../common/data/Gender"
 
 class LearnerUpdateForm {
   firstname: string

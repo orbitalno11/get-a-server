@@ -1,6 +1,6 @@
 import Address from "./Address"
 import User from "./User"
-import { Gender } from "./common/Gender"
+import { Gender } from "./common/data/Gender"
 
 class Member extends User {
   firstname: string

@@ -1,7 +1,7 @@
 import { DateTimeValue } from "../../core/constant/DateTime"
-import { Subject } from "../common/Subject"
-import { Grade } from "../common/Grade"
-import { CourseType } from "./CourseType"
+import { Subject } from "../common/data/Subject"
+import { Grade } from "../common/data/Grade"
+import { CourseType } from "./data/CourseType"
 
 class OfflineCourseForm {
   name: string
