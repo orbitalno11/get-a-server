@@ -3,8 +3,9 @@ import Contact from '../Contact'
 import {Gender} from "../common/data/Gender"
 import Education from "../education/Education";
 import ExamResult from "../education/ExamResult";
+import Profile from "./Profile"
 
-class TutorProfile {
+class TutorProfile implements Profile {
     id: string
     firstname: string
     lastname: string

@@ -97,14 +97,14 @@ export class LearnerController {
                 throw FailureResponse.create("You don't have permission", HttpStatus.UNAUTHORIZED)
             }
 
-            const tutorData = await this.learnerService.getProfileById(id)
+            const learnerData = await this.learnerService.getProfileById(id)
 
-            if (isEmpty(tutorData)) {
+            if (isEmpty(learnerData)) {
                 logger.info("Can not find user")
                 return SuccessResponse.create("Can not find user")
             }
 
-            return SuccessResponse.create(LearnerEntityToLearnerProfile(tutorData))
+            return SuccessResponse.create(LearnerEntityToLearnerProfile(learnerData))
         } catch (error) {
             logger.error(error)
             if (error instanceof FailureResponse) throw error

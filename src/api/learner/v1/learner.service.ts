@@ -1,7 +1,6 @@
 import {HttpStatus, Injectable} from "@nestjs/common"
 import {Connection} from "typeorm"
 import {UserRoleKey} from "../../../core/constant/UserRole"
-import FileErrorType from "../../../core/exceptions/model/FileErrorType"
 import {logger} from "../../../core/logging/Logger"
 import {GradeEntity} from "../../../entity/common/grade.entity"
 import {RoleEntity} from "../../../entity/common/role.entity"

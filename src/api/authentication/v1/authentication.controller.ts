@@ -4,16 +4,20 @@ import {
     HttpStatus,
     Query,
     UseFilters,
-    UseInterceptors,
-} from '@nestjs/common';
-import {ErrorExceptionFilter} from '../../../core/exceptions/filters/ErrorException.filter';
-import {FailureResponseExceptionFilter} from '../../../core/exceptions/filters/FailureResponseException.filter';
-import {logger} from '../../../core/logging/Logger';
-import FailureResponse from '../../../core/response/FailureResponse';
-import SuccessResponse from '../../../core/response/SuccessResponse';
-import {TransformSuccessResponse} from '../../../interceptors/TransformSuccessResponse.interceptor';
-import {AuthenticationService} from './authentication.service';
+    UseInterceptors
+} from '@nestjs/common'
+import {ErrorExceptionFilter} from '../../../core/exceptions/filters/ErrorException.filter'
+import {FailureResponseExceptionFilter} from '../../../core/exceptions/filters/FailureResponseException.filter'
+import {logger} from '../../../core/logging/Logger'
+import FailureResponse from '../../../core/response/FailureResponse'
+import SuccessResponse from '../../../core/response/SuccessResponse'
+import {TransformSuccessResponse} from '../../../interceptors/TransformSuccessResponse.interceptor'
+import {AuthenticationService} from './authentication.service'
 
+/**
+ * Class for authentication route
+ * @author orbitalno11 2021 A.D.
+ */
 @Controller('v1/auth')
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
@@ -21,22 +25,26 @@ export class AuthenticationController {
     constructor(private readonly authService: AuthenticationService) {
     }
 
+    /**
+     * Get generate get-a token from firebase token
+     * @param token
+     */
     @Get('token')
     async getToken(
-        @Query('token') token: string,
+        @Query('token') token: string
     ): Promise<SuccessResponse<string>> {
         try {
             if (!token?.isSafeNotNull()) {
                 throw FailureResponse.create(
                     'Can not found token',
-                    HttpStatus.NOT_FOUND,
-                );
+                    HttpStatus.NOT_FOUND
+                )
             }
-            const generateToken = await this.authService.getToken(token);
-            return SuccessResponse.create(generateToken);
+            const generateToken = await this.authService.getToken(token)
+            return SuccessResponse.create(generateToken)
         } catch (error) {
-            logger.error(error);
-            throw error;
+            logger.error(error)
+            throw error
         }
     }
 }
