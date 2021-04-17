@@ -18,6 +18,7 @@ import {TutorEntityToTutorProfile} from "../../../utils/mapper/tutor/TutorEntity
 import {LearnerEntity} from "../../../entity/profile/learner.entity"
 import {LearnerEntityToLearnerProfile} from "../../../utils/mapper/learner/LearnerEntityToLearnerProfile"
 import {launch} from "../../../core/common/launch"
+import {MemberAddressToAddressMapper} from "../../../utils/mapper/location/MemberAddressToAddressMapper"
 
 /**
  * Service for "v1/me"
@@ -53,18 +54,11 @@ export class MeService {
      * Get an user address data from user id
      * @param userId
      */
-    async getUserAddress(userId: string): Promise<MemberAddressEntity[]> {
-        try {
-            return await this.connection.createQueryBuilder(MemberAddressEntity, "memberAddress")
-                .leftJoinAndSelect("memberAddress.subDistrict", "subDistrict")
-                .leftJoinAndSelect("memberAddress.district", "district")
-                .leftJoinAndSelect("memberAddress.province", "province")
-                .where("memberAddress.member.id like :id", {id: userId})
-                .getMany()
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+    async getUserAddress(userId: string): Promise<Address[]> {
+        return launch(async () => {
+            const result = await this.repository.getUserAddress(userId)
+            return result.map(data => MemberAddressToAddressMapper(data))
+        })
     }
 
     /**
@@ -72,49 +66,9 @@ export class MeService {
      * @param userId
      * @param address
      */
-    async updateUserAddress(userId: string, address: Address) {
-        try {
-            const member = await this.userManger.getMember(userId)
-            const addressList = await this.getUserAddress(userId)
-            let addressData = addressList.filter(data => data.type === address.type)[0]
-
-            if (isEmpty(addressData)) {
-                addressData = new MemberAddressEntity()
-            }
-
-            addressData.member = member
-            addressData.address = address.address
-            addressData.hintAddress = address.hintAddress
-            addressData.road = address.road
-            addressData.subDistrict = new SubDistrictEntity()
-            addressData.subDistrict.id = address.subDistrict.id
-            addressData.district = new DistrictEntity()
-            addressData.district.id = address.district.id
-            addressData.province = new ProvinceEntity()
-            addressData.province.id = address.province.id
-            addressData.postCode = address.postcode
-            addressData.type = address.type
-            addressData.latitude = address.geoLocation.latitude
-            addressData.longitude = address.geoLocation.longitude
-
-            // update entity
-            const queryRunner = this.connection.createQueryRunner()
-            try {
-                await queryRunner.connect()
-                await queryRunner.startTransaction()
-                await queryRunner.manager.save(addressData)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                logger.error(error)
-                await queryRunner.rollbackTransaction()
-                throw ErrorExceptions.create("Can not update address", LocationError.CAN_NOT_UPDATE)
-            } finally {
-                await queryRunner.release()
-            }
-
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+    async updateUserAddress(userId: string, address: Address): Promise<void> {
+        return launch(async ()=> {
+            await this.repository.updateUserAddress(userId, address)
+        })
     }
 }
