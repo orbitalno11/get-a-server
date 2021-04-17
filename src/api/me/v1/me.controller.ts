@@ -1,19 +1,22 @@
-import {MeService} from "./me.service";
-import {Body, Controller, Get, HttpStatus, Post, UseFilters, UseInterceptors} from "@nestjs/common";
-import {FailureResponseExceptionFilter} from "../../../core/exceptions/filters/FailureResponseException.filter";
-import {ErrorExceptionFilter} from "../../../core/exceptions/filters/ErrorException.filter";
-import {TransformSuccessResponse} from "../../../interceptors/TransformSuccessResponse.interceptor";
-import AddressForm from "../../../model/location/AddressForm";
-import {CurrentUser} from "../../../decorator/CurrentUser.decorator";
-import {logger} from "../../../core/logging/Logger";
-import FailureResponse from "../../../core/response/FailureResponse";
-import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
-import {AddressFormValidator} from "../../../utils/validator/update-profile/AddressFormValidator";
-import {AddressFormToAddressMapper} from "../../../utils/mapper/location/AddressFormToAddressMapper";
-import {MemberAddressToAddressMapper} from "../../../utils/mapper/location/MemberAddressToAddressMapper";
-import SuccessResponse from "../../../core/response/SuccessResponse";
-import Address from "../../../model/location/Address";
-import IResponse from "../../../core/response/IResponse";
+import {MeService} from "./me.service"
+import {Body, Controller, Get, HttpStatus, Post, UseFilters, UseInterceptors} from "@nestjs/common"
+import {FailureResponseExceptionFilter} from "../../../core/exceptions/filters/FailureResponseException.filter"
+import {ErrorExceptionFilter} from "../../../core/exceptions/filters/ErrorException.filter"
+import {TransformSuccessResponse} from "../../../interceptors/TransformSuccessResponse.interceptor"
+import AddressForm from "../../../model/location/AddressForm"
+import {CurrentUser} from "../../../decorator/CurrentUser.decorator"
+import {logger} from "../../../core/logging/Logger"
+import FailureResponse from "../../../core/response/FailureResponse"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import {AddressFormValidator} from "../../../utils/validator/update-profile/AddressFormValidator"
+import {AddressFormToAddressMapper} from "../../../utils/mapper/location/AddressFormToAddressMapper"
+import {MemberAddressToAddressMapper} from "../../../utils/mapper/location/MemberAddressToAddressMapper"
+import SuccessResponse from "../../../core/response/SuccessResponse"
+import Address from "../../../model/location/Address"
+import IResponse from "../../../core/response/IResponse"
+import User from "../../../model/User"
+import {launch} from "../../../core/common/launch"
+import Profile from "../../../model/profile/Profile"
 
 /**
  * @author orbitalno11 2021 A.D.
@@ -23,6 +26,18 @@ import IResponse from "../../../core/response/IResponse";
 @UseInterceptors(TransformSuccessResponse)
 export class MeController {
     constructor(private readonly service: MeService) {
+    }
+
+    @Get()
+    async getUserProfile(@CurrentUser() currentUser: User): Promise<IResponse<Profile | null>> {
+        return launch(async () => {
+            const profile = await this.service.getUserProfile(currentUser)
+            if (profile) {
+                return SuccessResponse.create(profile)
+            } else {
+                null
+            }
+        })
     }
 
     /**

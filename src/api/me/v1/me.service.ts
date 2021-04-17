@@ -1,25 +1,52 @@
-import {Injectable} from "@nestjs/common";
-import {Connection} from "typeorm";
-import Address from "../../../model/location/Address";
-import {logger} from "../../../core/logging/Logger";
-import UserManager from "../../../utils/UserManager";
-import {MemberAddressEntity} from "../../../entity/member/memberAddress.entity";
-import {isEmpty} from "../../../core/extension/CommonExtension";
-import {SubDistrictEntity} from "../../../entity/contact/subDistrict.entity";
-import {DistrictEntity} from "../../../entity/contact/district.entity";
-import {ProvinceEntity} from "../../../entity/contact/province.entity";
-import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
-import {LocationError} from "../../../core/exceptions/model/LocationError";
+import {Injectable} from "@nestjs/common"
+import {Connection} from "typeorm"
+import Address from "../../../model/location/Address"
+import {logger} from "../../../core/logging/Logger"
+import UserManager from "../../../utils/UserManager"
+import {MemberAddressEntity} from "../../../entity/member/memberAddress.entity"
+import {isEmpty} from "../../../core/extension/CommonExtension"
+import {SubDistrictEntity} from "../../../entity/contact/subDistrict.entity"
+import {DistrictEntity} from "../../../entity/contact/district.entity"
+import {ProvinceEntity} from "../../../entity/contact/province.entity"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import {LocationError} from "../../../core/exceptions/model/LocationError"
+import User from "../../../model/User"
+import MeRepository from "../../../repository/MeRepository"
+import Profile from "../../../model/profile/Profile"
+import {TutorEntity} from "../../../entity/profile/tutor.entity"
+import {TutorEntityToTutorProfile} from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
+import {LearnerEntity} from "../../../entity/profile/learner.entity"
+import {LearnerEntityToLearnerProfile} from "../../../utils/mapper/learner/LearnerEntityToLearnerProfile"
+import {launch} from "../../../core/common/launch"
 
 /**
+ * Service for "v1/me"
  * @author oribitalno11 2021 A.D.
  */
 @Injectable()
 export class MeService {
     constructor(
         private readonly connection: Connection,
-        private readonly userManger: UserManager
+        private readonly userManger: UserManager,
+        private readonly repository: MeRepository
     ) {
+    }
+
+    /**
+     * Get user profile from user id and role
+     * @param user
+     */
+    async getUserProfile(user: User): Promise<Profile | null> {
+        return launch(async () => {
+            const result = await this.repository.getUserProfile(user)
+            if (result instanceof TutorEntity) {
+                return new TutorEntityToTutorProfile().map(result)
+            } else if (result instanceof LearnerEntity) {
+                return LearnerEntityToLearnerProfile(result)
+            } else {
+                return null
+            }
+        })
     }
 
     /**
@@ -32,7 +59,7 @@ export class MeService {
                 .leftJoinAndSelect("memberAddress.subDistrict", "subDistrict")
                 .leftJoinAndSelect("memberAddress.district", "district")
                 .leftJoinAndSelect("memberAddress.province", "province")
-                .where("memberAddress.member.id like :id", { id: userId })
+                .where("memberAddress.member.id like :id", {id: userId})
                 .getMany()
         } catch (error) {
             logger.error(error)
