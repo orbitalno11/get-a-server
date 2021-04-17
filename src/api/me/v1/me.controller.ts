@@ -32,11 +32,7 @@ export class MeController {
     async getUserProfile(@CurrentUser() currentUser: User): Promise<IResponse<Profile | null>> {
         return launch(async () => {
             const profile = await this.service.getUserProfile(currentUser)
-            if (profile) {
-                return SuccessResponse.create(profile)
-            } else {
-                null
-            }
+            return SuccessResponse.create(profile)
         })
     }
 
