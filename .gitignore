@@ -35,7 +35,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 .env
-package-lock.json
 serviceAccountKey.json
 jwtRS256.key
 jwtRS256.key.pub

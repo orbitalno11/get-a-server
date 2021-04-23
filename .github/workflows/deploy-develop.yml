@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: ${{matrix.node-version}}
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Setup environment
         env:
           environment: dev
@@ -55,6 +55,6 @@ jobs:
           script: |
             cd ~/get-a-server
             git pull origin develop
-            npm install
+            npm ci
             npm run build
             pm2 restart get-a-server
