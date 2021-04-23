@@ -5,21 +5,16 @@ import {TypeOrmModule} from "@nestjs/typeorm"
 import {Connection} from "typeorm"
 import {AppController} from "./app.controller"
 import {AppService} from "./app.service"
+import LoggerFactory from "./core/logging/LoggerFactory.middleware"
+import {ormConfig} from "./configs/ormconfig"
+import "./core/extension/string.extension"
+import "./core/extension/number.extension"
 import {AuthenticationModule} from "./api/authentication/v1/authentication.module"
 import {TutorModule} from "./api/tutor/v1/tutor.module"
 import {LearnerModule} from "./api/learner/v1/learner.module"
 import {OfflineCourseModule} from "./api/offline-course/v1/OfflineCourse.module"
+import {MeModule} from "./api/me/v1/me.module"
 
-// custom extension
-import "./core/extension/string.extension"
-import "./core/extension/number.extension"
-
-// logger
-import LoggerFactory from "./core/logging/LoggerFactory.middleware"
-
-// orm config
-import {ormConfig} from "./configs/ormconfig"
-import {MeModule} from "./api/me/v1/me.module";
 
 @Module({
     imports: [

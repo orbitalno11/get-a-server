@@ -1,9 +1,8 @@
-import Contact from "../Contact"
 import {Gender} from "../common/data/Gender"
-import Address from "../location/Address";
-import Profile from "./Profile"
+import Contact from "../Contact"
+import Address from "../location/Address"
 
-class LearnerProfile implements Profile{
+interface Profile {
     id: string
     firstname: string
     lastname: string
@@ -15,10 +14,6 @@ class LearnerProfile implements Profile{
     address: Address[] | null
     created: Date | null
     updated: Date | null
-
-    public static getLearnerId(userId: string): string {
-        return `learner-${userId}`
-    }
 }
 
-export default LearnerProfile
+export default Profile
