@@ -2,77 +2,70 @@ import * as dotenv from "dotenv"
 
 dotenv.config()
 
-const appEnvironment: string | undefined = process.env.environment
+export const appEnvironment: string | undefined = process.env.ENV
+export const LINE_PAY_CHANNEL_ID: string | undefined = process.env.LINE_PAY_CHANNEL_ID
+export const LINE_PAY_CHANNEL_SECRET: string | undefined = process.env.LINE_PAY_CHANNEL_SECRET
 
-function getPortNumber(): string | undefined {
+export function getPortNumber(): string | undefined {
   switch (appEnvironment) {
     case "production":
-      return process.env.prod_port
+      return process.env.PROD_PORT
     case "dev":
-      return process.env.dev_port
+      return process.env.DEV_PORT
     default:
-      return process.env.dev_local_port
+      return process.env.DEV_LOCAL_PORT
   }
 }
 
-function getDatabaseHost(): string | undefined {
+export function getDatabaseHost(): string | undefined {
   switch (appEnvironment) {
     case "production":
-      return process.env.db_prod_host
+      return process.env.DB_PROD_HOST
     case "dev":
-      return process.env.db_dev_host
+      return process.env.DB_DEV_HOST
     default:
-      return process.env.db_dev_local_host
+      return process.env.DB_DEV_LOCAL_HOST
   }
 }
 
-function getDatabaseName(): string | undefined {
+export function getDatabaseName(): string | undefined {
   switch (appEnvironment) {
     case "production":
-      return process.env.db_prod_name
+      return process.env.DB_PROD_NAME
     case "dev":
-      return process.env.db_dev_name
+      return process.env.DB_DEV_NAME
     default:
-      return process.env.db_dev_local_name
+      return process.env.DB_DEV_LOCAL_NAME
   }
 }
 
-function getDatabaseUser(): string | undefined {
+export function getDatabaseUser(): string | undefined {
   switch (appEnvironment) {
     case "production":
-      return process.env.db_prod_user
+      return process.env.DB_PROD_USER
     case "dev":
-      return process.env.db_dev_user
+      return process.env.DB_DEV_USER
     default:
-      return process.env.db_dev_local_user
+      return process.env.DB_DEV_LOCAL_USER
   }
 }
 
-function getDatabasePassword(): string | undefined {
+export function getDatabasePassword(): string | undefined {
   switch (appEnvironment) {
     case "production":
-      return process.env.db_prod_password
+      return process.env.DB_PROD_PASSWORD
     case "dev":
-      return process.env.db_dev_password
+      return process.env.DB_DEV_PASSWORD
     default:
-      return process.env.db_dev_local_password
+      return process.env.DB_DEV_LOCAL_PASSWORD
   }
 }
 
-function getFirebaseStorageBucketUrl(): string {
+export function getFirebaseStorageBucketUrl(): string {
   switch (appEnvironment) {
     case "dev":
       return process.env.FIREBASE_STORAGE_BUCKET_URL
     default:
       return process.env.FIREBASE_STORAGE_BUCKET_URL
   }
-}
-
-export {
-  getPortNumber,
-  getDatabaseHost,
-  getDatabaseName,
-  getDatabaseUser,
-  getDatabasePassword,
-  getFirebaseStorageBucketUrl
 }
