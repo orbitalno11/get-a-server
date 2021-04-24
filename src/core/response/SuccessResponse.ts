@@ -1,10 +1,10 @@
-import IResponse from "./IResponse";
+import IResponse from "./IResponse"
 
-class SuccessResponse<T> implements IResponse<T> {
-    message: string;
-    data: T;
-    success: boolean;
-    statusCode: number;
+class SuccessResponse<T>  implements IResponse<T>{
+  message: string;
+  data: T;
+  success: boolean;
+  statusCode: number;
 
     constructor(data: T, msg: string, isSuccess: boolean, code: number) {
         this.message = msg;

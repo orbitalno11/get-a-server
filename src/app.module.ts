@@ -14,7 +14,7 @@ import {TutorModule} from "./api/tutor/v1/tutor.module"
 import {LearnerModule} from "./api/learner/v1/learner.module"
 import {OfflineCourseModule} from "./api/offline-course/v1/OfflineCourse.module"
 import {MeModule} from "./api/me/v1/me.module"
-
+import {CoinModule} from "./api/coin/coin.module";
 
 @Module({
     imports: [
@@ -24,7 +24,8 @@ import {MeModule} from "./api/me/v1/me.module"
         TutorModule,
         LearnerModule,
         OfflineCourseModule,
-        MeModule
+        MeModule,
+        CoinModule
     ],
     controllers: [AppController],
     providers: [AppService]

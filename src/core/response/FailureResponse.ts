@@ -1,4 +1,4 @@
-import IResponse from "./IResponse";
+import IResponse from "./IResponse"
 
 class FailureResponse<T> extends Error implements IResponse<T> {
     message: string;
