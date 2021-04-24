@@ -37,8 +37,8 @@ class PaymentManager {
                 "applicationSecret": this.SCB_API_SECRET
             }
 
-            const url = this.SCB_SANDBOX_URL + "v1/oauth/token"
-            const response = await got.post("https://api-sandbox.partners.scb/partners/sandbox/v1/oauth/token", {
+            const url = this.SCB_SANDBOX_URL + "/v1/oauth/token"
+            const response = await got.post(url, {
                 headers: header,
                 body: JSON.stringify(data),
                 responseType: "json"
@@ -81,7 +81,7 @@ class PaymentManager {
             data.ref2 = detail.refNo2
             data.ref3 = detail.refNo3
 
-            const response = await got.post("https://api-sandbox.partners.scb/partners/sandbox/v1/payment/qrcode/create", {
+            const response = await got.post(url, {
                 headers: header,
                 body: data.toJson(),
                 responseType: "json"
