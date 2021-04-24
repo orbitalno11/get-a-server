@@ -2,9 +2,8 @@ import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import PaymentManager from "../../payment/PaymentManager"
 import { launch } from "../../core/common/launch"
-import { CoinTransactionToPaymentMapper } from "../../utils/mapper/payment/CoinTransactionToPaymentMapper"
 import PaymentRepository from "../../repository/PaymentRepository"
-import { CoinTransactionEntity } from "../../entity/coins/coinTransaction.entity"
+import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
 
 @Injectable()
 export class PaymentApiService {
@@ -15,17 +14,13 @@ export class PaymentApiService {
     ) {
     }
 
-    async confirmLinePayPayment(transactionId: number, orderId: string): Promise<CoinTransactionEntity> {
-        return launch(async () => {
-            const coinExchangeData = await this.repository.getPaymentDetail(orderId)
-            const confirmResult = await this.paymentManager.linePayConfirmPayment(transactionId, CoinTransactionToPaymentMapper(coinExchangeData))
-            return await this.repository.updatePaymentStatus(coinExchangeData, confirmResult)
+    async createQrCodePayment(orderDetail: CoinPaymentTransaction): Promise<string> {
+        return launch( async  () => {
+            return await this.paymentManager.createQrCodePayment(orderDetail)
         })
     }
 
-    async checkLinePayPayment(transactionId: string): Promise<void> {
-        return launch( async () => {
-            await this.paymentManager.linePayCheckPayment(transactionId)
-        })
+    async confirmPayment() {
+
     }
 }

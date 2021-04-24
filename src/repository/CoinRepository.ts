@@ -10,6 +10,8 @@ import UserManager from "../utils/UserManager"
 import { CoinTransactionEntity } from "../entity/coins/coinTransaction.entity"
 import { PaymentStatus } from "../model/payment/data/PaymentStatus"
 import { PaymentError } from "../model/payment/data/PaymentError"
+import CoinPaymentTransaction from "../model/payment/CoinPaymentTransaction"
+import { MemberEntity } from "../entity/member/member.entitiy"
 
 /**
  * Repository for "v1/coin"
@@ -72,21 +74,22 @@ class CoinRepository {
 
     /**
      * Buy coin
-     * @param transactionId
-     * @param paymentId
-     * @param userId
-     * @param rateDetail
+     * @param orderDetail
+     * @param exchangeRate
      */
-    async buyCoin(transactionId: string, paymentId: number, userId: string, rateDetail: ExchangeRateEntity): Promise<CoinTransactionEntity> {
+    async buyCoin(orderDetail: CoinPaymentTransaction, exchangeRate: ExchangeRateEntity): Promise<CoinTransactionEntity> {
         try {
-            const memberData = await this.userManager.getMember(userId)
             const coinTransaction = new CoinTransactionEntity()
-            coinTransaction.transactionId = transactionId
-            coinTransaction.paymentId = paymentId.toString()
+            const memberData = new MemberEntity()
+            memberData.id = orderDetail.userId
+            coinTransaction.transactionId = orderDetail.transactionId
             coinTransaction.member = memberData
-            coinTransaction.exchangeRate = rateDetail
+            coinTransaction.exchangeRate = exchangeRate
             coinTransaction.paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT
             coinTransaction.transactionDate = new Date()
+            coinTransaction.refNo1 = orderDetail.refNo1
+            coinTransaction.refNo2 = orderDetail.refNo2
+            coinTransaction.refNo3 = orderDetail.refNo3
 
             const queryRunner = this.connection.createQueryRunner()
             try {

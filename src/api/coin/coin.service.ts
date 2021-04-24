@@ -12,6 +12,7 @@ import {UserRoleKey} from "../../core/constant/UserRole"
 import {launch} from "../../core/common/launch"
 import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
 import PaymentManager from "../../payment/PaymentManager"
+import { CoinTransactionToPaymentMapper } from "../../utils/mapper/payment/CoinTransactionToPaymentMapper"
 
 /**
  * Class for coin api service
@@ -73,19 +74,41 @@ export class CoinService {
      * @param userId
      * @param rateId
      */
-    async buyCoin(userId: string, rateId: number): Promise<string> {
+    async buyCoin(userId: string, rateId: number): Promise<CoinPaymentTransaction> {
         return launch(async () => {
             const transactionId = "GET-A" + uuidV4()
             const rateDetail = await this.repository.getCoinRate(rateId)
 
-            const paymentDetail = new CoinPaymentTransaction()
-            paymentDetail.transactionId = transactionId
-            paymentDetail.paymentDetail = ExchangeRateEntityToCoinRateMapper(rateDetail)
+            const orderDetail = new CoinPaymentTransaction()
+            orderDetail.transactionId = transactionId
+            orderDetail.userId = userId
+            orderDetail.refNo1 = this.createRefNo(1)
+            orderDetail.refNo2 = this.createRefNo(2)
+            orderDetail.refNo3 = this.createRefNo(3)
+            orderDetail.paymentDetail = ExchangeRateEntityToCoinRateMapper(rateDetail)
 
-            const reserved = await this.paymentManager.linePayReservedPayment(paymentDetail)
-
-            await this.repository.buyCoin(transactionId, reserved.info.transactionId, userId, rateDetail)
-            return reserved.info.paymentUrl.web
+            const result = await this.repository.buyCoin(orderDetail, rateDetail)
+            return CoinTransactionToPaymentMapper(result)
         })
+    }
+
+    private createRefNo(refNo: number): string {
+        let result = []
+        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        const charactersLength = characters.length
+
+        if (refNo != 3) {
+            for (let index = 0; index < 3; index++) {
+                result.push(characters.charAt(Math.floor(Math.random() * charactersLength)))
+            }
+            const resultString = result.join("")
+            return `GETA${Date.now()}${resultString}`
+        } else {
+            for (let index = 0; index < 3; index++) {
+                result.push(characters.charAt(Math.floor(Math.random() * charactersLength)))
+            }
+            const resultString = result.join("")
+            return `SCB${Date.now()}${resultString}`
+        }
     }
 }

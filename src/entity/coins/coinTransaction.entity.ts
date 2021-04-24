@@ -17,6 +17,15 @@ export class CoinTransactionEntity {
     @Column({ default: PaymentStatus.WAITING_FOR_PAYMENT })
     paymentStatus: number
 
+    @Column()
+    refNo1: string
+
+    @Column()
+    refNo2: string
+
+    @Column()
+    refNo3: string
+
     // entity relation
     @ManyToOne(
         () => MemberEntity,

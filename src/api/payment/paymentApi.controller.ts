@@ -1,13 +1,17 @@
-import { Controller, Get, Query, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Body, Controller, Get, Post, Query, UseFilters, UseInterceptors } from "@nestjs/common"
 import { PaymentApiService } from "./paymentApi.service"
 import { launch } from "../../core/common/launch"
 import SuccessResponse from "../../core/response/SuccessResponse"
 import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
-import { CoinTransactionToPaymentMapper } from "../../utils/mapper/payment/CoinTransactionToPaymentMapper"
 import { FailureResponseExceptionFilter } from "../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../interceptors/TransformSuccessResponse.interceptor"
 import IResponse from "../../core/response/IResponse"
+import { CurrentUser } from "../../decorator/CurrentUser.decorator"
+import { logger } from "../../core/logging/Logger"
+import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
+import { PaymentError } from "../../model/payment/data/PaymentError"
+import ScbConfirmBody from "../../model/payment/ScbConfirmBody"
 
 @Controller("v1/payment")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -16,19 +20,21 @@ export class PaymentApiController {
     constructor(private readonly service: PaymentApiService) {
     }
 
-    @Get("confirm/linepay")
-    async confirmLinePayPayment(@Query("transactionId") transactionId: string, @Query("orderId") orderId: string): Promise<IResponse<CoinPaymentTransaction>> {
+    @Post("pay/qrcode")
+    async getQrCodePayment(@CurrentUser("id") currentUserId: string, @Body() orderDetail: CoinPaymentTransaction): Promise<IResponse<string>> {
         return launch(async () => {
-            const updateResult = await this.service.confirmLinePayPayment(Number(transactionId), orderId)
-            return SuccessResponse.create(CoinTransactionToPaymentMapper(updateResult))
+            if (currentUserId !== orderDetail.userId) {
+                logger.error("User ID not match")
+                throw ErrorExceptions.create("User is not match with order detail", PaymentError.USER_IS_NOT_MATCH)
+            }
+            const qrCode = await this.service.createQrCodePayment(orderDetail)
+            return SuccessResponse.create(qrCode)
         })
     }
 
-    @Get("check/linepay")
-    async checkLinePayPayment(@Query("transactionId") transactionId: string): Promise<IResponse<string>> {
-        return launch( async () => {
-            await this.service.checkLinePayPayment(transactionId)
-            return SuccessResponse.create("DEV CHECK")
-        })
+    @Post("confirm")
+    async confirmPayment(@Body() body: ScbConfirmBody) {
+        console.log(body)
+        return SuccessResponse.create("DEV")
     }
 }

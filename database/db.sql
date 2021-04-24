@@ -216,11 +216,14 @@ create table exchange_transaction(
 
 create table coin_transaction(
     transaction_id varchar(255) not null,
-    paymentId int UNSIGNED not null,
+    paymentId varchar(255),
     memberId varchar(255) not null,
     exchangeRateId int not null,
     transactionDate timestamp not null default current_timestamp,
     paymentStatus smallint UNSIGNED not null,
+    refNo1 varchar(20) not null,
+    refNo2 varchar(20) not null,
+    refNo3 varchar(20) not null,
     PRIMARY KEY(transaction_id),
     CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(memberId) REFERENCES member (id),
     CONSTRAINT `FK_MEMBER_COIN_RATE_TRANSACTION` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
