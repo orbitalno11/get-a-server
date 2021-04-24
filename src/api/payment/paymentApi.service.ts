@@ -22,4 +22,10 @@ export class PaymentApiService {
             return await this.repository.updatePaymentStatus(coinExchangeData, confirmResult)
         })
     }
+
+    async checkLinePayPayment(transactionId: string): Promise<void> {
+        return launch( async () => {
+            await this.paymentManager.linePayCheckPayment(transactionId)
+        })
+    }
 }

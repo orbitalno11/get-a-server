@@ -30,10 +30,9 @@ class PaymentManager {
     private readonly CONFIRM_API = `${this.LINE_PAY_API_VERSION}/payments`
     private readonly CONFIRM_TEXT = "confirm"
 
-    private createHeader(url: string, payload: RabbitLinePayPayload | RabbitLinePayConfirmPayload, nonce: string) {
-        const detail = payload.toJson()
-        const data = this.CHANNEL_ID + url + detail + nonce
-        const signature = crypto.createHmac("SHA256", this.CHANNEL_SECRET).update(data).digest("base64").toString()
+    private createHeader(url: string, payload: string, nonce: string) {
+        const data = this.CHANNEL_SECRET + url + payload + nonce
+        const signature = crypto.createHmac("sha256", this.CHANNEL_SECRET).update(data).digest("base64")
         return {
             "Content-Type": this.REQUEST_CONTENT_TYPE,
             "X-LINE-ChannelId": this.CHANNEL_ID,
@@ -51,9 +50,10 @@ class PaymentManager {
             const payload = new RabbitLinePayPayload()
             payload.amount = detail.paymentDetail.baht
             payload.orderId = detail.transactionId
+            payload.currency = "THB"
             payload.packages = [
                 {
-                    id: detail.paymentDetail.type,
+                    id: "test",
                     amount: detail.paymentDetail.baht,
                     name: detail.paymentDetail.title,
                     products: [
@@ -66,16 +66,13 @@ class PaymentManager {
                 }
             ]
             payload.redirectUrls = {
-                confirmUrl: "https://fe8d2fa772e3.ngrok.io/v1/payment/confirm/linepay",
-                cancelUrl: "https://fe8d2fa772e3.ngrok.io/v1/payment/confirm/linepay"
+                confirmUrl: "https://391fad432ffe.ngrok.io/v1/payment/confirm/linepay",
+                cancelUrl: "https://391fad432ffe.ngrok.io"
             }
-            // payload.productName = paymentDetail.paymentDetail.title
-            // payload.amount = paymentDetail.paymentDetail.baht
-            // payload.confirmUrl = "https://1ba40fd20132.ngrok.io/v1/payment/confirm/linepay"
 
             const nonce = UUID()
-            const header = this.createHeader(this.RESERVED_API, payload, nonce)
-            console.log(header)
+            const header = this.createHeader(`/${this.RESERVED_API}`, payload.toJson(), nonce)
+
             const response = await got.post(this.RESERVED_REQUEST_URL, {
                 headers: header,
                 body: payload.toJson(),
@@ -96,6 +93,20 @@ class PaymentManager {
         }
     }
 
+    async linePayCheckPayment(transactionId: string) {
+        try {
+            const pathUrl = "/v3/payments/requests/" + transactionId + "/check"
+            const response = await got.get(`${this.LINE_PAY_URL}${pathUrl}`, {
+                headers: this.createHeader(pathUrl, "", UUID()),
+                responseType: "json"
+            })
+            console.log(response.body)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not check payment", ErrorType.UNEXPECTED_ERROR)
+        }
+    }
+
     async linePayConfirmPayment(transactionId: number, orderDetail: CoinPaymentTransaction): Promise<boolean> {
         try {
             const pathUrl = `${this.CONFIRM_API}/${transactionId}/${this.CONFIRM_TEXT}`
@@ -103,16 +114,19 @@ class PaymentManager {
 
             const body = new RabbitLinePayConfirmPayload()
             body.amount = orderDetail.paymentDetail.baht
+            body.currency = "THB"
 
+            const data = body.toJson()
             const nonce = UUID()
-            const header = this.createHeader(pathUrl, body, nonce)
+            const header = this.createHeader(`/${pathUrl}`, data, nonce)
             const response = await got.post(url, {
                 headers: header,
-                body: body.toJson(),
+                body: data,
                 responseType: "json"
             })
 
             const responseBody = response.body as RabbitLinePayResponse
+            console.log(responseBody)
             return isNotEmpty(responseBody) && responseBody.returnCode === "0000" && isNotEmpty(responseBody.info)
         } catch (error) {
             logger.error(error)

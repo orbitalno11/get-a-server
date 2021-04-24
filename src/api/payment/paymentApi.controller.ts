@@ -23,4 +23,12 @@ export class PaymentApiController {
             return SuccessResponse.create(CoinTransactionToPaymentMapper(updateResult))
         })
     }
+
+    @Get("check/linepay")
+    async checkLinePayPayment(@Query("transactionId") transactionId: string): Promise<IResponse<string>> {
+        return launch( async () => {
+            await this.service.checkLinePayPayment(transactionId)
+            return SuccessResponse.create("DEV CHECK")
+        })
+    }
 }

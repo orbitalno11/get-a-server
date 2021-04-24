@@ -82,7 +82,7 @@ class CoinRepository {
             const memberData = await this.userManager.getMember(userId)
             const coinTransaction = new CoinTransactionEntity()
             coinTransaction.transactionId = transactionId
-            coinTransaction.paymentId = paymentId
+            coinTransaction.paymentId = paymentId.toString()
             coinTransaction.member = memberData
             coinTransaction.exchangeRate = rateDetail
             coinTransaction.paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT

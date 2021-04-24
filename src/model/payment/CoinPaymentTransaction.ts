@@ -7,7 +7,7 @@ import CoinRate from "../coin/CoinRate"
  */
 class CoinPaymentTransaction {
     transactionId: string
-    paymentId: number
+    paymentId: string
     transactionDate: Date
     paymentStatus: PaymentStatus
     paymentDetail: CoinRate

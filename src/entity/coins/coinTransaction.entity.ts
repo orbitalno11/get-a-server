@@ -9,7 +9,7 @@ export class CoinTransactionEntity {
     transactionId: string
 
     @Column()
-    paymentId: number
+    paymentId: string
 
     @Column({ default: new Date() })
     transactionDate: Date

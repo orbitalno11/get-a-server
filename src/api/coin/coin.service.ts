@@ -75,7 +75,7 @@ export class CoinService {
      */
     async buyCoin(userId: string, rateId: number): Promise<string> {
         return launch(async () => {
-            const transactionId = "GET-A" + uuidV4() + userId
+            const transactionId = "GET-A" + uuidV4()
             const rateDetail = await this.repository.getCoinRate(rateId)
 
             const paymentDetail = new CoinPaymentTransaction()
