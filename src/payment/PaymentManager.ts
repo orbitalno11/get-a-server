@@ -74,7 +74,7 @@ class PaymentManager {
             const url = this.SCB_SANDBOX_URL + "/v1/payment/qrcode/create"
             const header = await this.createHeader()
             const data = new ScbQrCodePayload()
-            data.amount = 10.0
+            data.amount = detail.paymentDetail.baht
             data.ppType = "BILLERID"
             data.ppId = this.SCB_BILLER_ID
             data.ref1 = detail.refNo1
@@ -91,10 +91,13 @@ class PaymentManager {
 
             return result?.data?.qrImage
         } catch (error) {
-            console.log(error)
             logger.error(error)
             throw ErrorExceptions.create("Can not create QR code", ErrorType.UNEXPECTED_ERROR)
         }
+    }
+
+    async verifyQrCodeSlip() {
+
     }
 }
 
