@@ -9,6 +9,7 @@ import FailureResponse from "../../core/response/FailureResponse";
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions";
 import {CreateCoinRateFormValidator} from "../../utils/validator/coin/CreateCoinRateFormValidator";
 import SuccessResponse from "../../core/response/SuccessResponse";
+import IResponse from "../../core/response/IResponse"
 
 /**
  * Class for coin api controller
