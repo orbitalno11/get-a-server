@@ -222,7 +222,7 @@ create table payment_transaction(
     exchangeRateId int not null,
     paymentStatus smallint UNSIGNED not null,
     created timestamp not null,
-    updated timestamp not null default current_timestamp,
+    updated timestamp not null,
     refNo1 varchar(20) not null,
     refNo2 varchar(20) not null,
     refNo3 varchar(20) not null,

@@ -1,17 +1,18 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
-import {v4 as uuidV4} from "uuid"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
+import { v4 as uuidV4 } from "uuid"
 import CoinRate from "../../model/coin/CoinRate"
-import {logger} from "../../core/logging/Logger"
-import {CoinRateFormToExchangeRateEntityMapper} from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
+import { logger } from "../../core/logging/Logger"
+import { CoinRateFormToExchangeRateEntityMapper } from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
-import {CoinError} from "../../core/exceptions/model/CoinError"
+import { CoinError } from "../../core/exceptions/model/CoinError"
 import CoinRepository from "../../repository/CoinRepository"
-import {ExchangeRateEntityToCoinRateMapper} from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
-import {UserRoleKey} from "../../core/constant/UserRole"
-import {launch} from "../../core/common/launch"
+import { ExchangeRateEntityToCoinRateMapper } from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
+import { UserRoleKey } from "../../core/constant/UserRole"
+import { launch } from "../../core/common/launch"
 import PaymentManager from "../../payment/PaymentManager"
 import CoinPayment from "../../model/payment/CoinPayment"
+import { SCB_REF3_PREFIX } from "../../configs/EnvironmentConfig"
 
 /**
  * Class for coin api service
@@ -114,7 +115,7 @@ export class CoinService {
                 result.push(characters.charAt(Math.floor(Math.random() * charactersLength)))
             }
             const resultString = result.join("")
-            return `SCB${Date.now()}${resultString}`
+            return `${SCB_REF3_PREFIX}${Date.now()}${resultString}`
         }
     }
 }

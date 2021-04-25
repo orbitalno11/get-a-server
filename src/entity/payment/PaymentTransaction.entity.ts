@@ -21,7 +21,7 @@ export class PaymentTransactionEntity {
     created: Date
 
     @Column({ default: new Date() })
-    updated: Date
+    updated: Date = new Date()
 
     @Column()
     refNo1: string

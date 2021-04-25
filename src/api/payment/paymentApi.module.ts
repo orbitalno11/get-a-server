@@ -21,7 +21,8 @@ export class PaymentApiModule implements NestModule {
         consumer
             .apply(Authenticated)
             .forRoutes(
-                { path: "v1/payment/pay/qrcode", method: RequestMethod.GET }
+                { path: "v1/payment/pay/qrcode", method: RequestMethod.GET },
+                { path: "v1/payment/pay/scbeasy", method: RequestMethod.GET }
             )
     }
 }

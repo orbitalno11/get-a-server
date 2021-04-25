@@ -44,13 +44,26 @@ export class PaymentApiController {
         })
     }
 
+    @Get("/pay/scbeasy")
+    async getScbEasyLink(@CurrentUser("id") currentUserId: string, @Query("transId") transactionId: string): Promise<IResponse<string>> {
+        return launch(async () => {
+            const paymentDetail = await this.service.getPaymentDetail(transactionId, currentUserId)
+            if (isEmpty(paymentDetail)) {
+                logger.error("Can not found payment detail")
+                throw ErrorExceptions.create("Can not found payment detail", PaymentError.CAN_NOT_FOUND_TRANSACTION)
+            }
+            const deepLink = await this.service.createScbEasyPayment(PaymentTransactionToCoinPayment(paymentDetail))
+            return SuccessResponse.create(deepLink)
+        })
+    }
+
     /**
      * Confirm payment
      * @param body
      */
     @Post("confirm")
     async confirmPayment(@Body() body: ScbConfirmBody): Promise<IResponse<string>> {
-        return launch( async () => {
+        return launch(async () => {
             if (isEmpty(body)) {
                 logger.error("Can not found payment detail form bank service")
                 throw ErrorExceptions.create("Can not found payment detail form bank service", PaymentError.CAN_NOT_FOUND_PAYMENT_DETAIL_FROM_BANK_SERVICE)

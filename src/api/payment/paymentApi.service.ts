@@ -53,6 +53,16 @@ export class PaymentApiService {
     }
 
     /**
+     * Create SCB Easy App payment link
+     * @param paymentDetail
+     */
+    async createScbEasyPayment(paymentDetail: CoinPayment): Promise<string> {
+        return launch( async () => {
+            return this.paymentManager.createScbEasyDeeplink(paymentDetail)
+        })
+    }
+
+    /**
      * Confirm payment
      * @param paymentDetail
      */

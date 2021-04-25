@@ -3,12 +3,14 @@ import * as dotenv from "dotenv"
 dotenv.config()
 
 export const appEnvironment: string | undefined = process.env.ENV
-export const LINE_PAY_CHANNEL_ID: string | undefined = process.env.LINE_PAY_CHANNEL_ID
-export const LINE_PAY_CHANNEL_SECRET: string | undefined = process.env.LINE_PAY_CHANNEL_SECRET
 export const SCB_SANDBOX_URL: string | undefined = process.env.SCB_SANDBOX_URL
 export const SCB_API_KEY: string | undefined = process.env.SCB_API_KEY
 export const SCB_API_SECRET: string | undefined = process.env.SCB_API_SECRET
 export const SCB_BILLER_ID: string | undefined = process.env.SCB_BILLER_ID
+export const SCB_MERCHANT_ID: string | undefined = process.env.SCB_MERCHANT_ID
+export const SCB_TERMINAL_ID: string | undefined = process.env.SCB_TERMINAL_ID
+export const SCB_REF3_PREFIX: string | undefined = process.env.SCB_REF3_PREFIX
+export const PAYMENT_CALLBACK_URL: string | undefined = process.env.PAYMENT_CALL_BACK_URL
 
 export function getPortNumber(): string | undefined {
     switch (appEnvironment) {
