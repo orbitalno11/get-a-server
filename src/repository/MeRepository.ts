@@ -18,10 +18,10 @@ import { ProvinceEntity } from "../entity/contact/province.entity"
 import { LocationError } from "../core/exceptions/model/LocationError"
 import UserManager from "../utils/UserManager"
 
-
-
-
-
+/**
+ * Repository for "v1/me"
+ * @author orbitalno11 2021 A.D.
+ */
 @Injectable()
 class MeRepository {
     constructor(

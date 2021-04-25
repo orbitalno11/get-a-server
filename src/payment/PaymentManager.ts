@@ -5,10 +5,10 @@ import * as config from "../configs/EnvironmentConfig"
 import { logger } from "../core/logging/Logger"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import ErrorType from "../core/exceptions/model/ErrorType"
-import CoinPaymentTransaction from "../model/payment/CoinPaymentTransaction"
 import ScbQrCodePayload from "../model/payment/ScbQrCodePayload"
 import ScbTokenResponse from "../model/payment/ScbTokenResponse"
 import ScbQrCodeResponse from "../model/payment/ScbQrCodeResponse"
+import CoinPayment from "../model/payment/CoinPayment"
 
 /**
  * Class for manage payment
@@ -17,12 +17,15 @@ import ScbQrCodeResponse from "../model/payment/ScbQrCodeResponse"
 @Injectable()
 class PaymentManager {
     private readonly REQUEST_CONTENT_TYPE = "application/json"
-
     private readonly SCB_API_KEY = config.SCB_API_KEY
     private readonly SCB_API_SECRET = config.SCB_API_SECRET
     private readonly SCB_SANDBOX_URL = config.SCB_SANDBOX_URL
     private readonly SCB_BILLER_ID = config.SCB_BILLER_ID
 
+    /**
+     * Get SCB Access token
+     * @private
+     */
     private async getScbOpenApiToken(): Promise<string | null> {
         try {
             const requestUId = UUID()
@@ -53,6 +56,10 @@ class PaymentManager {
         }
     }
 
+    /**
+     * Create header for SCB Open API request
+     * @private
+     */
     private async createHeader() {
         try {
             const requestUId = UUID()
@@ -69,12 +76,16 @@ class PaymentManager {
         }
     }
 
-    async createQrCodePayment(detail: CoinPaymentTransaction): Promise<string> {
+    /**
+     * Create QR code payment
+     * @param detail
+     */
+    async createQrCodePayment(detail: CoinPayment): Promise<string> {
         try {
             const url = this.SCB_SANDBOX_URL + "/v1/payment/qrcode/create"
             const header = await this.createHeader()
             const data = new ScbQrCodePayload()
-            data.amount = detail.paymentDetail.baht
+            data.amount = detail.amount
             data.ppType = "BILLERID"
             data.ppId = this.SCB_BILLER_ID
             data.ref1 = detail.refNo1
@@ -94,10 +105,6 @@ class PaymentManager {
             logger.error(error)
             throw ErrorExceptions.create("Can not create QR code", ErrorType.UNEXPECTED_ERROR)
         }
-    }
-
-    async verifyQrCodeSlip() {
-
     }
 }
 

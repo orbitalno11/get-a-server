@@ -1,21 +1,27 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm"
 import { MemberEntity } from "../member/member.entitiy"
-import { ExchangeRateEntity } from "./exchangeRate.entity"
 import { PaymentStatus } from "../../model/payment/data/PaymentStatus"
+import { ExchangeRateEntity } from "../coins/exchangeRate.entity"
 
-@Entity("coin_transaction")
-export class CoinTransactionEntity {
+@Entity("payment_transaction")
+export class PaymentTransactionEntity {
     @PrimaryColumn({ name: "transaction_id" })
     transactionId: string
 
     @Column()
-    paymentId: string
+    paymentTransId: string
 
-    @Column({ default: new Date() })
-    transactionDate: Date
+    @Column()
+    amount: number
 
     @Column({ default: PaymentStatus.WAITING_FOR_PAYMENT })
     paymentStatus: number
+
+    @Column()
+    created: Date
+
+    @Column({ default: new Date() })
+    updated: Date
 
     @Column()
     refNo1: string
@@ -29,13 +35,13 @@ export class CoinTransactionEntity {
     // entity relation
     @ManyToOne(
         () => MemberEntity,
-        (member) => member.coinTransaction)
+        (member) => member.paymentTransaction)
     @JoinColumn({ name: "memberId" })
     member: MemberEntity
 
     @ManyToOne(
         () => ExchangeRateEntity,
-        (rate) => rate.coinTransaction
+        (rate) => rate.paymentTransaction
     )
     @JoinColumn({ name: "exchangeRateId" })
     exchangeRate: ExchangeRateEntity

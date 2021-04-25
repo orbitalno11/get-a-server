@@ -1,3 +1,7 @@
+/**
+ * Class for SCB create QR code payload
+ * @author orbitalno11 2021 A.D.
+ */
 class ScbQrCodePayload {
     qrType: string = "PP"
     amount: number

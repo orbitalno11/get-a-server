@@ -1,3 +1,7 @@
+/**
+ * Class for SCB get auth token response
+ * @author orbitalno11 2021 A.D.
+ */
 class ScbTokenResponse {
     status: {
         code: number,

@@ -7,6 +7,10 @@ import { PaymentApiController } from "./paymentApi.controller"
 import { PaymentModule } from "../../payment/payment.module"
 import Authenticated from "../../middleware/auth/Authenticated.middleware"
 
+/**
+ * Module for payment API
+ * @author orbitalno11 2021 A.D.
+ */
 @Module({
     imports: [CoreModule, UtilityModule, PaymentModule, RepositoryModule],
     controllers: [PaymentApiController],
@@ -17,7 +21,7 @@ export class PaymentApiModule implements NestModule {
         consumer
             .apply(Authenticated)
             .forRoutes(
-                { path: "v1/payment/pay/qrcode", method: RequestMethod.POST }
+                { path: "v1/payment/pay/qrcode", method: RequestMethod.GET }
             )
     }
 }

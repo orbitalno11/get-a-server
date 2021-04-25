@@ -10,9 +10,8 @@ import CoinRepository from "../../repository/CoinRepository"
 import {ExchangeRateEntityToCoinRateMapper} from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
 import {UserRoleKey} from "../../core/constant/UserRole"
 import {launch} from "../../core/common/launch"
-import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
 import PaymentManager from "../../payment/PaymentManager"
-import { CoinTransactionToPaymentMapper } from "../../utils/mapper/payment/CoinTransactionToPaymentMapper"
+import CoinPayment from "../../model/payment/CoinPayment"
 
 /**
  * Class for coin api service
@@ -74,24 +73,31 @@ export class CoinService {
      * @param userId
      * @param rateId
      */
-    async buyCoin(userId: string, rateId: number): Promise<CoinPaymentTransaction> {
+    async buyCoin(userId: string, rateId: number): Promise<string> {
         return launch(async () => {
             const transactionId = "GET-A" + uuidV4()
             const rateDetail = await this.repository.getCoinRate(rateId)
 
-            const orderDetail = new CoinPaymentTransaction()
+            const orderDetail = new CoinPayment()
             orderDetail.transactionId = transactionId
             orderDetail.userId = userId
+            orderDetail.amount = rateDetail.baht
+            orderDetail.coinRate = rateDetail.id
+            orderDetail.created = new Date()
             orderDetail.refNo1 = this.createRefNo(1)
             orderDetail.refNo2 = this.createRefNo(2)
             orderDetail.refNo3 = this.createRefNo(3)
-            orderDetail.paymentDetail = ExchangeRateEntityToCoinRateMapper(rateDetail)
 
-            const result = await this.repository.buyCoin(orderDetail, rateDetail)
-            return CoinTransactionToPaymentMapper(result)
+            await this.repository.buyCoin(orderDetail, rateDetail)
+            return transactionId
         })
     }
 
+    /**
+     * Create reference number
+     * @param refNo
+     * @private
+     */
     private createRefNo(refNo: number): string {
         let result = []
         let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

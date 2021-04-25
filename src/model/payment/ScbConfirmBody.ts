@@ -1,3 +1,7 @@
+/**
+ * Class for SCB confirm post body
+ * @author orbitalno11 2021 A.D.
+ */
 class ScbConfirmBody {
     payeeProxyId: string
     payeeProxyType: string

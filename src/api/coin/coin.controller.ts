@@ -12,7 +12,6 @@ import SuccessResponse from "../../core/response/SuccessResponse"
 import IResponse from "../../core/response/IResponse"
 import { launch } from "../../core/common/launch"
 import { CurrentUser } from "../../decorator/CurrentUser.decorator"
-import CoinPaymentTransaction from "../../model/payment/CoinPaymentTransaction"
 
 /**
  * Class for coin api controller
@@ -69,7 +68,7 @@ export class CoinController {
      * @param coinRateId
      */
     @Post()
-    async buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<CoinPaymentTransaction>> {
+    async buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
         return launch(async () => {
             const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)
