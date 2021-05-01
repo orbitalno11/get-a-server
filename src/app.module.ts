@@ -1,4 +1,3 @@
-import * as helmet from "helmet"
 import {MiddlewareConsumer, Module, NestModule} from "@nestjs/common"
 import {ConfigModule} from "@nestjs/config"
 import {TypeOrmModule} from "@nestjs/typeorm"
@@ -35,6 +34,6 @@ export class AppModule implements NestModule {
     }
 
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(helmet(), LoggerFactory).forRoutes("*")
+        consumer.apply(LoggerFactory).forRoutes("*")
     }
 }

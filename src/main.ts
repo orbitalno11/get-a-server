@@ -1,4 +1,5 @@
 import { HttpAdapterHost, NestFactory } from "@nestjs/core"
+import * as helmet from "helmet"
 import { AppModule } from "./app.module"
 import { getPortNumber } from "./configs/EnvironmentConfig"
 import { UnexpectedExceptionFilter } from "./core/exceptions/filters/UnexpectedException.filter"
@@ -12,9 +13,10 @@ async function bootstrap() {
 
     app.enableCors({
         origin: true,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+        methods: ["GET", "POST", "PUT"],
         credentials: true
     })
+    app.use(helmet())
     app.useGlobalFilters(new UnexpectedExceptionFilter(httpAdapter), new ErrorExceptionFilter(), new FailureResponseExceptionFilter())
 
     const portNumber = getPortNumber()
