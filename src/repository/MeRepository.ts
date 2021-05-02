@@ -1,26 +1,26 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
 import User from "../model/User"
-import {logger} from "../core/logging/Logger"
-import {UserRoleKey} from "../core/constant/UserRole"
-import {TutorEntity} from "../entity/profile/tutor.entity"
+import { logger } from "../core/logging/Logger"
+import { UserRoleKey } from "../core/constant/UserRole"
+import { TutorEntity } from "../entity/profile/tutor.entity"
 import TutorProfile from "../model/profile/TutorProfile"
-import {LearnerEntity} from "../entity/profile/learner.entity"
+import { LearnerEntity } from "../entity/profile/learner.entity"
 import LearnerProfile from "../model/profile/LearnerProfile"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
-import {MemberAddressEntity} from "../entity/member/memberAddress.entity"
+import { MemberAddressEntity } from "../entity/member/memberAddress.entity"
 import ErrorType from "../core/exceptions/model/ErrorType"
 import Address from "../model/location/Address"
-import {isEmpty} from "../core/extension/CommonExtension"
-import {SubDistrictEntity} from "../entity/contact/subDistrict.entity"
-import {DistrictEntity} from "../entity/contact/district.entity"
-import {ProvinceEntity} from "../entity/contact/province.entity"
-import {LocationError} from "../core/exceptions/model/LocationError"
+import { isEmpty } from "../core/extension/CommonExtension"
+import { SubDistrictEntity } from "../entity/contact/subDistrict.entity"
+import { DistrictEntity } from "../entity/contact/district.entity"
+import { ProvinceEntity } from "../entity/contact/province.entity"
+import { LocationError } from "../core/exceptions/model/LocationError"
 import UserManager from "../utils/UserManager"
 
 /**
- * Repository class for "v1/me" route
- * @author oritalno11 2021 A.D.
+ * Repository for "v1/me"
+ * @author orbitalno11 2021 A.D.
  */
 @Injectable()
 class MeRepository {
@@ -74,7 +74,7 @@ class MeRepository {
                 .leftJoinAndSelect("memberAddress.subDistrict", "subDistrict")
                 .leftJoinAndSelect("memberAddress.district", "district")
                 .leftJoinAndSelect("memberAddress.province", "province")
-                .where("memberAddress.member.id like :id", {id: userId})
+                .where("memberAddress.member.id like :id", { id: userId })
                 .getMany()
         } catch (error) {
             logger.error(error)

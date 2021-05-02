@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn} from 'typeorm'
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn} from 'typeorm'
 import {DistrictEntity} from '../contact/district.entity'
 import {ProvinceEntity} from '../contact/province.entity'
 import {SubDistrictEntity} from '../contact/subDistrict.entity'

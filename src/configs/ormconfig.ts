@@ -33,7 +33,7 @@ import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.enti
 import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
-import { CoinTransactionEntity } from "../entity/coins/coinTransaction.entity"
+import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -66,7 +66,7 @@ const ormConfig: TypeOrmModuleOptions = {
         EducationHistoryEntity,
         ExchangeRateEntity,
         CoinEntity,
-        CoinTransactionEntity,
+        PaymentTransactionEntity,
         ExchangeTransactionEntity,
         CourseTypeEntity,
         OfflineCourseEntity,

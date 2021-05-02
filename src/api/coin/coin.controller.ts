@@ -67,8 +67,8 @@ export class CoinController {
      * @param currentUserId
      * @param coinRateId
      */
-    @Get()
-    async buyCoin(@CurrentUser("id") currentUserId: string, @Query("rate") coinRateId: number): Promise<IResponse<string>> {
+    @Post()
+    async buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
         return launch(async () => {
             const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)
