@@ -4,7 +4,6 @@ import {getDayOfWeekTh} from "../../../DateTime";
 import Subject from "../../../../model/common/Subject";
 import Grade from "../../../../model/common/Grade";
 import {OfflineCourseReviewToReviewMapper} from "./OfflineCourseReviewToReviewMapper";
-import {TutorEntityToTutorProfile} from "../../tutor/TutorEntityToTutorProfileMapper";
 import Mapper from "../../../../core/common/Mapper";
 import {TutorEntityToTutorProfilePublicMapper} from "../../tutor/TutorEntityToTutorProfilePublicMapper";
 
