@@ -1,15 +1,15 @@
-import {Request} from "express"
-import {Injectable} from "@nestjs/common"
-import {logger} from "../../core/logging/Logger"
+import { Request } from "express"
+import { Injectable } from "@nestjs/common"
+import { logger } from "../../core/logging/Logger"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
-import {authentication} from "../../configs/FirebaseConfig"
-import {auth} from "firebase-admin"
+import { authentication } from "../../configs/FirebaseConfig"
+import { auth } from "firebase-admin"
 import * as fs from "fs"
 import * as jwt from "jsonwebtoken"
-import TokenErrorType from "../../core/exceptions/model/TokenErrorType"
-import ErrorType from "../../core/exceptions/model/ErrorType"
+import TokenError from "../../core/exceptions/constants/token-error.enum"
+import CommonError from "../../core/exceptions/constants/common-error.enum"
 import User from "../../model/User"
-import {isNotEmpty} from "../../core/extension/CommonExtension"
+import { isNotEmpty } from "../../core/extension/CommonExtension"
 
 @Injectable()
 class TokenManager {
@@ -36,7 +36,7 @@ class TokenManager {
             logger.error(error)
             throw new ErrorExceptions(
                 "Unexpected error while verify token",
-                TokenErrorType.CAN_NOT_VERIFY_TOKEN
+                TokenError.CAN_NOT_VERIFY
             )
         }
     }
@@ -50,7 +50,7 @@ class TokenManager {
             logger.error(error)
             throw new ErrorExceptions(
                 "Unexpected error while decode firebase token",
-                TokenErrorType.CAN_NOT_DECODE_TOKEN
+                TokenError.CAN_NOT_DECODE
             )
         }
     }
@@ -60,14 +60,14 @@ class TokenManager {
             const privateKey = fs.readFileSync("jwtRS256.key", "utf-8")
             const token = jwt.sign(JSON.parse(JSON.stringify(userTokenData)), privateKey, {
                 algorithm: "RS256",
-                expiresIn: 36000
+                expiresIn: 7200
             })
             return token
         } catch (error) {
             logger.error(error)
             throw new ErrorExceptions(
                 "Error while generate token",
-                ErrorType.UNEXPECTED_ERROR
+                CommonError.UNEXPECTED_ERROR
             )
         }
     }
@@ -83,7 +83,7 @@ class TokenManager {
             logger.error(error)
             throw new ErrorExceptions(
                 "Can not verify token",
-                TokenErrorType.CAN_NOT_VERIFY_TOKEN
+                TokenError.CAN_NOT_VERIFY
             )
         }
     }
@@ -99,7 +99,7 @@ class TokenManager {
             logger.error(error)
             throw new ErrorExceptions(
                 "Can nor decode token",
-                TokenErrorType.CAN_NOT_VERIFY_TOKEN
+                TokenError.CAN_NOT_VERIFY
             )
         }
     }

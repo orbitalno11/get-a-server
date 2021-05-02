@@ -6,12 +6,12 @@ import { CoinService } from "./coin.service"
 import CoinRate from "../../model/coin/CoinRate"
 import { logger } from "../../core/logging/Logger"
 import FailureResponse from "../../core/response/FailureResponse"
-import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import { CreateCoinRateFormValidator } from "../../utils/validator/coin/CreateCoinRateFormValidator"
 import SuccessResponse from "../../core/response/SuccessResponse"
 import IResponse from "../../core/response/IResponse"
 import { launch } from "../../core/common/launch"
 import { CurrentUser } from "../../decorator/CurrentUser.decorator"
+import { CoinError } from "../../core/exceptions/constants/coin.error"
 
 /**
  * Class for coin api controller
@@ -29,25 +29,21 @@ export class CoinController {
      * @param body
      */
     @Post("rate")
-    async createCoinRate(@Body() body: CoinRate): Promise<IResponse<string>> {
-        try {
+    createCoinRate(@Body() body: CoinRate): Promise<IResponse<string>> {
+        return launch(async () => {
             const data = CoinRate.createFormBody(body)
             const validator = new CreateCoinRateFormValidator(data)
             const validate = validator.validate()
 
             if (!validate.valid) {
                 logger.error("Coin rate data is invalid")
-                throw FailureResponse.create("Coin rate data is invalid", HttpStatus.INTERNAL_SERVER_ERROR, validate.error)
+                throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST, validate.error)
             }
 
             const result = await this.service.createCoinRate(data)
 
             return SuccessResponse.create(result)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse || error instanceof ErrorExceptions) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -55,7 +51,7 @@ export class CoinController {
      * @param userRole
      */
     @Get("rates")
-    async getCoinRateList(@Query("user") userRole: number): Promise<IResponse<CoinRate[]>> {
+    getCoinRateList(@Query("user") userRole: number): Promise<IResponse<CoinRate[]>> {
         return launch(async () => {
             const result = await this.service.getCoinRateList(Number(userRole))
             return SuccessResponse.create(result)
@@ -68,7 +64,7 @@ export class CoinController {
      * @param coinRateId
      */
     @Post()
-    async buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
+    buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
         return launch(async () => {
             const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)

@@ -2,7 +2,7 @@ import { PaymentTransactionEntity } from "../../../entity/payment/PaymentTransac
 import CoinPayment from "../../../model/payment/CoinPayment"
 
 /**
- * Mapper for transform entity to model
+ * Mapper for transform entity to constants
  * @author orbitalno11 2021 A.D.
  * @param from
  * @constructor

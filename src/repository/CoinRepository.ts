@@ -4,13 +4,13 @@ import {logger} from "../core/logging/Logger"
 import {ExchangeRateEntity} from "../entity/coins/exchangeRate.entity"
 import {CoinRateType} from "../model/coin/data/CoinRateType"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
-import ErrorType from "../core/exceptions/model/ErrorType"
-import {UserRoleKey} from "../core/constant/UserRole"
-import UserManager from "../utils/UserManager"
-import { PaymentError } from "../model/payment/data/PaymentError"
+import CommonError from "../core/exceptions/constants/common-error.enum"
+import {UserRole} from "../core/constant/UserRole"
+import { PaymentError } from "../core/exceptions/constants/payment-error.enum"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import CoinPayment from "../model/payment/CoinPayment"
+import { CoinError } from "../core/exceptions/constants/coin.error"
 
 /**
  * Repository for "v1/coin"
@@ -20,7 +20,6 @@ import CoinPayment from "../model/payment/CoinPayment"
 class CoinRepository {
     constructor(
         private readonly connection: Connection,
-        private readonly userManager: UserManager
     ) {
     }
 
@@ -28,18 +27,18 @@ class CoinRepository {
      * Get coin rate depend on user role
      * @param userRole
      */
-    async getCoinRateList(userRole: UserRoleKey): Promise<ExchangeRateEntity[]> {
+    async getCoinRateList(userRole: UserRole): Promise<ExchangeRateEntity[]> {
         try {
             switch (userRole) {
-                case UserRoleKey.ADMIN: {
+                case UserRole.ADMIN: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate").getMany()
                 }
-                case UserRoleKey.TUTOR: {
+                case UserRole.TUTOR: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
                         .where("exchangeRate.endDate >= CURDATE()")
                         .getMany()
                 }
-                case UserRoleKey.LEARNER: {
+                case UserRole.LEARNER: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
                         .where("exchangeRate.type not like :type", {type: CoinRateType.TRANSFER})
                         .andWhere("exchangeRate.endDate >= CURDATE()")
@@ -54,7 +53,7 @@ class CoinRepository {
             }
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get exchange rate", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
         }
     }
 
@@ -64,10 +63,14 @@ class CoinRepository {
      */
     async getCoinRate(rateId: number): Promise<ExchangeRateEntity> {
         try {
-            return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
+            if (rateId) {
+                return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
+            } else {
+                throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
+            }
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get exchange rate", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
         }
     }
 
@@ -104,7 +107,7 @@ class CoinRepository {
             }
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not create transaction", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not create transaction", CommonError.UNEXPECTED_ERROR)
         }
     }
 }

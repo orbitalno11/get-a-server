@@ -1,5 +1,4 @@
-enum UserRoleKey {
-    // key
+enum UserRole {
     ADMIN = 0,
     LEARNER = 1,
     TUTOR = 2,
@@ -7,8 +6,7 @@ enum UserRoleKey {
     VISITOR = 4
 }
 
-enum UserRoleValue {
-    // value
+enum UserRoleName {
     ADMIN_TITLE = 'admin',
     LEARNER_TITLE = 'learner',
     TUTOR_TITLE = 'tutor',
@@ -17,6 +15,6 @@ enum UserRoleValue {
 }
 
 export {
-    UserRoleKey,
-    UserRoleValue
+    UserRole,
+    UserRoleName
 }

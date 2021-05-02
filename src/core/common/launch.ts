@@ -1,7 +1,4 @@
 import {logger} from "../logging/Logger"
-import ErrorExceptions from "../exceptions/ErrorExceptions"
-import FailureResponse from "../response/FailureResponse"
-import ErrorType from "../exceptions/model/ErrorType"
 
 /**
  * Wrapper function for try catch
@@ -13,7 +10,6 @@ export const launch = <T>(fx: () => T): T => {
         return fx()
     } catch (error) {
         logger.error(error)
-        if (error instanceof ErrorExceptions || FailureResponse) throw error
-        throw ErrorExceptions.create("Unexpected Error", ErrorType.UNEXPECTED_ERROR)
+        throw error
     }
 }
