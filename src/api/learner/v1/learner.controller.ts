@@ -4,7 +4,7 @@ import {
     Get,
     HttpStatus,
     Param,
-    Post, Put,
+    Post,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -21,10 +21,6 @@ import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import LearnerRegisterFromValidator from "../../../utils/validator/register/LearnerRegisterFormValidator"
 import { LearnerService } from "./learner.service"
 import { isEmpty } from "../../../core/extension/CommonExtension"
-import UploadImageUtil from "../../../utils/multer/UploadImageUtils"
-import LearnerUpdateForm from "../../../model/form/update/LearnerUpdateForm"
-import LearnerUpdateFormValidator from "../../../utils/validator/update-profile/LearnerUpdateFormValidator"
-import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { launch } from "../../../core/common/launch"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import FileError from "../../../core/exceptions/constants/file-error.enum"
@@ -97,44 +93,6 @@ export class LearnerController {
             }
 
             return SuccessResponse.create(LearnerEntityToSimpleProfile(learnerData))
-        })
-    }
-
-    @Put(":id")
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtil().uploadImage2MbProperty("profile")))
-    updateProfile(
-        @Param("id") id: string,
-        @UploadedFile() file: Express.Multer.File,
-        @Body() body: LearnerUpdateForm,
-        @CurrentUser("id") currentUserId: string
-    ) {
-        return launch(async () => {
-            if (!id.isSafeNotNull()) {
-                logger.error("Can not found user id")
-                throw FailureResponse.create(UserError.CAN_NOT_FOUND_ID, HttpStatus.NOT_FOUND)
-            }
-
-            if (id !== currentUserId) {
-                logger.error("You don't have permission")
-                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.UNAUTHORIZED)
-            }
-
-            const data = LearnerUpdateForm.createFromBody(body)
-            const validator = new LearnerUpdateFormValidator()
-            validator.setData(data)
-            const validate = validator.validate()
-
-            if (!validate.valid) {
-                logger.error("validation error")
-                throw FailureResponse.create(
-                    CommonError.VALIDATE_DATA,
-                    HttpStatus.BAD_REQUEST,
-                    validate.error
-                )
-            }
-
-            const result = await this.learnerService.updateProfile(id, data, file)
-            return SuccessResponse.create(result)
         })
     }
 }
