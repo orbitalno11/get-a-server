@@ -12,7 +12,7 @@ import { UserRoleKey } from "../../core/constant/UserRole"
 import { launch } from "../../core/common/launch"
 import PaymentManager from "../../payment/PaymentManager"
 import CoinPayment from "../../model/payment/CoinPayment"
-import { SCB_REF3_PREFIX } from "../../configs/EnvironmentConfig"
+import * as config from "../../configs/EnvironmentConfig"
 
 /**
  * Class for coin api service
@@ -115,7 +115,7 @@ export class CoinService {
                 result.push(characters.charAt(Math.floor(Math.random() * charactersLength)))
             }
             const resultString = result.join("")
-            return `${SCB_REF3_PREFIX}${Date.now()}${resultString}`
+            return `${config.SCB_REF3_PREFIX}${Date.now()}${resultString}`
         }
     }
 }
