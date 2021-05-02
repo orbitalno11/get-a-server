@@ -158,8 +158,8 @@ class MeRepository {
     ): MemberEntity {
         const member = new MemberEntity()
         member.id = userProfile.member.id
-        member.firstname = updateData.firstName
-        member.lastname = updateData.lastName
+        member.firstname = updateData.firstname
+        member.lastname = updateData.lastname
         member.gender = updateData.gender
         member.dateOfBirth = updateData.dateOfBirth
         member.email = updateData.email

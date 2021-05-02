@@ -2,8 +2,8 @@ import { Gender } from "../../common/data/Gender"
 import { Grade } from "../../common/data/Grade"
 
 class UpdateProfileForm {
-    firstName: string
-    lastName: string
+    firstname: string
+    lastname: string
     gender: Gender
     dateOfBirth: Date
     email: string
@@ -16,8 +16,8 @@ class UpdateProfileForm {
 
     public static createFromBody(body: UpdateProfileForm): UpdateProfileForm {
         const form = new UpdateProfileForm()
-        form.firstName = body.firstName
-        form.lastName = body.lastName
+        form.firstname = body.firstname
+        form.lastname = body.lastname
         form.gender = body.gender
         form.dateOfBirth = new Date(body.dateOfBirth)
         form.email = body.email

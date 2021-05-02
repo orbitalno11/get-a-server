@@ -16,10 +16,10 @@ class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
     }
 
     validator(): ValidateResult<any> {
-        if (!this.form.firstName?.isSafeNotBlank()) {
+        if (!this.form.firstname?.isSafeNotBlank()) {
             this.errors["firstname"] = "firstname is required"
         }
-        if (!this.form.lastName?.isSafeNotBlank()) {
+        if (!this.form.lastname?.isSafeNotBlank()) {
             this.errors["lastname"] = "lastname is required"
         }
         if (!(this.form.gender in Gender)) {
