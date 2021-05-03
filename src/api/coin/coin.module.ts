@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common"
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common"
 import { CoreModule } from "../../core/core.module"
 import { UtilityModule } from "../../utils/utility.module"
 import { CoinService } from "./coin.service"
@@ -20,6 +20,9 @@ export class CoinModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(Authenticated)
-            .forRoutes("v1/coin")
+            .exclude(
+                { path: "v1/coin/rates", method: RequestMethod.GET }
+            )
+            .forRoutes(CoinController)
     }
 }
