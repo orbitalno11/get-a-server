@@ -165,6 +165,7 @@ class MeRepository {
         member.email = updateData.email
         member.username = updateData.username
         member.profileUrl = pictureUrl?.isSafeNotBlank() ? pictureUrl : userProfile.member?.profileUrl
+        member.updated = new Date()
         return member
     }
 
