@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { HttpStatus, Injectable } from "@nestjs/common"
 import Address from "../../../model/location/Address"
 import User from "../../../model/User"
 import MeRepository from "../../../repository/MeRepository"
@@ -14,6 +14,8 @@ import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 import { logger } from "../../../core/logging/Logger"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import { UserRole } from "../../../core/constant/UserRole"
+import FailureResponse from "../../../core/response/FailureResponse"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 /**
  * Service for "v1/me"
@@ -57,7 +59,7 @@ export class MeService {
             const userProfile = await this.repository.getUserProfile(user)
             if (isEmpty(userProfile)) {
                 logger.error("Can not find user data")
-                // todo throw exception
+                throw FailureResponse.create(UserError.CAN_NOT_FIND, HttpStatus.NOT_FOUND)
             }
 
             if (file) {
@@ -71,7 +73,7 @@ export class MeService {
                 await this.repository.updateTutorProfile(data, userProfile, newFileUrl)
             } else {
                 logger.error("User type is mismatch")
-                // todo throw exception
+                throw FailureResponse.create(UserError.CAN_NOT_UPDATE)
             }
 
             if (oldFileUrl) {

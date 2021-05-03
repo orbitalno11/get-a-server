@@ -65,7 +65,7 @@ export class MeController {
 
             if (!validate.valid) {
                 logger.error("data is invalid")
-                // todo throw failure response
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST)
             }
 
             await this.service.updateUserProfile(currentUser, data, file)

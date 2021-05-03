@@ -94,7 +94,7 @@ class MeRepository {
             await this.saveUserData(member, contact)
         } catch (error) {
             logger.error(error)
-            throw error
+            throw ErrorExceptions.create("Can not update learner profile", UserError.CAN_NOT_UPDATE)
         }
     }
 
@@ -122,7 +122,7 @@ class MeRepository {
             await this.saveUserData(member, contact)
         } catch (error) {
             logger.error(error)
-            throw error
+            throw ErrorExceptions.create("Can not update tutor profile", UserError.CAN_NOT_UPDATE)
         }
     }
 
@@ -185,7 +185,7 @@ class MeRepository {
         } catch (error) {
             logger.error(error)
             await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update tutor profile", "can-not-update")
+            throw ErrorExceptions.create("Can not save user profile", UserError.CAN_NOT_UPDATE)
         } finally {
             await queryRunner.release()
         }
