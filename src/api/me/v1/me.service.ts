@@ -12,10 +12,14 @@ import { MemberAddressToAddressMapper } from "../../../utils/mapper/location/Mem
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 import { logger } from "../../../core/logging/Logger"
-import { isEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import { UserRole } from "../../../core/constant/UserRole"
 import FailureResponse from "../../../core/response/FailureResponse"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
+import CoinBalance from "../../../model/coin/CoinBalance"
+import CoinTransaction from "../../../model/coin/CoinTransaction"
+import { ExchangeTransactionToRedeemListMapper } from "../../../utils/mapper/coin/ExchangeTransactionToRedeemList.mapper"
+import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 
 /**
  * Service for "v1/me"
@@ -110,7 +114,39 @@ export class MeService {
         })
     }
 
-    getCoinHistory(user: User, tab: number) {
+    /**
+     * Get user coin balance
+     * @param user
+     */
+    getCoinBalance(user: User): Promise<CoinBalance> {
+        return launch( async () => {
+            const result = await this.repository.getUserCoinBalance(user)
+            const balance = new CoinBalance()
+            balance.amount = result?.amount.isSafeNumber() ? result?.amount : 0
+            balance.updated = isSafeNotNull(result?.updated) ? result?.updated : new Date()
+            return balance
+        })
+    }
 
+    /**
+     * Get user coin transaction
+     * @param user
+     */
+    getCoinTransaction(user: User): Promise<CoinTransaction[]> {
+        return launch( async () => {
+            const result = await this.repository.getUserCoinTransaction(user)
+            return result.map((item) => CoinTransaction.createFormEntity(item))
+        })
+    }
+
+    /**
+     * Get user (tutor) redeem transaction
+     * @param user
+     */
+    getRedeemTransaction(user: User): Promise<RedeemTransaction[]> {
+        return launch( async () => {
+            const result = await this.repository.getUserCoinRedeemTransaction(user)
+            return ExchangeTransactionToRedeemListMapper(result)
+        })
     }
 }

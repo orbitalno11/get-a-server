@@ -216,9 +216,10 @@ create table exchange_transaction(
     id int not null AUTO_INCREMENT,
     memberId varchar(255) not null,
     exchangeRateId int not null,
-    requestDate timestamp not null default current_timestamp,
+    requestDate timestamp not null,
     approveDate timestamp,
     transferDate timestamp,
+    request_status smallint UNSIGNED not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(memberId) REFERENCES member (id),
     CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)

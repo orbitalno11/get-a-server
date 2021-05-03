@@ -22,6 +22,10 @@ import UpdateProfileForm from "../model/form/update/UpdateProfileForm"
 import { ContactEntity } from "../entity/contact/contact.entitiy"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { GradeEntity } from "../entity/common/grade.entity"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
+import { CoinError } from "../core/exceptions/constants/coin.error"
+import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
 
 /**
  * Repository for "v1/me"
@@ -259,6 +263,72 @@ class MeRepository {
             logger.error(error)
             if (error instanceof ErrorExceptions) throw error
             throw ErrorExceptions.create("Can not update user address", CommonError.UNEXPECTED_ERROR)
+        }
+    }
+
+    /**
+     * Get user coin balance
+     * @param user
+     */
+    async getUserCoinBalance(user: User): Promise<CoinEntity> {
+        try {
+            return await this.connection.getRepository(CoinEntity)
+                .findOne({
+                    where: {
+                        member: user.id
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found coin balance", CoinError.CAN_NOT_FOUND_COIN_BALANCE)
+        }
+    }
+
+    /**
+     * Get user coin transaction
+     * @param user
+     */
+    async getUserCoinTransaction(user: User): Promise<CoinTransactionEntity[]> {
+        try {
+            return await this.connection.getRepository(CoinTransactionEntity)
+                .find({
+                    where: {
+                        member: user.id
+                    },
+                    order: {
+                        transactionDate: "DESC"
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found coin transaction", CoinError.CAN_NOT_FOUND_COIN_TRANSACTION)
+        }
+    }
+
+    /**
+     * Get user (tutor) redeem transaction
+     * @param user
+     */
+    async getUserCoinRedeemTransaction(user: User): Promise<ExchangeTransactionEntity[]> {
+        try {
+            return await this.connection.getRepository(ExchangeTransactionEntity)
+                .find({
+                    where: {
+                        member: user.id
+                    },
+                    join: {
+                        alias: "transaction",
+                        leftJoinAndSelect: {
+                            exchangeRate: "transaction.exchangeRate"
+                        }
+                    },
+                    order: {
+                        requestDate: "ASC",
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found coin redeem transaction", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
         }
     }
 }

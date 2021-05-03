@@ -30,6 +30,11 @@ import { FileInterceptor } from "@nestjs/platform-express"
 import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import UpdateProfileFormValidator from "../../../utils/validator/update-profile/UpdateProfileFormValidator"
+import { CoinHistory } from "../../../model/coin/data/CoinHistory.enum"
+import CoinTransaction from "../../../model/coin/CoinTransaction"
+import RedeemTransaction from "../../../model/coin/RedeemTransaction"
+import CoinBalance from "../../../model/coin/CoinBalance"
+import { UserRole } from "../../../core/constant/UserRole"
 
 /**
  * Class for "v1/me" controller
@@ -41,11 +46,6 @@ import UpdateProfileFormValidator from "../../../utils/validator/update-profile/
 export class MeController {
     constructor(private readonly service: MeService) {
     }
-
-    private readonly COIN_TAB_PAYMENT = 101
-    private readonly COIN_TAB_TRANSACTION = 102
-    private readonly COIN_TAB_TRANSFER = 103
-    private readonly COIN_TAB_REDEEM = 104
 
     /**
      * Get user profile data
@@ -125,10 +125,37 @@ export class MeController {
         })
     }
 
+    /**
+     * Get User coin detail by type
+     * @param currentUser
+     * @param type
+     */
     @Get("coin")
-    getCoinHistory(@CurrentUser() currentUser: User, @Query("tab") tab: number) {
-        return launch( async () => {
-
+    getCoinHistory(@CurrentUser() currentUser: User, @Query("type") type: CoinHistory): Promise<IResponse<CoinBalance | CoinTransaction[] | RedeemTransaction[] | null>> {
+        return launch(async () => {
+            let result = null
+            switch (Number(type)) {
+                case CoinHistory.BALANCE: {
+                    result = await this.service.getCoinBalance(currentUser)
+                    break
+                }
+                case CoinHistory.TRANSACTION: {
+                    result = await this.service.getCoinTransaction(currentUser)
+                    break
+                }
+                case CoinHistory.REDEEM: {
+                    if (currentUser.role === UserRole.TUTOR) {
+                        result = await this.service.getRedeemTransaction(currentUser)
+                    } else {
+                        result = null
+                    }
+                    break
+                }
+                default: {
+                    break
+                }
+            }
+            return SuccessResponse.create(result)
         })
     }
 }
