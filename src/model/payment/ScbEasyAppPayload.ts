@@ -5,7 +5,7 @@
 class ScbEasyAppPayload {
     transactionType: string = "PURCHASE"
     transactionSubType: string[] = ["BP", "CCFA"]
-    sessionValidityPeriod: number = 1800
+    sessionValidityPeriod: number = 900
     billPayment: {
         paymentAmount: number,
         accountTo: string,
