@@ -10,8 +10,9 @@ create table member (
     profileUrl varchar(255),
     email varchar(50) not null,
     username varchar(50) not null,
-    updated timestamp DEFAULT CURRENT_TIMESTAMP,
-    created timestamp DEFAULT '1998-12-11 00:00:00',
+    verified tinyint(1) not null default 0,
+    updated timestamp,
+    created timestamp,
     PRIMARY KEY (id),
     CONSTRAINT `MEMBER_UNIQUE_EMAIL_KEY` UNIQUE (email),
     CONSTRAINT `MEMBER_UNIQUE_USERNAME_KEY` UNIQUE (username)

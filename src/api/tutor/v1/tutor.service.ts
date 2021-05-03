@@ -41,7 +41,9 @@ export class TutorService {
             const member = TutorFormToMemberEntityMapper(data)
             member.id = userId
             member.profileUrl = filePath
+            member.verified = false
             member.created = new Date()
+            member.updated = new Date()
 
             const memberRole = new MemberRoleEntity()
             memberRole.member = member

@@ -43,11 +43,16 @@ export class MemberEntity {
     @Column()
     username: string
 
-    @UpdateDateColumn()
+    @Column()
+    @UpdateDateColumn({ default: new Date() })
     updated: Date | null
 
-    @CreateDateColumn({ default: new Date() })
+    @Column()
+    @CreateDateColumn()
     created: Date | null
+
+    @Column()
+    verified: boolean
 
     // entity relation
     @OneToOne(
