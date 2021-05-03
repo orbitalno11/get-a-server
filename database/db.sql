@@ -13,7 +13,8 @@ create table member (
     updated timestamp DEFAULT CURRENT_TIMESTAMP,
     created timestamp DEFAULT '1998-12-11 00:00:00',
     PRIMARY KEY (id),
-    CONSTRAINT `MEMBER_UNIQUE_KEY` UNIQUE (email, username)
+    CONSTRAINT `MEMBER_UNIQUE_EMAIL_KEY` UNIQUE (email),
+    CONSTRAINT `MEMBER_UNIQUE_USERNAME_KEY` UNIQUE (username)
 );
 
 create table grade(
@@ -202,6 +203,15 @@ create table coin(
     CONSTRAINT `FK_MEMBER_COIN` FOREIGN KEY(memberId) REFERENCES member (id)
 );
 
+create table coin_transaction(
+    transaction_id varchar(255) not null,
+    member_id varchar(255) not null,
+    transaction_type smallint UNSIGNED not null,
+    number_of_coin float(10,3) not null,
+    PRIMARY KEY (transaction_id),
+    CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(member_id) REFERENCES member (id)
+);
+
 create table exchange_transaction(
     id int not null AUTO_INCREMENT,
     memberId varchar(255) not null,
@@ -227,7 +237,7 @@ create table payment_transaction(
     refNo2 varchar(20) not null,
     refNo3 varchar(20) not null,
     PRIMARY KEY (transaction_id),
-    CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(memberId) REFERENCES member (id),
+    CONSTRAINT `FK_MEMBER_PAYMENT_TRANSACTION` FOREIGN KEY(memberId) REFERENCES member (id),
     CONSTRAINT `FK_MEMBER_COIN_RATE_TRANSACTION` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
 );
 

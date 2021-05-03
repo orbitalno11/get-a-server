@@ -109,4 +109,8 @@ export class MeService {
             await this.repository.updateUserAddress(userId, address)
         })
     }
+
+    getCoinHistory(user: User, tab: number) {
+
+    }
 }

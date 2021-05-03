@@ -1,5 +1,15 @@
 import { MeService } from "./me.service"
-import { Body, Controller, Get, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Post,
+    Query,
+    UploadedFile,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
@@ -31,6 +41,11 @@ import UpdateProfileFormValidator from "../../../utils/validator/update-profile/
 export class MeController {
     constructor(private readonly service: MeService) {
     }
+
+    private readonly COIN_TAB_PAYMENT = 101
+    private readonly COIN_TAB_TRANSACTION = 102
+    private readonly COIN_TAB_TRANSFER = 103
+    private readonly COIN_TAB_REDEEM = 104
 
     /**
      * Get user profile data
@@ -107,6 +122,13 @@ export class MeController {
             await this.service.updateUserAddress(currentUserId, AddressFormToAddressMapper(data))
 
             return SuccessResponse.create("Successfully")
+        })
+    }
+
+    @Get("coin")
+    getCoinHistory(@CurrentUser() currentUser: User, @Query("tab") tab: number) {
+        return launch( async () => {
+
         })
     }
 }
