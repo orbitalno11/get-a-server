@@ -4,13 +4,13 @@ import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import ValidateResult from "../ValidateResult"
 import { Gender } from "../../../model/common/data/Gender"
 import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
-import { UserRoleKey } from "../../../core/constant/UserRole"
+import { UserRole } from "../../../core/constant/UserRole"
 import { Grade } from "../../../model/common/data/Grade"
 
 class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
-    private readonly userRole: UserRoleKey
+    private readonly userRole: UserRole
 
-    constructor(userRole: UserRoleKey) {
+    constructor(userRole: UserRole) {
         super()
         this.userRole = userRole
     }
@@ -45,7 +45,7 @@ class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
         if (!this.form.username?.isSafeNotBlank()) {
             this.errors["username"] = "username is required"
         }
-        if (this.userRole === UserRoleKey.LEARNER) {
+        if (this.userRole === UserRole.LEARNER) {
             this.checkLearner()
         }
 
