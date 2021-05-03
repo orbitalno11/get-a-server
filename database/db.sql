@@ -10,8 +10,9 @@ create table member (
     profileUrl varchar(255),
     email varchar(50) not null,
     username varchar(50) not null,
-    updated timestamp DEFAULT CURRENT_TIMESTAMP,
-    created timestamp DEFAULT '1998-12-11 00:00:00',
+    verified tinyint(1) not null default 0,
+    updated timestamp,
+    created timestamp,
     PRIMARY KEY (id),
     CONSTRAINT `MEMBER_UNIQUE_EMAIL_KEY` UNIQUE (email),
     CONSTRAINT `MEMBER_UNIQUE_USERNAME_KEY` UNIQUE (username)
@@ -162,10 +163,15 @@ create table testing_history(
     tutorId varchar(255) not null,
     examId int not null,
     testingScore float(10, 3) not null,
-    status varchar(100) not null,
+    subject_code varchar(50) not null,
+    year varchar(4) not null,
+    verified smallint not null,
+    verified_id varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_TESTING_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
-    CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id)
+    CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id),
+    CONSTRAINT `FK_TESTING_SUBJECT` FOREIGN KEY(subject_code) REFERENCES subject (code),
+    CONSTRAINT `FK_TESTING_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
 );
 
 create table education_history(
@@ -175,10 +181,24 @@ create table education_history(
     branchId int not null,
     gpax float(3,2) not null,
     status varchar(10) not null,
+    verified smallint not null,
+    verified_id varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_EDUCATION_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_EDUCATION_INSTITUTE` FOREIGN KEY(instituteId) REFERENCES institute (id),
-    CONSTRAINT `FK_ECUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id)
+    CONSTRAINT `FK_EDUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id),
+    CONSTRAINT `FK_EDUCATION_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
+);
+
+create table user_verify(
+    id varchar(255) not null,
+    member_id varchar(255) not null,
+    documentUrl1 varchar(255),
+    documentUrl2 varchar(255),
+    documentUrl3 varchar(255),
+    verify_type smallint UNSIGNED not null,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
 -- coin

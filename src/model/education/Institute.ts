@@ -1,5 +1,5 @@
 class Institute {
-    id: string
+    id: number
     name: string
 }
 

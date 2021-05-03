@@ -11,14 +11,15 @@ import LearnerForm from "../../../model/form/register/LearnerForm"
 import LearnerFormToMemberEntityMapper from "../../../utils/mapper/learner/LearnerFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
 import UserManager from "../../../utils/UserManager"
-import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
+import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 
 @Injectable()
 export class LearnerService {
     constructor(
         private connection: Connection,
         private readonly userManager: UserManager,
-        private readonly tokenManger: TokenManager
+        private readonly tokenManger: TokenManager,
+        private readonly fileStorageUtils: FileStorageUtils
     ) {
     }
 
@@ -26,7 +27,6 @@ export class LearnerService {
         data: LearnerForm,
         file: Express.Multer.File
     ): Promise<string> {
-        const firebaseStorageUtils = new FirebaseStorageUtils()
         let userId: string
         let filePath: string
         try {
@@ -36,13 +36,15 @@ export class LearnerService {
             userId = user.uid
 
             // set profile image path
-            filePath = await firebaseStorageUtils.uploadImage("profile", userId, file)
+            filePath = await this.fileStorageUtils.uploadImageTo(file, userId, "profile")
 
             // create entity
             const member = LearnerFormToMemberEntityMapper(data)
             member.id = userId
             member.profileUrl = filePath
+            member.verified = false
             member.created = new Date()
+            member.updated = new Date()
 
             const memberRole = new MemberRoleEntity()
             memberRole.member = member
@@ -93,7 +95,7 @@ export class LearnerService {
                 await this.userManager.deleteUser(userId)
             }
             if (filePath) {
-                await firebaseStorageUtils.deleteImage(filePath)
+                await this.fileStorageUtils.deleteFileFromUrl(filePath)
             }
             throw error
         }

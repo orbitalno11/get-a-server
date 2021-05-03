@@ -4,7 +4,7 @@ import { EducationHistoryEntity } from './educationHistory.entity'
 @Entity('institute')
 export class InstituteEntity {
   @PrimaryGeneratedColumn()
-  id: string
+  id: number
 
   @Column()
   title: string

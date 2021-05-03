@@ -1,29 +1,37 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { TutorEntity } from '../profile/tutor.entity'
-import { BranchEntity } from './branch.entity'
-import { InstituteEntity } from './institute.entity'
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm"
+import { TutorEntity } from "../profile/tutor.entity"
+import { BranchEntity } from "./branch.entity"
+import { InstituteEntity } from "./institute.entity"
+import { UserVerifyEntity } from "../UserVerify.entity"
 
-@Entity('education_history')
+@Entity("education_history")
 export class EducationHistoryEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  gpax: number
+    @Column()
+    gpax: number
 
-  @Column()
-  status: string
+    @Column()
+    status: string
 
-  // entity relation
-  @ManyToOne(() => TutorEntity, (tutor) => tutor.educationHistory)
-  @JoinColumn({ name: 'tutorId' })
-  tutor: TutorEntity
+    @Column()
+    verified: number
 
-  @ManyToOne(() => InstituteEntity, (institute) => institute.educationHistory)
-  @JoinColumn({ name: 'instituteId' })
-  institute: InstituteEntity
+    // entity relation
+    @ManyToOne(() => TutorEntity, (tutor) => tutor.educationHistory)
+    @JoinColumn({ name: "tutorId" })
+    tutor: TutorEntity
 
-  @ManyToOne(() => BranchEntity, (branch) => branch.educationHistory)
-  @JoinColumn({ name: 'branchId' })
-  branch: BranchEntity
+    @ManyToOne(() => InstituteEntity, (institute) => institute.educationHistory)
+    @JoinColumn({ name: "instituteId" })
+    institute: InstituteEntity
+
+    @ManyToOne(() => BranchEntity, (branch) => branch.educationHistory)
+    @JoinColumn({ name: "branchId" })
+    branch: BranchEntity
+
+    @OneToOne(() => UserVerifyEntity, { cascade: true })
+    @JoinColumn({ name: "verified_id" })
+    verifiedData: UserVerifyEntity
 }

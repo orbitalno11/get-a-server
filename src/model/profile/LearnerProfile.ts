@@ -2,6 +2,7 @@ import Contact from "../Contact"
 import {Gender} from "../common/data/Gender"
 import Address from "../location/Address";
 import Profile from "./Profile"
+import Grade from "../common/Grade"
 
 class LearnerProfile implements Profile{
     id: string
@@ -13,6 +14,7 @@ class LearnerProfile implements Profile{
     email: string
     contact: Contact
     address: Address[] | null
+    grade: Grade
     created: Date | null
     updated: Date | null
 

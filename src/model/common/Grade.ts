@@ -1,10 +1,10 @@
 class Grade {
-    key: number
-    value: string
+    grade: number
+    title: string
 
-    constructor(key: number, value: string) {
-        this.key = key
-        this.value = value
+    constructor(grade: number, title: string) {
+        this.grade = grade
+        this.title = title
     }
 }
 
