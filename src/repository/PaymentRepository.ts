@@ -2,10 +2,10 @@ import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import { logger } from "../core/logging/Logger"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
-import ErrorType from "../core/exceptions/model/ErrorType"
+import CommonError from "../core/exceptions/constants/common-error.enum"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import CoinPayment from "../model/payment/CoinPayment"
-import { PaymentError } from "../model/payment/data/PaymentError"
+import { PaymentError } from "../core/exceptions/constants/payment-error.enum"
 
 /**
  * Repository for "v1/payment"
@@ -32,7 +32,7 @@ class PaymentRepository {
                 })
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get order detail", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get order detail", PaymentError.CAN_NOT_FOUND_TRANSACTION)
         }
     }
 
@@ -60,7 +60,7 @@ class PaymentRepository {
                 })
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get order detail", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get order detail", PaymentError.CAN_NOT_FOUND_TRANSACTION)
         }
     }
 
@@ -92,7 +92,7 @@ class PaymentRepository {
         } catch (error) {
             logger.error(error)
             if (error instanceof ErrorExceptions) throw error
-            throw ErrorExceptions.create("Can not update payment status", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not update payment status", CommonError.UNEXPECTED_ERROR)
         }
     }
 }

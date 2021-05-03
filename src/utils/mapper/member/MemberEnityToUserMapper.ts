@@ -1,4 +1,4 @@
-import {UserRoleKey} from '../../../core/constant/UserRole';
+import {UserRole} from '../../../core/constant/UserRole';
 import {MemberEntity} from '../../../entity/member/member.entitiy';
 import User from '../../../model/User';
 import Mapper from "../../../core/common/Mapper";
@@ -20,18 +20,18 @@ export class MemberEntityToUserMapper implements Mapper<MemberEntity, User> {
         return user
     }
 
-    private getUserRole(roleId: number): UserRoleKey {
+    private getUserRole(roleId: number): UserRole {
         switch (roleId) {
             case 0:
-                return UserRoleKey.ADMIN;
+                return UserRole.ADMIN;
             case 1:
-                return UserRoleKey.LEARNER;
+                return UserRole.LEARNER;
             case 2:
-                return UserRoleKey.TUTOR;
+                return UserRole.TUTOR;
             case 3:
-                return UserRoleKey.TUTOR_LEARNER;
+                return UserRole.TUTOR_LEARNER;
             default:
-                return UserRoleKey.VISITOR;
+                return UserRole.VISITOR;
         }
     }
 

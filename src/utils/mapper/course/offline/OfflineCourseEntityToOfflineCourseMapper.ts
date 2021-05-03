@@ -8,12 +8,6 @@ import Mapper from "../../../../core/common/Mapper";
 import {TutorEntityToTutorProfilePublicMapper} from "../../tutor/TutorEntityToTutorProfilePublicMapper";
 
 export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineCourseEntity, OfflineCourse> {
-    private readonly isOwner: boolean
-
-    constructor(isOwner: boolean) {
-        this.isOwner = isOwner
-    }
-
     map(from: OfflineCourseEntity): OfflineCourse {
         const course = new OfflineCourse()
         course.id = from.id
@@ -29,14 +23,9 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.grade = new Grade(from.grade.grade, from.grade.title)
         course.status = from.status
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
-        if (this.isOwner) {
-            course.requestNumber = from.requestNumber ? from.requestNumber : 0
-        }
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
         course.review = new OfflineCourseReviewToReviewMapper().toReviewArray(from.courseReview)
         course.owner = TutorEntityToTutorProfilePublicMapper.getTutorSimpleDetail(from.owner)
-
-
         return course
     }
 }

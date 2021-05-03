@@ -1,4 +1,4 @@
-import { DateTimeValue } from "../../core/constant/DateTime"
+import { DayOfWeek } from "../../core/constant/DateTime"
 import { Subject } from "../common/data/Subject"
 import { Grade } from "../common/data/Grade"
 import { CourseType } from "./data/CourseType"
@@ -9,7 +9,7 @@ class OfflineCourseForm {
   subject: Subject
   grade: Grade
   type: CourseType
-  dayOfWeek: DateTimeValue
+  dayOfWeek: DayOfWeek
   startTime: string
   endTime: string
   cost: number

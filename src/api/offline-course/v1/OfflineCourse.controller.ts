@@ -10,20 +10,24 @@ import {
     UseFilters,
     UseInterceptors
 } from "@nestjs/common"
-import {OfflineCourseService} from "./OfflineCourse.service"
-import {FailureResponseExceptionFilter} from "../../../core/exceptions/filters/FailureResponseException.filter"
-import {ErrorExceptionFilter} from "../../../core/exceptions/filters/ErrorException.filter"
-import {TransformSuccessResponse} from "../../../interceptors/TransformSuccessResponse.interceptor"
+import { OfflineCourseService } from "./OfflineCourse.service"
+import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
+import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
+import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
 import OfflineCourseForm from "../../../model/course/OfflineCourseForm"
-import {logger} from "../../../core/logging/Logger"
+import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import OfflineCourseFormValidator from "../../../utils/validator/offline-course/OfflineCourseFormValidator"
 import SuccessResponse from "../../../core/response/SuccessResponse"
-import {CurrentUser} from "../../../decorator/CurrentUser.decorator";
-import OfflineCourse from "../../../model/course/OfflineCourse";
-import {OfflineCourseEntityToOfflineCourseMapper} from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper";
-import {EnrollListMapper} from "../../../utils/mapper/course/offline/EnrollListMapper";
+import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
+import OfflineCourse from "../../../model/course/OfflineCourse"
+import { OfflineCourseEntityToOfflineCourseMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper"
+import { EnrollListMapper } from "../../../utils/mapper/course/offline/EnrollListMapper"
 import IResponse from "../../../core/response/IResponse"
+import { launch } from "../../../core/common/launch"
+import CommonError from "../../../core/exceptions/constants/common-error.enum"
+import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 /**
  * Controller for offline course
@@ -44,7 +48,7 @@ export class OfflineCourseController {
     private checkCurrentUser(userId?: string) {
         if (!userId?.isSafeNotNull()) {
             logger.error("user is invalid")
-            throw FailureResponse.create("Can not found user", HttpStatus.BAD_REQUEST)
+            throw FailureResponse.create(UserError.CAN_NOT_FIND, HttpStatus.BAD_REQUEST)
         }
     }
 
@@ -56,7 +60,7 @@ export class OfflineCourseController {
     private checkCourseId(courseId?: string) {
         if (!courseId?.isSafeNotNull()) {
             logger.error("Can not found course id")
-            throw FailureResponse.create("Can not found course id", HttpStatus.NOT_FOUND)
+            throw FailureResponse.create(UserError.CAN_NOT_FIND, HttpStatus.NOT_FOUND)
         }
     }
 
@@ -66,8 +70,8 @@ export class OfflineCourseController {
      * @param body
      */
     @Post("create")
-    async createOfflineCourse(@CurrentUser("id") currentUserId: string, @Body() body: OfflineCourseForm): Promise<IResponse<string>> {
-        try {
+    createOfflineCourse(@CurrentUser("id") currentUserId: string, @Body() body: OfflineCourseForm): Promise<IResponse<string>> {
+        return launch(async () => {
             this.checkCurrentUser(currentUserId)
 
             const data = OfflineCourseForm.createFromBody(body)
@@ -77,17 +81,13 @@ export class OfflineCourseController {
 
             if (!validate.valid) {
                 logger.error("data is invalid")
-                throw FailureResponse.create("Course data is invalid", HttpStatus.BAD_REQUEST, validate.error)
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
             const courseId = await this.service.createOfflineCourse(currentUserId, data)
 
             return SuccessResponse.create(courseId)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -96,16 +96,12 @@ export class OfflineCourseController {
      * @param currentUserId
      */
     @Get(":id")
-    async getOfflineCourseDetail(@Param("id") courseId: string, @CurrentUser("id") currentUserId?: string): Promise<IResponse<OfflineCourse>> {
-        try {
+    getOfflineCourseDetail(@Param("id") courseId: string): Promise<IResponse<OfflineCourse>> {
+        return launch(async () => {
             const courseData = await this.service.getOfflineCourseDetail(courseId)
-            const data = new OfflineCourseEntityToOfflineCourseMapper(currentUserId === courseData.owner.member.id).map(courseData)
+            const data = new OfflineCourseEntityToOfflineCourseMapper().map(courseData)
             return SuccessResponse.create(data)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -115,11 +111,11 @@ export class OfflineCourseController {
      * @param body
      */
     @Put("/:id")
-    async updateOfflineCourse(
+    updateOfflineCourse(
         @Param("id") courseId: string,
         @CurrentUser("id") currentUserId: string,
         @Body() body: OfflineCourseForm): Promise<IResponse<OfflineCourse>> {
-        try {
+        return launch(async () => {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
 
@@ -130,23 +126,19 @@ export class OfflineCourseController {
 
             if (!validate.valid) {
                 logger.error("data is invalid")
-                throw FailureResponse.create("Course data is invalid", HttpStatus.BAD_REQUEST, validate.error)
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
             const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
             if (!isOwner) {
                 logger.error("You are not a course owner.")
-                throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
+                throw FailureResponse.create(CourseError.CAN_NOT_UPDATE, HttpStatus.BAD_REQUEST)
             }
 
             const updatedCourseData = await this.service.updateOfflineCourse(courseId, currentUserId, data)
-            const offlineCourseData = new OfflineCourseEntityToOfflineCourseMapper(isOwner).map(updatedCourseData)
+            const offlineCourseData = new OfflineCourseEntityToOfflineCourseMapper().map(updatedCourseData)
             return SuccessResponse.create(offlineCourseData)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -155,8 +147,8 @@ export class OfflineCourseController {
      * @param currentUserId
      */
     @Post(":id/enroll")
-    async learnerRequestOfflineCourse(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<string>> {
-        try {
+    learnerRequestOfflineCourse(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<string>> {
+        return launch(async () => {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
 
@@ -165,11 +157,7 @@ export class OfflineCourseController {
             const result = await this.service.enrollOfflineCourse(availableCourse, currentUserId)
 
             return SuccessResponse.create(result)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -178,26 +166,22 @@ export class OfflineCourseController {
      * @param currentUserId
      */
     @Get(":id/enroll")
-    async getEnrollList(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string) {
-        try {
+    getEnrollList(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string) {
+        return launch(async () => {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
 
             const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
             if (!isOwner) {
                 logger.error("You are not a course owner.")
-                throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.BAD_REQUEST)
             }
 
             const result = await this.service.getEnrollOfflineCourseList(courseId)
             const enrollList = new EnrollListMapper().map(result)
 
             return SuccessResponse.create(enrollList)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 
     /**
@@ -208,35 +192,31 @@ export class OfflineCourseController {
      * @param action - param for manage action "approve" or "denied"
      */
     @Get(":id/accept")
-    async menageEnrollRequest(
+    manageEnrollRequest(
         @Param("id") courseId: string,
         @CurrentUser("id") currentUserId: string,
         @Query("learnerId") learnerId: string,
         @Query("action") action: string
     ): Promise<IResponse<string>> {
-        try {
+        return launch(async () => {
             this.checkCourseId(courseId)
             this.checkCurrentUser(currentUserId)
 
             if (!learnerId?.isSafeNotNull()) {
                 logger.error("Can not found learner id")
-                throw FailureResponse.create("Can not found learner id", HttpStatus.NOT_FOUND)
+                throw FailureResponse.create(CourseError.CAN_NOT_FOUND_LEARNER, HttpStatus.NOT_FOUND)
             }
 
             const availableCourse = await this.service.checkOfflineCourseAvailable(courseId)
             const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
             if (!isOwner) {
                 logger.error("You are not a course owner.")
-                throw FailureResponse.create("You are not a course owner.", HttpStatus.BAD_REQUEST)
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.BAD_REQUEST)
             }
 
             const result = await this.service.manageEnrollRequest(availableCourse, currentUserId, learnerId, action)
 
             return SuccessResponse.create(result)
-        } catch (error) {
-            logger.error(error)
-            if (error instanceof FailureResponse) throw error
-            throw FailureResponse.create(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        })
     }
 }

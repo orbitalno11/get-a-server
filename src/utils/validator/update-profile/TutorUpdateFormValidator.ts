@@ -18,7 +18,7 @@ class TutorUpdateFormValidator extends AbstractValidator<TutorUpdateForm> {
       this.errors["email"] = "email is required"
     }
 
-    if (this.form?.phoneNumber.isSafeNotNull()) {
+    if (this.form?.phoneNumber?.isSafeNotNull()) {
       if (!validator.isMobilePhone(this.form.phoneNumber, "th-TH")) this.errors["phoneNumber"] = "phone number is invalid"
     }
 

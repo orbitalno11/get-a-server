@@ -1,6 +1,6 @@
 import {HttpStatus, Injectable} from "@nestjs/common"
 import {Connection} from "typeorm"
-import {UserRoleKey} from "../../../core/constant/UserRole"
+import {UserRole} from "../../../core/constant/UserRole"
 import {logger} from "../../../core/logging/Logger"
 import {GradeEntity} from "../../../entity/common/grade.entity"
 import {RoleEntity} from "../../../entity/common/role.entity"
@@ -8,7 +8,6 @@ import {ContactEntity} from "../../../entity/contact/contact.entitiy"
 import {MemberRoleEntity} from "../../../entity/member/memberRole.entitiy"
 import {LearnerEntity} from "../../../entity/profile/learner.entity"
 import LearnerForm from "../../../model/form/register/LearnerForm"
-import FileManager from "../../../utils/files/FileManager"
 import LearnerFormToMemberEntityMapper from "../../../utils/mapper/learner/LearnerFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
 import UserManager from "../../../utils/UserManager"
@@ -51,7 +50,7 @@ export class LearnerService {
 
             const memberRole = new MemberRoleEntity()
             memberRole.member = member
-            memberRole.role = RoleEntity.createFromId(UserRoleKey.LEARNER)
+            memberRole.role = RoleEntity.createFromId(UserRole.LEARNER)
 
             member.memberRole = memberRole
 
@@ -88,14 +87,14 @@ export class LearnerService {
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRoleKey.LEARNER
+                role: UserRole.LEARNER
             })
 
             return token
         } catch (error) {
             logger.error(error)
             if (userId) {
-                this.userManager.deleteUser(userId)
+                await this.userManager.deleteUser(userId)
             }
             if (filePath) {
                 await firebaseStorageUtils.deleteImage(filePath)
@@ -145,6 +144,8 @@ export class LearnerService {
             const contact = new ContactEntity()
             contact.id = learnerProfile.contact.id
             contact.phoneNumber = data.phoneNumber
+            contact.facebookUrl = data.facebookUrl
+            contact.lineId = data.lineId
 
             const learnerEntity = new LearnerEntity()
             learnerEntity.id = `learner-${id}`
@@ -160,11 +161,6 @@ export class LearnerService {
             member.email = data.email
             member.username = data.email
             member.leanerProfile = learnerEntity
-
-            if (file !== undefined && file !== null) {
-                const fileManager = new FileManager()
-                member.profileUrl = await fileManager.convertImageToProfile(file.path, id)
-            }
 
             // update member data
             const queryRunner = this.connection.createQueryRunner()
@@ -182,13 +178,18 @@ export class LearnerService {
                 await queryRunner.release()
             }
 
+            // delete old image
+            if (oldFileUrl) {
+                await firebaseStorageUtils.deleteImage(oldFileUrl)
+            }
+
             // generate token
             const token = this.tokenManger.generateToken({
                 id: member.id,
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRoleKey.TUTOR,
+                role: UserRole.TUTOR,
             })
 
             return token

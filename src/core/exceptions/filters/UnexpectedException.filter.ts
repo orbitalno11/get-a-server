@@ -5,6 +5,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import CommonError from "../constants/common-error.enum"
 
 @Catch()
 export class UnexpectedExceptionFilter extends BaseExceptionFilter {
@@ -18,7 +19,7 @@ export class UnexpectedExceptionFilter extends BaseExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     response.status(status).json({
-      message: 'Unexpected Error',
+      message: CommonError.UNEXPECTED_ERROR,
       data: null,
       success: false,
     });

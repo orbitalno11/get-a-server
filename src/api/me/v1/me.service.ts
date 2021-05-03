@@ -1,16 +1,16 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
 import Address from "../../../model/location/Address"
 import UserManager from "../../../utils/UserManager"
 import User from "../../../model/User"
 import MeRepository from "../../../repository/MeRepository"
 import Profile from "../../../model/profile/Profile"
-import {TutorEntity} from "../../../entity/profile/tutor.entity"
-import {TutorEntityToTutorProfile} from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
-import {LearnerEntity} from "../../../entity/profile/learner.entity"
-import {LearnerEntityToLearnerProfile} from "../../../utils/mapper/learner/LearnerEntityToLearnerProfile"
-import {launch} from "../../../core/common/launch"
-import {MemberAddressToAddressMapper} from "../../../utils/mapper/location/MemberAddressToAddressMapper"
+import { TutorEntity } from "../../../entity/profile/tutor.entity"
+import { TutorEntityToTutorProfile } from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
+import { LearnerEntity } from "../../../entity/profile/learner.entity"
+import { LearnerEntityToLearnerProfile } from "../../../utils/mapper/learner/LearnerEntityToLearnerProfile"
+import { launch } from "../../../core/common/launch"
+import { MemberAddressToAddressMapper } from "../../../utils/mapper/location/MemberAddressToAddressMapper"
 
 /**
  * Service for "v1/me"
@@ -29,7 +29,7 @@ export class MeService {
      * Get user profile from user id and role
      * @param user
      */
-    async getUserProfile(user: User): Promise<Profile | null> {
+    getUserProfile(user: User): Promise<Profile | null> {
         return launch(async () => {
             const result = await this.repository.getUserProfile(user)
             if (result instanceof TutorEntity) {
@@ -46,7 +46,7 @@ export class MeService {
      * Get an user address data from user id
      * @param userId
      */
-    async getUserAddress(userId: string): Promise<Address[]> {
+    getUserAddress(userId: string): Promise<Address[]> {
         return launch(async () => {
             const result = await this.repository.getUserAddress(userId)
             return result.map(data => MemberAddressToAddressMapper(data))
@@ -58,8 +58,8 @@ export class MeService {
      * @param userId
      * @param address
      */
-    async updateUserAddress(userId: string, address: Address): Promise<void> {
-        return launch(async ()=> {
+    updateUserAddress(userId: string, address: Address): Promise<void> {
+        return launch(async () => {
             await this.repository.updateUserAddress(userId, address)
         })
     }

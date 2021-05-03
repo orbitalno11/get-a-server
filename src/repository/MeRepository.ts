@@ -2,21 +2,22 @@ import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import User from "../model/User"
 import { logger } from "../core/logging/Logger"
-import { UserRoleKey } from "../core/constant/UserRole"
+import { UserRole } from "../core/constant/UserRole"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import TutorProfile from "../model/profile/TutorProfile"
 import { LearnerEntity } from "../entity/profile/learner.entity"
 import LearnerProfile from "../model/profile/LearnerProfile"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { MemberAddressEntity } from "../entity/member/memberAddress.entity"
-import ErrorType from "../core/exceptions/model/ErrorType"
+import CommonError from "../core/exceptions/constants/common-error.enum"
 import Address from "../model/location/Address"
 import { isEmpty } from "../core/extension/CommonExtension"
 import { SubDistrictEntity } from "../entity/contact/subDistrict.entity"
 import { DistrictEntity } from "../entity/contact/district.entity"
 import { ProvinceEntity } from "../entity/contact/province.entity"
-import { LocationError } from "../core/exceptions/model/LocationError"
+import { LocationError } from "../core/exceptions/constants/location-error.enum"
 import UserManager from "../utils/UserManager"
+import UserError from "../core/exceptions/constants/user-error.enum"
 
 /**
  * Repository for "v1/me"
@@ -36,7 +37,7 @@ class MeRepository {
     async getUserProfile(user: User): Promise<TutorEntity | LearnerEntity | null> {
         try {
             switch (user.role) {
-                case UserRoleKey.TUTOR: {
+                case UserRole.TUTOR: {
                     return await this.connection.createQueryBuilder(TutorEntity, "tutor")
                         .leftJoinAndSelect("tutor.member", "member")
                         .leftJoinAndSelect("tutor.contact", "contact")
@@ -45,7 +46,7 @@ class MeRepository {
                         .setParameter("id", TutorProfile.getTutorId(user.id))
                         .getOne()
                 }
-                case UserRoleKey.LEARNER: {
+                case UserRole.LEARNER: {
                     return await this.connection
                         .createQueryBuilder(LearnerEntity, "learner")
                         .leftJoinAndSelect("learner.member", "member")
@@ -60,7 +61,7 @@ class MeRepository {
             }
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get user profile", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get user profile", UserError.CAN_NOT_FIND)
         }
     }
 
@@ -78,7 +79,7 @@ class MeRepository {
                 .getMany()
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get user address list", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not get user address list", UserError.CAN_NOT_GET_ADDRESS)
         }
     }
 
@@ -130,7 +131,7 @@ class MeRepository {
         } catch (error) {
             logger.error(error)
             if (error instanceof ErrorExceptions) throw error
-            throw ErrorExceptions.create("Can not update user addree", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not update user address", CommonError.UNEXPECTED_ERROR)
         }
     }
 }

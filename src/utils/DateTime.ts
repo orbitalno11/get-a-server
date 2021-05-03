@@ -1,49 +1,45 @@
-import {DateTimeValue, DayOfWeekTh} from "../core/constant/DateTime"
+import { DayOfWeek, DayOfWeekTh } from "../core/constant/DateTime"
 
-const getDayofWeekValue = (day: number): DateTimeValue => {
+const getDayOfWeekValue = (day: number): DayOfWeek => {
     switch (day) {
         case 1:
-            return DateTimeValue.SUN
+            return DayOfWeek.SUN
         case 2:
-            return DateTimeValue.MON
+            return DayOfWeek.MON
         case 3:
-            return DateTimeValue.TUE
+            return DayOfWeek.TUE
         case 4:
-            return DateTimeValue.WED
+            return DayOfWeek.WED
         case 5:
-            return DateTimeValue.THU
+            return DayOfWeek.THU
         case 6:
-            return DateTimeValue.FRI
+            return DayOfWeek.FRI
         case 7:
-            return DateTimeValue.SAT
+            return DayOfWeek.SAT
         default:
-            return DateTimeValue.UNKNOWN_DAY_OF_WEEK
+            return DayOfWeek.UNKNOWN_DAY_OF_WEEK
     }
 }
 
 const isDayOfWeek = (day: number): boolean => {
-    if (Number.isInteger(day) && day.isBetween(DateTimeValue.SUN, DateTimeValue.SAT)) {
-        return true
-    } else {
-        return false
-    }
+    return Number.isInteger(day) && day.isBetween(DayOfWeek.SUN, DayOfWeek.SAT);
 }
 
 const getDayOfWeekTh = (day: number): string => {
     switch (day) {
-        case DateTimeValue.SUN:
+        case DayOfWeek.SUN:
             return DayOfWeekTh.SUN
-        case DateTimeValue.MON:
+        case DayOfWeek.MON:
             return DayOfWeekTh.MON
-        case DateTimeValue.TUE:
+        case DayOfWeek.TUE:
             return DayOfWeekTh.TUE
-        case DateTimeValue.WED:
+        case DayOfWeek.WED:
             return DayOfWeekTh.WED
-        case DateTimeValue.THU:
+        case DayOfWeek.THU:
             return DayOfWeekTh.THU
-        case DateTimeValue.FRI:
+        case DayOfWeek.FRI:
             return DayOfWeekTh.FRI
-        case DateTimeValue.SAT:
+        case DayOfWeek.SAT:
             return DayOfWeekTh.SAT
         default:
             return DayOfWeekTh.UNKNOWN_DAY_OF_WEEK
@@ -51,7 +47,7 @@ const getDayOfWeekTh = (day: number): string => {
 }
 
 export {
-    getDayofWeekValue,
+    getDayOfWeekValue,
     isDayOfWeek,
     getDayOfWeekTh
 }

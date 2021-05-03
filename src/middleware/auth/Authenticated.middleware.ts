@@ -2,6 +2,7 @@ import {HttpStatus, Injectable, NestMiddleware} from "@nestjs/common"
 import {NextFunction, Request, Response} from "express"
 import TokenManager from "../../utils/token/TokenManager"
 import FailureResponse from "../../core/response/FailureResponse"
+import TokenError from "../../core/exceptions/constants/token-error.enum"
 
 @Injectable()
 class Authenticated implements NestMiddleware {
@@ -11,12 +12,12 @@ class Authenticated implements NestMiddleware {
             const token = tokenManager.extractAuthToken(req)
 
             if (!token) {
-                return FailureResponse.create("Can not found token", HttpStatus.UNAUTHORIZED)
+                return FailureResponse.create(TokenError.CAN_NOT_FOUND, HttpStatus.UNAUTHORIZED)
             }
 
             const isValidToken = await tokenManager.verifyToken(token)
             if (!isValidToken) {
-                return FailureResponse.create("Your token is invalid", HttpStatus.UNAUTHORIZED)
+                return FailureResponse.create(TokenError.INVALID, HttpStatus.UNAUTHORIZED)
             }
 
             req.currentUser = await tokenManager.decodeToken(token)

@@ -15,9 +15,10 @@ import TokenManager from "../../../utils/token/TokenManager"
 import UserManager from "../../../utils/UserManager"
 import {TutorEntity} from "../../../entity/profile/tutor.entity"
 import {ContactEntity} from "../../../entity/contact/contact.entitiy"
-import {UserRoleKey} from "../../../core/constant/UserRole"
+import {UserRole} from "../../../core/constant/UserRole"
 import {Subject} from "../../../model/common/data/Subject"
 import {FirebaseStorageUtils} from "../../../utils/files/FirebaseStorageUtils"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 @Injectable()
 export class TutorService {
@@ -49,7 +50,7 @@ export class TutorService {
 
             const memberRole = new MemberRoleEntity()
             memberRole.member = member
-            memberRole.role = RoleEntity.createFromId(UserRoleKey.TUTOR)
+            memberRole.role = RoleEntity.createFromId(UserRole.TUTOR)
 
             member.memberRole = memberRole
 
@@ -94,7 +95,7 @@ export class TutorService {
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRoleKey.TUTOR,
+                role: UserRole.TUTOR,
             })
 
             return token
@@ -146,7 +147,7 @@ export class TutorService {
             const tutorProfile = await this.getProfileById(id)
             if (isEmpty(tutorProfile)) {
                 logger.error("Can not find user data")
-                throw FailureResponse.create("Can not find user", HttpStatus.BAD_REQUEST)
+                throw FailureResponse.create(UserError.CAN_NOT_FIND, HttpStatus.BAD_REQUEST)
             }
 
             if (file !== undefined && file !== null) {
@@ -204,11 +205,13 @@ export class TutorService {
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRoleKey.TUTOR,
+                role: UserRole.TUTOR,
             })
 
             // delete old profile image
-            await firebaseStorageUtils.deleteImage(oldFileUrl)
+            if (oldFileUrl) {
+                await firebaseStorageUtils.deleteImage(oldFileUrl)
+            }
 
             return token
         } catch (error) {

@@ -13,7 +13,7 @@ import {SubjectEntity} from "../../../entity/common/subject.entity"
 import {CourseTypeEntity} from "../../../entity/course/courseType.entity"
 import TutorProfile from "../../../model/profile/TutorProfile";
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
-import {CourseError} from "../../../model/course/data/CourseError";
+import {CourseError} from "../../../core/exceptions/constants/course-error.enum";
 import {isEmpty} from "../../../core/extension/CommonExtension";
 import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
 import {LearnerEntity} from "../../../entity/profile/learner.entity";
@@ -161,12 +161,12 @@ export class OfflineCourseService {
         try {
             const offlineCourse = await this.connection.getRepository(OfflineCourseEntity).findOne(courseId)
             if (isEmpty(offlineCourse) || offlineCourse.status !== CourseStatus.OPEN) {
-                throw ErrorExceptions.create("The selected course is not available", CourseError.COURSE_NOT_AVAILABLE)
+                throw ErrorExceptions.create("The selected course is not available", CourseError.NOT_AVAILABLE)
             }
             return offlineCourse
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("The selected course is not available", CourseError.COURSE_NOT_AVAILABLE)
+            throw ErrorExceptions.create("The selected course is not available", CourseError.NOT_AVAILABLE)
         }
     }
 
@@ -200,7 +200,7 @@ export class OfflineCourseService {
             if (enrolled === undefined) {
                 enrolled = new OfflineCourseLeanerRequestEntity()
             } else if (enrolled.status === EnrollStatus.WAITING_FOR_APPROVE || enrolled.status === EnrollStatus.APPROVE) {
-                return "Sorry, You already sent a request for enroll this course. Please, waiting for tutor approve your request."
+                return CourseError.ALREADY_ENROLL
             }
 
             course.requestNumber++
@@ -220,12 +220,12 @@ export class OfflineCourseService {
             } catch (error) {
                 logger.error(error)
                 await queryRunner.rollbackTransaction()
-                throw ErrorExceptions.create("Can not enroll this course", CourseError.CAN_NOT_ENROLL_COURSE)
+                throw ErrorExceptions.create("Can not enroll this course", CourseError.CAN_NOT_ENROLL)
             } finally {
                 await queryRunner.release()
             }
 
-            return "Successfully, You sent a request for enroll this course."
+            return CourseError.ENROLL_SUCCESS
         } catch (error) {
             logger.error(error)
             throw error
@@ -297,7 +297,7 @@ export class OfflineCourseService {
             } catch (error) {
                 logger.error(error)
                 await queryRunner.rollbackTransaction()
-                throw ErrorExceptions.create("Can not make action with this request", CourseError.CAN_NOT_ENROLL_COURSE)
+                throw ErrorExceptions.create("Can not make action with this request", CourseError.CAN_NOT_ENROLL)
             } finally {
                 await queryRunner.release()
             }

@@ -4,7 +4,7 @@ import { v4 as UUID } from "uuid"
 import * as config from "../configs/EnvironmentConfig"
 import { logger } from "../core/logging/Logger"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
-import ErrorType from "../core/exceptions/model/ErrorType"
+import CommonError from "../core/exceptions/constants/common-error.enum"
 import ScbQrCodePayload from "../model/payment/ScbQrCodePayload"
 import ScbTokenResponse from "../model/payment/ScbTokenResponse"
 import ScbPaymentResponse from "../model/payment/ScbPaymentResponse"
@@ -119,7 +119,7 @@ class PaymentManager {
             return result?.data?.qrImage
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not create QR code", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not create QR code", CommonError.UNEXPECTED_ERROR)
         }
     }
 
@@ -163,7 +163,7 @@ class PaymentManager {
             return result?.data?.deeplinkUrl
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not create payment link", ErrorType.UNEXPECTED_ERROR)
+            throw ErrorExceptions.create("Can not create payment link", CommonError.UNEXPECTED_ERROR)
         }
     }
 }

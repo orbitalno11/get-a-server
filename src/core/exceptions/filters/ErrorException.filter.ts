@@ -13,7 +13,7 @@ export class ErrorExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse();
 
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-      message: exception.message,
+      message: exception.type,
       data: null,
       success: false,
     });

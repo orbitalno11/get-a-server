@@ -15,6 +15,7 @@ import IResponse from "../../../core/response/IResponse"
 import User from "../../../model/User"
 import {launch} from "../../../core/common/launch"
 import Profile from "../../../model/profile/Profile"
+import CommonError from "../../../core/exceptions/constants/common-error.enum"
 
 /**
  * @author orbitalno11 2021 A.D.
@@ -60,7 +61,7 @@ export class MeController {
 
             if (!validateResult.valid) {
                 logger.error("Address data is invalid")
-                throw FailureResponse.create("Address data is invalid", HttpStatus.BAD_REQUEST, validateResult.error)
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validateResult.error)
             }
 
             await this.service.updateUserAddress(currentUserId, AddressFormToAddressMapper(data))

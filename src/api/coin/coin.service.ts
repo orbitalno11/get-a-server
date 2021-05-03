@@ -5,12 +5,11 @@ import CoinRate from "../../model/coin/CoinRate"
 import { logger } from "../../core/logging/Logger"
 import { CoinRateFormToExchangeRateEntityMapper } from "../../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
-import { CoinError } from "../../core/exceptions/model/CoinError"
+import { CoinError } from "../../core/exceptions/constants/coin.error"
 import CoinRepository from "../../repository/CoinRepository"
 import { ExchangeRateEntityToCoinRateMapper } from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
-import { UserRoleKey } from "../../core/constant/UserRole"
+import { UserRole } from "../../core/constant/UserRole"
 import { launch } from "../../core/common/launch"
-import PaymentManager from "../../payment/PaymentManager"
 import CoinPayment from "../../model/payment/CoinPayment"
 import * as config from "../../configs/EnvironmentConfig"
 
@@ -22,8 +21,7 @@ import * as config from "../../configs/EnvironmentConfig"
 export class CoinService {
     constructor(
         private readonly connection: Connection,
-        private readonly repository: CoinRepository,
-        private readonly paymentManager: PaymentManager
+        private readonly repository: CoinRepository
     ) {
     }
 
@@ -59,7 +57,7 @@ export class CoinService {
      * Get coin rate depend on user role
      * @param userRole
      */
-    async getCoinRateList(userRole: UserRoleKey): Promise<CoinRate[]> {
+    async getCoinRateList(userRole: UserRole): Promise<CoinRate[]> {
         try {
             const result = await this.repository.getCoinRateList(userRole)
             return result.map(data => ExchangeRateEntityToCoinRateMapper(data))
