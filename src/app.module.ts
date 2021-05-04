@@ -19,7 +19,9 @@ import { VerifyModule } from "./api/verify/v1/verify.module"
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({
+            envFilePath: `.env.${process.env.NODE_ENV}`
+        }),
         TypeOrmModule.forRoot(ormConfig),
         AuthenticationModule,
         TutorModule,

@@ -12,20 +12,20 @@ import UserManager from "../../../utils/UserManager"
 import { TutorEntity } from "../../../entity/profile/tutor.entity"
 import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
-import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 import {UserRole} from "../../../core/constant/UserRole"
+import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 
 @Injectable()
 export class TutorService {
     constructor(
         private connection: Connection,
         private readonly userManager: UserManager,
-        private readonly tokenManager: TokenManager
+        private readonly tokenManager: TokenManager,
+        private readonly fileStorageUtils: FileStorageUtils
     ) {
     }
 
     async createTutor(data: TutorForm, file: Express.Multer.File): Promise<string> {
-        const firebaseStorageUtils = new FirebaseStorageUtils()
         let userId: string
         let filePath: string
         try {
@@ -35,7 +35,7 @@ export class TutorService {
             userId = user.uid
 
             // set profile image path
-            filePath = await firebaseStorageUtils.uploadImage("profile", userId, file)
+            filePath = await this.fileStorageUtils.uploadImageTo(file, userId, "profile")
 
             // create entity
             const member = TutorFormToMemberEntityMapper(data)
@@ -102,7 +102,7 @@ export class TutorService {
                 await this.userManager.deleteUser(userId)
             }
             if (filePath) {
-                await firebaseStorageUtils.deleteImage(filePath)
+                await this.fileStorageUtils.deleteFileFromUrl(filePath)
             }
             throw error
         }

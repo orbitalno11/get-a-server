@@ -8,14 +8,16 @@ import TokenManager from "./token/TokenManager"
 import UserManager from "./UserManager"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import { LearnerEntity } from "../entity/profile/learner.entity"
+import { FileStorageUtils } from "./files/FileStorageUtils"
+import { ImageUtils } from "./files/ImageUtils"
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([MemberEntity, MemberRoleEntity, RoleEntity, TutorEntity, LearnerEntity]),
         CoreModule
     ],
-    providers: [TokenManager, UserManager],
-    exports: [TokenManager, UserManager]
+    providers: [TokenManager, UserManager, FileStorageUtils, ImageUtils],
+    exports: [TokenManager, UserManager, FileStorageUtils]
 })
 export class UtilityModule {
 }

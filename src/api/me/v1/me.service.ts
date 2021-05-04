@@ -10,7 +10,6 @@ import { LearnerEntityToLearnerProfile } from "../../../utils/mapper/learner/Lea
 import { launch } from "../../../core/common/launch"
 import { MemberAddressToAddressMapper } from "../../../utils/mapper/location/MemberAddressToAddressMapper"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
-import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 import { logger } from "../../../core/logging/Logger"
 import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import { UserRole } from "../../../core/constant/UserRole"
@@ -20,6 +19,7 @@ import CoinBalance from "../../../model/coin/CoinBalance"
 import CoinTransaction from "../../../model/coin/CoinTransaction"
 import { ExchangeTransactionToRedeemListMapper } from "../../../utils/mapper/coin/ExchangeTransactionToRedeemList.mapper"
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
+import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 
 /**
  * Service for "v1/me"
@@ -28,7 +28,8 @@ import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 @Injectable()
 export class MeService {
     constructor(
-        private readonly repository: MeRepository
+        private readonly repository: MeRepository,
+        private readonly fileStorageUtils: FileStorageUtils
     ) {
     }
 
@@ -56,7 +57,6 @@ export class MeService {
      * @param file
      */
     async updateUserProfile(user: User, data: UpdateProfileForm, file?: Express.Multer.File) {
-        const firebaseStorageUtils = new FirebaseStorageUtils()
         let newFileUrl: string
         let oldFileUrl: string
         try {
@@ -68,7 +68,7 @@ export class MeService {
 
             if (file) {
                 oldFileUrl = userProfile.member?.profileUrl
-                newFileUrl = await firebaseStorageUtils.uploadImage("profile", userProfile.member?.id, file)
+                newFileUrl = await this.fileStorageUtils.uploadImageTo(file, userProfile.member?.id, "profile")
             }
 
             if (user.role === UserRole.LEARNER && userProfile instanceof LearnerEntity) {
@@ -81,12 +81,12 @@ export class MeService {
             }
 
             if (oldFileUrl) {
-                await firebaseStorageUtils.deleteImage(oldFileUrl)
+                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
             }
         } catch (error) {
             logger.error(error)
             if (newFileUrl) {
-                await firebaseStorageUtils.deleteImage(newFileUrl)
+                await this.fileStorageUtils.deleteFileFromUrl(newFileUrl)
             }
             throw error
         }

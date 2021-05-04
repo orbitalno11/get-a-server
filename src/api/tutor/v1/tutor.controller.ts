@@ -18,7 +18,6 @@ import { TransformSuccessResponse } from "../../../interceptors/TransformSuccess
 import TutorForm from "../../../model/form/register/TutorForm"
 import { TutorService } from "./tutor.service"
 import { FileInterceptor } from "@nestjs/platform-express"
-import UploadImageUtil from "../../../utils/multer/UploadImageUtils"
 import FailureResponse from "../../../core/response/FailureResponse"
 import TutorRegisterFormValidator from "../../../utils/validator/register/TutorRegisterFormValidator"
 import { isEmpty } from "../../../core/extension/CommonExtension"
@@ -29,6 +28,7 @@ import { launch } from "../../../core/common/launch"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import FileError from "../../../core/exceptions/constants/file-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
+import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -38,7 +38,7 @@ export class TutorController {
     }
 
     @Post("create")
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtil().uploadImage2MbProperty()))
+    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImage2MbProperty()))
     createTutor(@UploadedFile() file: Express.Multer.File, @Body() body: TutorForm): Promise<SuccessResponse<string>> {
         return launch(async () => {
             const data = TutorForm.createFromBody(body)

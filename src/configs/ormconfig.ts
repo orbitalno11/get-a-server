@@ -1,9 +1,9 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm"
 import {
-    getDatabaseHost,
-    getDatabaseName,
-    getDatabasePassword,
-    getDatabaseUser
+    DATABASE_HOST,
+    DATABASE_NAME,
+    DATABASE_USER,
+    DATABASE_PASSWORD
 } from "./EnvironmentConfig"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import { MemberEntity } from "../entity/member/member.entitiy"
@@ -38,11 +38,11 @@ import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
-    host: getDatabaseHost(),
+    host: DATABASE_HOST,
     port: 3306,
-    username: getDatabaseUser(),
-    password: getDatabasePassword(),
-    database: getDatabaseName(),
+    username: DATABASE_USER,
+    password: DATABASE_PASSWORD,
+    database: DATABASE_NAME,
     synchronize: false,
     entities: [
         MemberEntity,

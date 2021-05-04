@@ -27,7 +27,6 @@ import { launch } from "../../../core/common/launch"
 import Profile from "../../../model/profile/Profile"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { FileInterceptor } from "@nestjs/platform-express"
-import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import UpdateProfileFormValidator from "../../../utils/validator/update-profile/UpdateProfileFormValidator"
 import { CoinHistory } from "../../../model/coin/data/CoinHistory.enum"
@@ -35,6 +34,7 @@ import CoinTransaction from "../../../model/coin/CoinTransaction"
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import CoinBalance from "../../../model/coin/CoinBalance"
 import { UserRole } from "../../../core/constant/UserRole"
+import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 
 /**
  * Class for "v1/me" controller
@@ -66,7 +66,7 @@ export class MeController {
      * @param file
      */
     @Post()
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtils().uploadImage2MbProperty("profile")))
+    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImage2MbProperty()))
     updateUserProfile(
         @CurrentUser() currentUser: User,
         @Body() body: UpdateProfileForm,

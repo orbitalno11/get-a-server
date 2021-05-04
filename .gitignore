@@ -34,10 +34,14 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-.env
 serviceAccountKey.json
 jwtRS256.key
 jwtRS256.key.pub
 /myScript
 /uploads
 /firebase
+
+.env
+.env.debug
+.env.dev
+.env.local
