@@ -15,6 +15,7 @@ import { CoinEntity } from "../coins/coin.entity"
 import { ExchangeTransactionEntity } from "../coins/exchangeTransaction.entity"
 import { LearnerEntity } from "../profile/learner.entity"
 import { PaymentTransactionEntity } from "../payment/PaymentTransaction.entity"
+import { CoinTransactionEntity } from "../coins/CoinTransaction.entity"
 
 @Entity("member")
 export class MemberEntity {
@@ -86,6 +87,12 @@ export class MemberEntity {
 
     @OneToOne(() => CoinEntity, (coin) => coin.member)
     coins: CoinEntity
+
+    @OneToMany(
+        () => CoinTransactionEntity,
+        (transaction) => transaction.member
+    )
+    coinTransaction: CoinTransactionEntity[]
 
     @OneToMany(
         () => ExchangeTransactionEntity,

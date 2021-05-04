@@ -6,6 +6,11 @@ import CommonError from "../core/exceptions/constants/common-error.enum"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import CoinPayment from "../model/payment/CoinPayment"
 import { PaymentError } from "../core/exceptions/constants/payment-error.enum"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import { MemberEntity } from "../entity/member/member.entitiy"
+import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
+import { CoinTransactionType } from "../model/coin/data/CoinTransactionType.enum"
+import { ExchangeRateEntity } from "../entity/coins/exchangeRate.entity"
 
 /**
  * Repository for "v1/payment"
@@ -54,7 +59,8 @@ class PaymentRepository {
                     join: {
                         alias: "transaction",
                         leftJoinAndSelect: {
-                            member: "transaction.member"
+                            member: "transaction.member",
+                            exchangeRate: "transaction.exchangeRate"
                         }
                     }
                 })
@@ -75,12 +81,24 @@ class PaymentRepository {
             updatePayment.paymentTransId = paymentDetail.paymentTransId
             updatePayment.paymentStatus = paymentDetail.status
 
+            const member = new MemberEntity()
+            member.id = paymentDetail.userId
+
             // update entity
             const queryRunner = this.connection.createQueryRunner()
             try {
                 await queryRunner.connect()
                 await queryRunner.startTransaction()
+
+                const coinRate = await queryRunner.manager.findOne(ExchangeRateEntity, { id: paymentDetail.coinRate })
+                const coinResult = await queryRunner.manager.findOne(CoinEntity, { member: member })
+                const coin = this.createCoinEntity(coinResult, member, coinRate?.coin)
+                const transaction = this.createCoinTransaction(paymentDetail.transactionId, coinRate?.coin, member)
+
                 await queryRunner.manager.save(updatePayment)
+                await queryRunner.manager.save(transaction)
+                await queryRunner.manager.save(coin)
+
                 await queryRunner.commitTransaction()
             } catch (error) {
                 logger.error(error)
@@ -94,6 +112,51 @@ class PaymentRepository {
             if (error instanceof ErrorExceptions) throw error
             throw ErrorExceptions.create("Can not update payment status", CommonError.UNEXPECTED_ERROR)
         }
+    }
+
+    /**
+     * Create CoinEntity with update data
+     * @param coinEntity
+     * @param member
+     * @param numberOfCoin
+     * @private
+     */
+    private createCoinEntity(
+        coinEntity: CoinEntity,
+        member: MemberEntity,
+        numberOfCoin: number
+    ): CoinEntity {
+        let coin
+        if (coinEntity) {
+            coin = coinEntity
+        } else {
+            coin = new CoinEntity()
+            coin.member = member
+            coin.amount = 0
+        }
+        coin.amount += numberOfCoin
+        return coin
+    }
+
+    /**
+     * Create transaction entity
+     * @param transactionId
+     * @param numberOfCoin
+     * @param member
+     * @private
+     */
+    private createCoinTransaction(
+        transactionId: string,
+        numberOfCoin: number,
+        member: MemberEntity
+    ): CoinTransactionEntity {
+        const transaction = new CoinTransactionEntity()
+        transaction.transactionId = transactionId
+        transaction.member = member
+        transaction.transactionType = CoinTransactionType.DEPOSIT
+        transaction.numberOfCoin = numberOfCoin
+        transaction.transactionDate = new Date()
+        return transaction
     }
 }
 
