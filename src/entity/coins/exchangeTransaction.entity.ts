@@ -7,7 +7,7 @@ export class ExchangeTransactionEntity {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column()
+    @Column({ default: new Date() })
     requestDate: Date
 
     @Column()
@@ -15,6 +15,9 @@ export class ExchangeTransactionEntity {
 
     @Column()
     transferDate: Date
+
+    @Column({ name: "request_status" })
+    requestStatus: number
 
     // entity relation
     @ManyToOne(() => MemberEntity, (member) => member.exchangeTransaction)

@@ -1,5 +1,15 @@
 import { MeService } from "./me.service"
-import { Body, Controller, Get, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Post,
+    Query,
+    UploadedFile,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
@@ -20,6 +30,11 @@ import { FileInterceptor } from "@nestjs/platform-express"
 import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import UpdateProfileFormValidator from "../../../utils/validator/update-profile/UpdateProfileFormValidator"
+import { CoinHistory } from "../../../model/coin/data/CoinHistory.enum"
+import CoinTransaction from "../../../model/coin/CoinTransaction"
+import RedeemTransaction from "../../../model/coin/RedeemTransaction"
+import CoinBalance from "../../../model/coin/CoinBalance"
+import { UserRole } from "../../../core/constant/UserRole"
 
 /**
  * Class for "v1/me" controller
@@ -107,6 +122,40 @@ export class MeController {
             await this.service.updateUserAddress(currentUserId, AddressFormToAddressMapper(data))
 
             return SuccessResponse.create("Successfully")
+        })
+    }
+
+    /**
+     * Get User coin detail by type
+     * @param currentUser
+     * @param type
+     */
+    @Get("coin")
+    getCoinHistory(@CurrentUser() currentUser: User, @Query("type") type: CoinHistory): Promise<IResponse<CoinBalance | CoinTransaction[] | RedeemTransaction[] | null>> {
+        return launch(async () => {
+            let result = null
+            switch (Number(type)) {
+                case CoinHistory.BALANCE: {
+                    result = await this.service.getCoinBalance(currentUser)
+                    break
+                }
+                case CoinHistory.TRANSACTION: {
+                    result = await this.service.getCoinTransaction(currentUser)
+                    break
+                }
+                case CoinHistory.REDEEM: {
+                    if (currentUser.role === UserRole.TUTOR) {
+                        result = await this.service.getRedeemTransaction(currentUser)
+                    } else {
+                        result = null
+                    }
+                    break
+                }
+                default: {
+                    break
+                }
+            }
+            return SuccessResponse.create(result)
         })
     }
 }
