@@ -1,7 +1,7 @@
 import * as multer from "multer"
 
 class UploadImageUtils {
-    public uploadImage2MbProperty(dest = "") {
+    public uploadImage2MbProperty() {
         return {
             storage: multer.memoryStorage(),
             limits: {

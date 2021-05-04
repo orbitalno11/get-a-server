@@ -38,7 +38,7 @@ export class TutorController {
     }
 
     @Post("create")
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtil().uploadImage2MbProperty("profile")))
+    @UseInterceptors(FileInterceptor("image", new UploadImageUtil().uploadImage2MbProperty()))
     createTutor(@UploadedFile() file: Express.Multer.File, @Body() body: TutorForm): Promise<SuccessResponse<string>> {
         return launch(async () => {
             const data = TutorForm.createFromBody(body)

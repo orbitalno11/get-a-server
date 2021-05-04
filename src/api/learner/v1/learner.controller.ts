@@ -39,7 +39,7 @@ export class LearnerController {
     @UseInterceptors(
         FileInterceptor(
             "image",
-            new UploadImageUtils().uploadImage2MbProperty("profile")
+            new UploadImageUtils().uploadImage2MbProperty()
         )
     )
     createLearner(
