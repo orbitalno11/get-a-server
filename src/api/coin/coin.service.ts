@@ -7,7 +7,7 @@ import { CoinRateFormToExchangeRateEntityMapper } from "../../utils/mapper/coin/
 import ErrorExceptions from "../../core/exceptions/ErrorExceptions"
 import { CoinError } from "../../core/exceptions/constants/coin.error"
 import CoinRepository from "../../repository/CoinRepository"
-import { ExchangeRateEntityToCoinRateMapper } from "../../utils/mapper/coin/ExchangeRateEntityToCoinRateMapper"
+import { ExchangeRateEntityToCoinRateMapper } from "../../utils/mapper/coin/ExchangeRateEntityToCoinRate.mapper"
 import { UserRole } from "../../core/constant/UserRole"
 import { launch } from "../../core/common/launch"
 import CoinPayment from "../../model/payment/CoinPayment"

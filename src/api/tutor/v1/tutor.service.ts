@@ -1,31 +1,26 @@
-import {HttpStatus, Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
-import {isEmpty} from "../../../core/extension/CommonExtension"
-import {logger} from "../../../core/logging/Logger"
-import FailureResponse from "../../../core/response/FailureResponse"
-import {InterestedSubjectEntity} from "../../../entity/member/interestedSubject.entity"
-import {MemberEntity} from "../../../entity/member/member.entitiy"
-import {MemberRoleEntity} from "../../../entity/member/memberRole.entitiy"
-import {RoleEntity} from "../../../entity/common/role.entity"
-import {SubjectEntity} from "../../../entity/common/subject.entity"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
+import { logger } from "../../../core/logging/Logger"
+import { InterestedSubjectEntity } from "../../../entity/member/interestedSubject.entity"
+import { MemberRoleEntity } from "../../../entity/member/memberRole.entitiy"
+import { RoleEntity } from "../../../entity/common/role.entity"
+import { SubjectEntity } from "../../../entity/common/subject.entity"
 import TutorForm from "../../../model/form/register/TutorForm"
-import TutorUpdateForm from "../../../model/form/update/TutorUpdateForm"
 import TutorFormToMemberEntityMapper from "../../../utils/mapper/tutor/TutorFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
 import UserManager from "../../../utils/UserManager"
-import {TutorEntity} from "../../../entity/profile/tutor.entity"
-import {ContactEntity} from "../../../entity/contact/contact.entitiy"
+import { TutorEntity } from "../../../entity/profile/tutor.entity"
+import { ContactEntity } from "../../../entity/contact/contact.entitiy"
+import { Subject } from "../../../model/common/data/Subject"
+import { FirebaseStorageUtils } from "../../../utils/files/FirebaseStorageUtils"
 import {UserRole} from "../../../core/constant/UserRole"
-import {Subject} from "../../../model/common/data/Subject"
-import {FirebaseStorageUtils} from "../../../utils/files/FirebaseStorageUtils"
-import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 @Injectable()
 export class TutorService {
     constructor(
         private connection: Connection,
         private readonly userManager: UserManager,
-        private readonly tokenManager: TokenManager,
+        private readonly tokenManager: TokenManager
     ) {
     }
 
@@ -95,7 +90,7 @@ export class TutorService {
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRole.TUTOR,
+                role: UserRole.TUTOR
             })
 
             return token
@@ -135,90 +130,6 @@ export class TutorService {
                 .getOne()
         } catch (error) {
             logger.error(error)
-            throw error
-        }
-    }
-
-    async updateProfile(id: string, data: TutorUpdateForm, file: Express.Multer.File | null): Promise<string> {
-        const firebaseStorageUtils = new FirebaseStorageUtils()
-        let newFileUrl: string
-        let oldFileUrl: string
-        try {
-            const tutorProfile = await this.getProfileById(id)
-            if (isEmpty(tutorProfile)) {
-                logger.error("Can not find user data")
-                throw FailureResponse.create(UserError.CAN_NOT_FIND, HttpStatus.BAD_REQUEST)
-            }
-
-            if (file !== undefined && file !== null) {
-                oldFileUrl = tutorProfile.member.profileUrl
-                newFileUrl = await firebaseStorageUtils.uploadImage("profile", id, file)
-                data.profileUrl = newFileUrl
-            }
-
-            // update user email if change email
-            if (tutorProfile.member.email !== data.email) {
-                await this.userManager.editUserEmail(id, data.email)
-            }
-
-            const contact = new ContactEntity()
-            contact.id = tutorProfile.contact.id
-            contact.phoneNumber = data.phoneNumber
-            contact.lineId = data.lineId
-            contact.facebookUrl = data.facebookUrl
-
-            const tutorEntity = new TutorEntity()
-            tutorEntity.id = `tutor-${id}`
-            tutorEntity.introduction = data.introduction
-            tutorEntity.contact = contact
-
-            const member = new MemberEntity()
-            member.id = id
-            member.firstname = data.firstname
-            member.lastname = data.lastname
-            member.gender = data.gender
-            member.dateOfBirth = data.dateOfBirth
-            member.email = data.email
-            member.username = data.username
-            member.profileUrl = data.profileUrl
-            member.tutorProfile = tutorEntity
-
-            // update member data
-            const queryRunner = this.connection.createQueryRunner()
-            try {
-                await queryRunner.connect()
-                await queryRunner.startTransaction()
-                await queryRunner.manager.save(contact)
-                await queryRunner.manager.save(member)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                logger.error(error)
-                await queryRunner.rollbackTransaction()
-                throw error
-            } finally {
-                await queryRunner.release()
-            }
-
-            // generate token
-            const token = this.tokenManager.generateToken({
-                id: member.id,
-                email: member.email,
-                username: member.username,
-                profileUrl: member.profileUrl,
-                role: UserRole.TUTOR,
-            })
-
-            // delete old profile image
-            if (oldFileUrl) {
-                await firebaseStorageUtils.deleteImage(oldFileUrl)
-            }
-
-            return token
-        } catch (error) {
-            logger.error(error)
-            if (newFileUrl) {
-                await firebaseStorageUtils.deleteImage(newFileUrl)
-            }
             throw error
         }
     }

@@ -2,7 +2,7 @@ import {ExchangeRateEntity} from "../../../../entity/coins/exchangeRate.entity";
 import {CoinRateType} from "../../../../model/coin/data/CoinRateType";
 import * as MockDate from "mockdate";
 import CoinRate from "../../../../model/coin/CoinRate"
-import {ExchangeRateEntityToCoinRateMapper} from "../ExchangeRateEntityToCoinRateMapper"
+import {ExchangeRateEntityToCoinRateMapper} from "../ExchangeRateEntityToCoinRate.mapper"
 
 describe("exchange rate entity to coin rate mapper", () => {
     test("map success", () => {

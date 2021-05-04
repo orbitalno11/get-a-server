@@ -6,7 +6,6 @@ import {
     HttpStatus,
     Param,
     Post,
-    Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -23,8 +22,6 @@ import UploadImageUtil from "../../../utils/multer/UploadImageUtils"
 import FailureResponse from "../../../core/response/FailureResponse"
 import TutorRegisterFormValidator from "../../../utils/validator/register/TutorRegisterFormValidator"
 import { isEmpty } from "../../../core/extension/CommonExtension"
-import TutorUpdateForm from "../../../model/form/update/TutorUpdateForm"
-import TutorUpdateFormValidator from "../../../utils/validator/update-profile/TutorUpdateFormValidator"
 import TutorProfile from "../../../model/profile/TutorProfile"
 import { TutorEntityToTutorProfile } from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
@@ -86,40 +83,6 @@ export class TutorController {
             }
 
             return SuccessResponse.create(new TutorEntityToTutorProfile().map(tutorData))
-        })
-    }
-
-    @Put(":id")
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtil().uploadImage2MbProperty("profile")))
-    async updateProfile(
-        @Param("id") id: string,
-        @UploadedFile() file: Express.Multer.File,
-        @Body() body: TutorUpdateForm,
-        @CurrentUser("id") currentUserId: string
-    ): Promise<SuccessResponse<string>> {
-        return launch(async () => {
-            if (!id.isSafeNotNull()) {
-                logger.error("Can not found user id")
-                throw FailureResponse.create(UserError.CAN_NOT_FOUND_ID, HttpStatus.NOT_FOUND)
-            }
-
-            if (id !== currentUserId) {
-                logger.error("You don't have permission")
-                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
-            }
-
-            const data = TutorUpdateForm.createFromBody(body)
-            const validator = new TutorUpdateFormValidator()
-            validator.setData(data)
-            const validate = validator.validate()
-
-            if (!validate.valid) {
-                logger.error("validation error")
-                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
-            }
-
-            const result = await this.tutorService.updateProfile(id, data, file)
-            return SuccessResponse.create(result)
         })
     }
 }
