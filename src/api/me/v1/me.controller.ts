@@ -6,7 +6,7 @@ import {
     HttpStatus,
     Post,
     Query,
-    UploadedFile,
+    UploadedFile, UploadedFiles,
     UseFilters,
     UseInterceptors
 } from "@nestjs/common"
@@ -26,7 +26,7 @@ import User from "../../../model/User"
 import { launch } from "../../../core/common/launch"
 import Profile from "../../../model/profile/Profile"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
-import { FileInterceptor } from "@nestjs/platform-express"
+import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import UpdateProfileFormValidator from "../../../utils/validator/update-profile/UpdateProfileFormValidator"
 import { CoinHistory } from "../../../model/coin/data/CoinHistory.enum"
@@ -35,6 +35,7 @@ import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import CoinBalance from "../../../model/coin/CoinBalance"
 import { UserRole } from "../../../core/constant/UserRole"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
+import FileError from "../../../core/exceptions/constants/file-error.enum"
 
 /**
  * Class for "v1/me" controller
@@ -155,6 +156,34 @@ export class MeController {
                     break
                 }
             }
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Request identity verification
+     * @param files
+     * @param currentUser
+     */
+    @Post("identity")
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "idCard", maxCount: 1 },
+            { name: "face", maxCount: 1 },
+            { name: "idCardWithFace", maxCount: 1 }
+        ], new UploadFileUtils().uploadImage())
+    )
+    requestVerifyIdentity(@UploadedFiles() files, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
+        return launch( async () => {
+            const card = files.idCard[0]
+            const face = files.face[0]
+            const cardFace = files.idCardWithFace[0]
+
+            if (!card || !face || !cardFace) {
+                throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
+            }
+
+            const result = await this.service.requestIdentifyVerify(currentUser, card, face, cardFace)
             return SuccessResponse.create(result)
         })
     }

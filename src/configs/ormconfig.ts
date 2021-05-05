@@ -35,6 +35,7 @@ import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/o
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
+import { UserVerifyEntity } from "../entity/UserVerify.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -74,7 +75,8 @@ const ormConfig: TypeOrmModuleOptions = {
         OfflineCourseEntity,
         OfflineCourseRatingEntity,
         OfflineCourseRatingTransactionEntity,
-        OfflineCourseLeanerRequestEntity
+        OfflineCourseLeanerRequestEntity,
+        UserVerifyEntity
     ]
 }
 

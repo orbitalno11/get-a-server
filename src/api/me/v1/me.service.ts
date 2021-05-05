@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from "@nestjs/common"
+import { v4 as uuid } from "uuid"
 import Address from "../../../model/location/Address"
 import User from "../../../model/User"
 import MeRepository from "../../../repository/MeRepository"
@@ -20,6 +21,7 @@ import CoinTransaction from "../../../model/coin/CoinTransaction"
 import { ExchangeTransactionToRedeemListMapper } from "../../../utils/mapper/coin/ExchangeTransactionToRedeemList.mapper"
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 
 /**
  * Service for "v1/me"
@@ -119,7 +121,7 @@ export class MeService {
      * @param user
      */
     getCoinBalance(user: User): Promise<CoinBalance> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getUserCoinBalance(user)
             const balance = new CoinBalance()
             balance.amount = result?.amount.isSafeNumber() ? result?.amount : 0
@@ -133,7 +135,7 @@ export class MeService {
      * @param user
      */
     getCoinTransaction(user: User): Promise<CoinTransaction[]> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getUserCoinTransaction(user)
             return result.map((item) => CoinTransaction.createFormEntity(item))
         })
@@ -144,9 +146,46 @@ export class MeService {
      * @param user
      */
     getRedeemTransaction(user: User): Promise<RedeemTransaction[]> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getUserCoinRedeemTransaction(user)
             return ExchangeTransactionToRedeemListMapper(result)
         })
+    }
+
+    /**
+     * Request identity verification
+     * @param user
+     * @param idCard
+     * @param face
+     * @param idCardWithFace
+     */
+    async requestIdentifyVerify(
+        user: User,
+        idCard: Express.Multer.File,
+        face: Express.Multer.File,
+        idCardWithFace: Express.Multer.File
+    ): Promise<boolean> {
+        let cardUrl = ""
+        let faceUrl = ""
+        let cardFaceUrl = ""
+        try {
+            const requestId = uuid()
+            cardUrl = await this.fileStorageUtils.uploadImageTo(idCard, user.id, "verify", 1280, 720)
+            faceUrl = await this.fileStorageUtils.uploadImageTo(face, user.id, "verify", 1280, 720)
+            cardFaceUrl = await this.fileStorageUtils.uploadImageTo(idCardWithFace, user.id, "verify", 1280, 720)
+            return await this.repository.requestVerifyIdentity(requestId, user, cardUrl, faceUrl, cardFaceUrl)
+        } catch (error) {
+            logger.error(error)
+            if (cardUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(cardUrl)
+            }
+            if (faceUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(faceUrl)
+            }
+            if (cardFaceUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(cardFaceUrl)
+            }
+            throw ErrorExceptions.create("Can not request verify", UserError.CAN_NOT_REQUEST_VERIFY)
+        }
     }
 }

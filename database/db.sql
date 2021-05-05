@@ -182,6 +182,17 @@ create table education_history(
     CONSTRAINT `FK_ECUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id)
 );
 
+create table user_verify(
+    id varchar(255) not null,
+    member_id varchar(255) not null,
+    documentUrl1 varchar(255),
+    documentUrl2 varchar(255),
+    documentUrl3 varchar(255),
+    verify_type smallint UNSIGNED not null,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
+);
+
 -- coin
 create table exchange_rate(
     id int not null AUTO_INCREMENT,
