@@ -30,4 +30,24 @@ export class VerifyService {
             await this.repository.deniedEducation(requestId)
         })
     }
+
+    /**
+     * Approved testing verification
+     * @param requestId
+     */
+    approvedTesting(requestId: string) {
+        return launch(async () => {
+            await this.repository.approvedTesting(requestId)
+        })
+    }
+
+    /**
+     * Denied testing verification
+     * @param requestId
+     */
+    deniedTesting(requestId: string) {
+        return launch(async () => {
+            await this.repository.deniedTesting(requestId)
+        })
+    }
 }

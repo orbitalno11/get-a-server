@@ -5,6 +5,7 @@ import { EducationHistoryEntity } from "../entity/education/educationHistory.ent
 import { RequestStatus } from "../model/common/data/RequestStatus"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
+import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 
 /**
  * Repository for "v1/verify"
@@ -38,6 +39,38 @@ class VerifyRepository {
     async deniedEducation(requestId: string) {
         try {
             await this.connection.getRepository(EducationHistoryEntity).save({
+                id: requestId.toNumber(),
+                verified: RequestStatus.DENIED
+            })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not denied verification", VerificationError.CAN_NOT_DENIED)
+        }
+    }
+
+    /**
+     * Approved testing verification
+     * @param requestId
+     */
+    async approvedTesting(requestId: string) {
+        try {
+            await this.connection.getRepository(TestingHistoryEntity).save({
+                id: requestId.toNumber(),
+                verified: RequestStatus.APPROVE
+            })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
+        }
+    }
+
+    /**
+     * Denied testing verification
+     * @param requestId
+     */
+    async deniedTesting(requestId: string) {
+        try {
+            await this.connection.getRepository(TestingHistoryEntity).save({
                 id: requestId.toNumber(),
                 verified: RequestStatus.DENIED
             })

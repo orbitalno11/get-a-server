@@ -53,4 +53,35 @@ export class VerifyController {
             }
         })
     }
+
+    /**
+     * Manage testing verification
+     * @param id
+     * @param approved
+     */
+    @Get("testing")
+    manageTestingVerification(@Query("id") id: string, @Query("approved") approved: string): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (id?.isSafeNotBlank() && approved?.isSafeNotBlank()) {
+                switch (approved) {
+                    case "true": {
+                        await this.service.approvedTesting(id)
+                        break
+                    }
+                    case "false": {
+                        await this.service.deniedTesting(id)
+                        break
+                    }
+                    default: {
+                        logger.error("Invalid approve key.")
+                        throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+                    }
+                }
+                return SuccessResponse.create("Successful")
+            } else {
+                logger.error("Invalid approve data.")
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+        })
+    }
 }
