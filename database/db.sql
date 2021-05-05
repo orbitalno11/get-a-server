@@ -164,9 +164,12 @@ create table testing_history(
     examId int not null,
     testingScore float(10, 3) not null,
     verified smallint not null,
+    subject_code varchar(50) not null,
+    year varchar(4) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_TESTING_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
-    CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id)
+    CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id),
+    CONSTRAINT `FK_TESTING_SUBJECT` FOREIGN KEY(subject_code) REFERENCES subject (code)
 );
 
 create table education_history(

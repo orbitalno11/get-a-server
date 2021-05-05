@@ -14,6 +14,10 @@ import { UserVerifyEntity } from "../entity/UserVerify.entity"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
 import { RequestStatus } from "../model/common/data/RequestStatus"
+import TestingVerifyForm from "../model/education/TestingVerifyForm"
+import { ExamTypeEntity } from "../entity/education/examType.entity"
+import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
+import { SubjectEntity } from "../entity/common/subject.entity"
 
 /**
  * Repository for "v1/tutor"
@@ -37,9 +41,6 @@ class TutorRepository {
             const tutor = new TutorEntity()
             tutor.id = TutorProfile.getTutorId(user.id)
 
-            const member = new MemberEntity()
-            member.id = user.id
-
             const branch = new BranchEntity()
             branch.id = data.branch
 
@@ -54,11 +55,7 @@ class TutorRepository {
             educationHistory.status = data.status
             educationHistory.verified = RequestStatus.WAITING
 
-            const userVerify = new UserVerifyEntity()
-            userVerify.id = requestId
-            userVerify.member = member
-            userVerify.documentUrl1 = fileUrl
-            userVerify.type = UserVerify.EDUCATION
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION ,fileUrl)
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
@@ -68,10 +65,67 @@ class TutorRepository {
         } catch (error) {
             logger.error(error)
             await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not request education verification", TutorError.CAN_NOT_REQUEST_EDUCATION_VERIFY)
+            throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
         } finally {
             await queryRunner.release()
         }
+    }
+
+    async requestTestingVerify(requestId: string, user: User, data: TestingVerifyForm, fileUrl: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const tutor = new TutorEntity()
+            tutor.id = TutorProfile.getTutorId(user.id)
+
+            const exam = new ExamTypeEntity()
+            exam.id = data.examId
+
+            const subject = new SubjectEntity()
+            subject.code = data.subjectCode
+
+            const testingHistory = new TestingHistoryEntity()
+            testingHistory.tutor = tutor
+            testingHistory.exam = exam
+            testingHistory.subject = subject
+            testingHistory.testingScore = data.score
+            testingHistory.year = data.year.toString()
+            testingHistory.verified = RequestStatus.WAITING
+
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl)
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(testingHistory)
+            await queryRunner.manager.save(userVerify)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    private getUserVerifyEntity(
+        requestId: string,
+        user: User,
+        type: UserVerify,
+        doc1Url: string,
+        doc2Url?: string,
+        doc3Url?: string
+    ): UserVerifyEntity {
+        const member = new MemberEntity()
+        member.id = user.id
+
+        const entity = new UserVerifyEntity()
+        entity.id = requestId
+        entity.member = member
+        entity.type = type
+        entity.documentUrl1 = doc1Url
+        entity.documentUrl2 = doc2Url ? doc2Url : null
+        entity.documentUrl3 = doc3Url ? doc3Url : null
+        return entity
     }
 }
 

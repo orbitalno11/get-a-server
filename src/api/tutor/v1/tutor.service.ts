@@ -18,6 +18,7 @@ import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import EducationVerifyForm from "../../../model/education/EducationVerifyForm"
 import TutorRepository from "../../../repository/TutorRepository"
 import User from "../../../model/User"
+import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 
 @Injectable()
 export class TutorService {
@@ -148,6 +149,24 @@ export class TutorService {
             const requestId = uuid()
 
             await this.repository.requestEducationVerify(requestId, user, data, fileUrl)
+
+            return "Successful"
+        } catch (error) {
+            logger.error(error)
+            if (fileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            }
+            throw error
+        }
+    }
+
+    async requestTestingVerify(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
+        let fileUrl = ""
+        try {
+            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
+            const requestId = uuid()
+
+            await this.repository.requestTestingVerify(requestId, user, data, fileUrl)
 
             return "Successful"
         } catch (error) {

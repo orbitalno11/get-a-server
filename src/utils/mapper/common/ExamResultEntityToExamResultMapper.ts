@@ -10,7 +10,7 @@ export class ExamResultEntityToExamResultMapper implements Mapper<TestingHistory
         result.exam = new ExamEntityToExamMapper().map(from.exam)
         result.examText = result.exam.title
         result.score = from.testingScore
-        result.status = from.verified as RequestStatus
+        result.verified = from.verified as RequestStatus
         return result
     }
 

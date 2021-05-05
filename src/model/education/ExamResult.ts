@@ -5,7 +5,7 @@ class ExamResult {
     exam: Exam
     examText: string
     score: number
-    status: RequestStatus
+    verified: RequestStatus
 }
 
 export default ExamResult

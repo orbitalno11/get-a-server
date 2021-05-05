@@ -33,6 +33,8 @@ import EducationVerifyForm from "../../../model/education/EducationVerifyForm"
 import User from "../../../model/User"
 import EducationVerifyFormValidator from "../../../utils/validator/verify/EducationVerifyFormValidator"
 import IResponse from "../../../core/response/IResponse"
+import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
+import TestingVerifyFormValidator from "../../../utils/validator/verify/TestingVerifyFormValidator"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -97,10 +99,10 @@ export class TutorController {
      * @param file
      * @param currentUser
      */
-    @Post("/education/verify")
+    @Post("education/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
     requestEducationVerify(@Body() body: EducationVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
-        return launch( async () => {
+        return launch(async () => {
             const data = EducationVerifyForm.createFormBody(body)
             const validator = new EducationVerifyFormValidator()
             validator.setData(data)
@@ -117,6 +119,30 @@ export class TutorController {
             }
 
             const result = await this.tutorService.requestEducationVerify(currentUser, data, file)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    @Post("testing/verify")
+    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    requestTestingVerify(@Body() body, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            const data = TestingVerifyForm.createFormBody(body)
+            const validator = new TestingVerifyFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("validation error")
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            if (!file) {
+                logger.error("upload file is invalid:" + file)
+                throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
+            }
+
+            const result = await this.tutorService.requestTestingVerify(currentUser, data, file)
             return SuccessResponse.create(result)
         })
     }
