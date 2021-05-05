@@ -2,9 +2,9 @@ import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common"
 import { CoreModule } from "../../../core/core.module"
 import { UtilityModule } from "../../../utils/utility.module"
 import { RepositoryModule } from "../../../repository/repository.module"
-import { TutorVerifyController } from "./tutor_verify_controller"
+import { VerifyController } from "./verify.controller"
 import { VerifyService } from "./verify.service"
-import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
+import AdminAuthenticated from "../../../middleware/auth/AdminAuthenticated.middleware"
 
 /**
  * Module class for "v1/verify"
@@ -12,13 +12,13 @@ import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.midd
  */
 @Module({
     imports: [CoreModule, UtilityModule, RepositoryModule],
-    controllers: [TutorVerifyController],
+    controllers: [VerifyController],
     providers: [VerifyService]
 })
 export class VerifyModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
-            .apply(TutorAuthenticated)
-            .forRoutes(TutorVerifyController)
+            .apply(AdminAuthenticated)
+            .forRoutes(VerifyController)
     }
 }
