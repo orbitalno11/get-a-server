@@ -3,6 +3,10 @@ import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 import ValidateResult from "../ValidateResult"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 
+/**
+ * Validator class for TestingVerify form
+ * @author orbitalno11 2021 A.D.
+ */
 class TestingVerifyFormValidator extends AbstractValidator<TestingVerifyForm> {
     validator(): ValidateResult<any> {
         if (!this.form.examId?.isSafeNumber()) {
@@ -33,6 +37,11 @@ class TestingVerifyFormValidator extends AbstractValidator<TestingVerifyForm> {
         }
     }
 
+    /**
+     * Check testing year is valid
+     * @param year
+     * @private
+     */
     private isValidYear(year: number): boolean {
         return year <= (new Date().getFullYear())
     }

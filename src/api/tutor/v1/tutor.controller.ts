@@ -123,9 +123,15 @@ export class TutorController {
         })
     }
 
+    /**
+     * Tutor request testing verification
+     * @param body
+     * @param file
+     * @param currentUser
+     */
     @Post("testing/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
-    requestTestingVerify(@Body() body, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+    requestTestingVerify(@Body() body: TestingVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = TestingVerifyForm.createFormBody(body)
             const validator = new TestingVerifyFormValidator()

@@ -20,6 +20,10 @@ import TutorRepository from "../../../repository/TutorRepository"
 import User from "../../../model/User"
 import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 
+/**
+ * Service for tutor controller
+ * @author orbitalno11 2021 A.D.
+ */
 @Injectable()
 export class TutorService {
     constructor(
@@ -142,6 +146,12 @@ export class TutorService {
         }
     }
 
+    /**
+     * Tutor request education verification
+     * @param user
+     * @param data
+     * @param file
+     */
     async requestEducationVerify(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
         let fileUrl = ""
         try {
@@ -160,6 +170,12 @@ export class TutorService {
         }
     }
 
+    /**
+     * Tutor request testing verification
+     * @param user
+     * @param data
+     * @param file
+     */
     async requestTestingVerify(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
         let fileUrl = ""
         try {

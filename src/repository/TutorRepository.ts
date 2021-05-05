@@ -71,6 +71,13 @@ class TutorRepository {
         }
     }
 
+    /**
+     * Create testing verification request
+     * @param requestId
+     * @param user
+     * @param data
+     * @param fileUrl
+     */
     async requestTestingVerify(requestId: string, user: User, data: TestingVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
@@ -107,6 +114,16 @@ class TutorRepository {
         }
     }
 
+    /**
+     * Create user verify entity object
+     * @param requestId
+     * @param user
+     * @param type
+     * @param doc1Url
+     * @param doc2Url
+     * @param doc3Url
+     * @private
+     */
     private getUserVerifyEntity(
         requestId: string,
         user: User,
