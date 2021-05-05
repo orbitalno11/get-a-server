@@ -91,6 +91,12 @@ export class TutorController {
         })
     }
 
+    /**
+     * Tutor request education verification
+     * @param body
+     * @param file
+     * @param currentUser
+     */
     @Post(":id/education/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
     requestEducationVerify(@Body() body: EducationVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {

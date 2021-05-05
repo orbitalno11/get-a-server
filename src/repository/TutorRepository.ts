@@ -15,11 +15,22 @@ import { MemberEntity } from "../entity/member/member.entitiy"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
 import { RequestStatus } from "../model/common/data/RequestStatus"
 
+/**
+ * Repository for "v1/tutor"
+ * @author oribitalno11 2021 A.D.
+ */
 @Injectable()
 class TutorRepository {
     constructor(private readonly connection: Connection) {
     }
 
+    /**
+     * Create education verification request
+     * @param requestId
+     * @param user
+     * @param data
+     * @param fileUrl
+     */
     async requestEducationVerify(requestId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {

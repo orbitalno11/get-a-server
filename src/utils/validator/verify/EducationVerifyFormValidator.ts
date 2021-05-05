@@ -5,6 +5,10 @@ import { Grade } from "../../../model/common/data/Grade"
 import { EducationStatus } from "../../../model/education/data/EducationStatus.enum"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 
+/**
+ * Validation class for education verify request
+ * @author orbitalno11 2021 A.D.
+ */
 class EducationVerifyFormValidator extends AbstractValidator<EducationVerifyForm> {
     validator(): ValidateResult<any> {
         if (!(this.form.grade in Grade)) {
