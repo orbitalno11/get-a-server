@@ -97,7 +97,7 @@ export class TutorController {
      * @param file
      * @param currentUser
      */
-    @Post(":id/education/verify")
+    @Post("/education/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
     requestEducationVerify(@Body() body: EducationVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch( async () => {
