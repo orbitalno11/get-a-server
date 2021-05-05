@@ -1,11 +1,11 @@
 import Exam from "./Exam";
-import {EducationRequestStatus} from "./data/EducationRequestStatus";
+import { RequestStatus } from "../common/data/RequestStatus"
 
 class ExamResult {
     exam: Exam
     examText: string
     score: number
-    status: EducationRequestStatus
+    status: RequestStatus
 }
 
 export default ExamResult

@@ -163,7 +163,7 @@ create table testing_history(
     tutorId varchar(255) not null,
     examId int not null,
     testingScore float(10, 3) not null,
-    status varchar(100) not null,
+    verified smallint not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_TESTING_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id)
@@ -176,6 +176,7 @@ create table education_history(
     branchId int not null,
     gpax float(3,2) not null,
     status varchar(10) not null,
+    verified smallint not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_EDUCATION_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_EDUCATION_INSTITUTE` FOREIGN KEY(instituteId) REFERENCES institute (id),

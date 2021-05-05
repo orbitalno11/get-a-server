@@ -14,6 +14,9 @@ export class EducationHistoryEntity {
   @Column()
   status: string
 
+  @Column()
+  verified: number
+
   // entity relation
   @ManyToOne(() => TutorEntity, (tutor) => tutor.educationHistory)
   @JoinColumn({ name: 'tutorId' })

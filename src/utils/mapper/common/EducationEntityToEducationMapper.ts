@@ -2,8 +2,8 @@ import {EducationHistoryEntity} from "../../../entity/education/educationHistory
 import Education from "../../../model/education/Education";
 import {InstituteEntityToInstituteMapper} from "./InstituteEntityToInstituteMapper";
 import {BranchEntityToBranchMapper} from "./BranchEntityToBranchMapper";
-import {EducationRequestStatus} from "../../../model/education/data/EducationRequestStatus";
 import Mapper from "../../../core/common/Mapper";
+import { EducationStatus } from "../../../model/education/data/EducationStatus.enum"
 
 export class EducationEntityToEducationMapper implements Mapper<EducationHistoryEntity, Education> {
     map(from: EducationHistoryEntity): Education {
@@ -13,7 +13,8 @@ export class EducationEntityToEducationMapper implements Mapper<EducationHistory
         education.branch = BranchEntityToBranchMapper(from.branch)
         education.branchText = from.branch.title
         education.gpax = from.gpax
-        education.status = from.status as EducationRequestStatus
+        education.status = from.status as EducationStatus
+        education.verified = from.verified
         return education
     }
 

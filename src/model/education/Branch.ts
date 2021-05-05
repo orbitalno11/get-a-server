@@ -1,5 +1,5 @@
 class Branch {
-    id: string
+    id: number
     title: string
 }
 

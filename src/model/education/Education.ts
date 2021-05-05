@@ -1,6 +1,7 @@
 import Institute from "./Institute";
 import Branch from "./Branch";
-import {EducationRequestStatus} from "./data/EducationRequestStatus";
+import {RequestStatus} from "../common/data/RequestStatus";
+import { EducationStatus } from "./data/EducationStatus.enum"
 
 class Education {
     institute: Institute
@@ -8,7 +9,8 @@ class Education {
     branch: Branch
     branchText: string
     gpax: number
-    status: EducationRequestStatus
+    status: EducationStatus
+    verified: RequestStatus
 }
 
 export default Education

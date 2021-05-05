@@ -5,6 +5,7 @@ import MeRepository from "./MeRepository"
 import CoinRepository from "./CoinRepository"
 import PaymentRepository from "./PaymentRepository"
 import VerifyRepository from "./VerifyRepository"
+import TutorRepository from "./TutorRepository"
 
 /**
  * Class for Repository module
@@ -12,7 +13,7 @@ import VerifyRepository from "./VerifyRepository"
  */
 @Module({
     imports: [CoreModule, UtilityModule],
-    providers: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository],
-    exports: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository]
+    providers: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository, TutorRepository],
+    exports: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository, TutorRepository]
 })
 export class RepositoryModule{}

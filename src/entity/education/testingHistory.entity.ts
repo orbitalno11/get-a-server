@@ -13,6 +13,9 @@ export class TestingHistoryEntity {
   @Column()
   status: string
 
+  @Column()
+  verified: number
+
   // entity relation
   @ManyToOne(() => TutorEntity, (tutor) => tutor.testingHistory)
   @JoinColumn({ name: 'tutorId '})

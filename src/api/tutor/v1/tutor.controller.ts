@@ -29,6 +29,10 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import FileError from "../../../core/exceptions/constants/file-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
+import EducationVerifyForm from "../../../model/education/EducationVerifyForm"
+import User from "../../../model/User"
+import EducationVerifyFormValidator from "../../../utils/validator/verify/EducationVerifyFormValidator"
+import IResponse from "../../../core/response/IResponse"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -62,6 +66,7 @@ export class TutorController {
         })
     }
 
+    // todo refactor this route to get tutor public profile
     @Get(":id")
     getProfileById(@Param("id") id: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<TutorProfile | string>> {
         return launch(async () => {
@@ -83,6 +88,30 @@ export class TutorController {
             }
 
             return SuccessResponse.create(new TutorEntityToTutorProfile().map(tutorData))
+        })
+    }
+
+    @Post(":id/education/verify")
+    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    requestEducationVerify(@Body() body: EducationVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch( async () => {
+            const data = EducationVerifyForm.createFormBody(body)
+            const validator = new EducationVerifyFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("validation error")
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            if (!file) {
+                logger.error("upload file is invalid:" + file)
+                throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
+            }
+
+            const result = await this.tutorService.requestEducationVerify(currentUser, data, file)
+            return SuccessResponse.create(result)
         })
     }
 }

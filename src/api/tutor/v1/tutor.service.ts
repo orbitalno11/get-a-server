@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
+import { v4 as uuid } from "uuid"
 import { logger } from "../../../core/logging/Logger"
 import { InterestedSubjectEntity } from "../../../entity/member/interestedSubject.entity"
 import { MemberRoleEntity } from "../../../entity/member/memberRole.entitiy"
@@ -14,6 +15,9 @@ import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
 import {UserRole} from "../../../core/constant/UserRole"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
+import EducationVerifyForm from "../../../model/education/EducationVerifyForm"
+import TutorRepository from "../../../repository/TutorRepository"
+import User from "../../../model/User"
 
 @Injectable()
 export class TutorService {
@@ -21,7 +25,8 @@ export class TutorService {
         private connection: Connection,
         private readonly userManager: UserManager,
         private readonly tokenManager: TokenManager,
-        private readonly fileStorageUtils: FileStorageUtils
+        private readonly fileStorageUtils: FileStorageUtils,
+        private readonly repository: TutorRepository
     ) {
     }
 
@@ -132,6 +137,24 @@ export class TutorService {
                 .getOne()
         } catch (error) {
             logger.error(error)
+            throw error
+        }
+    }
+
+    async requestEducationVerify(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
+        let fileUrl = ""
+        try {
+            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
+            const requestId = uuid()
+
+            await this.repository.requestEducationVerify(requestId, user, data, fileUrl)
+
+            return "Successful"
+        } catch (error) {
+            logger.error(error)
+            if (fileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            }
             throw error
         }
     }

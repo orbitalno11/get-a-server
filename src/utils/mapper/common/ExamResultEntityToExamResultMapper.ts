@@ -1,8 +1,8 @@
-import {TestingHistoryEntity} from "../../../entity/education/testingHistory.entity";
-import ExamResult from "../../../model/education/ExamResult";
-import Mapper from "../../../core/common/Mapper";
-import {ExamEntityToExamMapper} from "./ExamEntityToExamMapper";
-import {EducationRequestStatus} from "../../../model/education/data/EducationRequestStatus";
+import { TestingHistoryEntity } from "../../../entity/education/testingHistory.entity"
+import ExamResult from "../../../model/education/ExamResult"
+import Mapper from "../../../core/common/Mapper"
+import { ExamEntityToExamMapper } from "./ExamEntityToExamMapper"
+import { RequestStatus } from "../../../model/common/data/RequestStatus"
 
 export class ExamResultEntityToExamResultMapper implements Mapper<TestingHistoryEntity, ExamResult> {
     map(from: TestingHistoryEntity): ExamResult {
@@ -10,7 +10,7 @@ export class ExamResultEntityToExamResultMapper implements Mapper<TestingHistory
         result.exam = new ExamEntityToExamMapper().map(from.exam)
         result.examText = result.exam.title
         result.score = from.testingScore
-        result.status = from.status as EducationRequestStatus
+        result.status = from.verified as RequestStatus
         return result
     }
 
