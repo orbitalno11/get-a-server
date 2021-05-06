@@ -36,6 +36,7 @@ import CoinBalance from "../../../model/coin/CoinBalance"
 import { UserRole } from "../../../core/constant/UserRole"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 import FileError from "../../../core/exceptions/constants/file-error.enum"
+import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
  * Class for "v1/me" controller
@@ -174,7 +175,7 @@ export class MeController {
         ], new UploadFileUtils().uploadImage())
     )
     requestVerifyIdentity(@UploadedFiles() files, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
-        return launch( async () => {
+        return launch(async () => {
             const card = files.idCard[0]
             const face = files.face[0]
             const cardFace = files.idCardWithFace[0]
@@ -184,6 +185,18 @@ export class MeController {
             }
 
             const result = await this.service.requestIdentifyVerify(currentUser, card, face, cardFace)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get user identity verification data
+     * @param currentUser
+     */
+    @Get("identity")
+    getUserIdentityVerification(@CurrentUser() currentUser: User): Promise<IResponse<IdentityVerification>> {
+        return launch(async () => {
+            const result = await this.service.getUserIdentityVerification(currentUser)
             return SuccessResponse.create(result)
         })
     }

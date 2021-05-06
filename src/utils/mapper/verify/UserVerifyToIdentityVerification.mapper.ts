@@ -10,6 +10,7 @@ export const UserVerifyToIdentityVerificationMapper = (from: UserVerifyEntity): 
     verification.verifiedData = UserVerifyToVerifyDataMapper(from)
     verification.created = from.created
     verification.updated = from.updated
+    verification.verified = from.member?.verified
     return verification
 }
 

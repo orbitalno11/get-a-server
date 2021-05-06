@@ -22,6 +22,8 @@ import { ExchangeTransactionToRedeemListMapper } from "../../../utils/mapper/coi
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import { UserVerifyToIdentityVerificationMapper } from "../../../utils/mapper/verify/UserVerifyToIdentityVerification.mapper"
+import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
  * Service for "v1/me"
@@ -187,5 +189,16 @@ export class MeService {
             }
             throw ErrorExceptions.create("Can not request verify", UserError.CAN_NOT_REQUEST_VERIFY)
         }
+    }
+
+    /**
+     * Get user identity verification data
+     * @param user
+     */
+    getUserIdentityVerification(user: User): Promise<IdentityVerification> {
+        return launch(async () => {
+            const result = await this.repository.getIdentityVerification(user)
+            return UserVerifyToIdentityVerificationMapper(result)
+        })
     }
 }

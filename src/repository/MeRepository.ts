@@ -28,6 +28,7 @@ import { CoinError } from "../core/exceptions/constants/coin.error"
 import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
 import { UserVerifyEntity } from "../entity/UserVerify.entity"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
+import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
 
 /**
  * Repository for "v1/me"
@@ -61,6 +62,7 @@ class MeRepository {
                         .createQueryBuilder(LearnerEntity, "learner")
                         .leftJoinAndSelect("learner.member", "member")
                         .leftJoinAndSelect("learner.contact", "contact")
+                        .leftJoinAndSelect("learner.grade", "grade")
                         .where("learner.id like :id")
                         .setParameter("id", LearnerProfile.getLearnerId(user.id))
                         .getOne()
@@ -369,6 +371,24 @@ class MeRepository {
             throw ErrorExceptions.create("Can not request identity verify", UserError.CAN_NOT_REQUEST_VERIFY)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get user identity verification data
+     * @param user
+     */
+    async getIdentityVerification(user: User): Promise<UserVerifyEntity> {
+        try {
+            return this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .where("member.id like :userId", { "userId": user.id })
+                .andWhere("verify.type = :type", { "type": UserVerify.IDENTITY })
+                .orderBy("verify.updated", "DESC")
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
         }
     }
 }

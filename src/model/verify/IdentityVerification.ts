@@ -5,6 +5,7 @@ class IdentityVerification {
     fullNameRequest: string
     email: string
     verifiedData: VerifyData
+    verified: boolean
     created: Date
     updated: Date
 }

@@ -92,6 +92,7 @@ class VerifyRepository {
                 .leftJoinAndSelect("verify.member", "member")
                 .leftJoinAndSelect("verify.educationHistory", "education")
                 .where("education.verified = :status", { "status": status })
+                .andWhere("verify.type = :type", { "type": UserVerify.EDUCATION })
                 .orderBy("verify.updated", "DESC")
                 .getMany()
         } catch (error) {
@@ -131,6 +132,7 @@ class VerifyRepository {
                 .leftJoinAndSelect("testing.subject", "subject")
                 .leftJoinAndSelect("testing.exam", "exam")
                 .where("testing.verified = :status", { "status": status })
+                .andWhere("verify.type = :type", { "type": UserVerify.TESTING_RESULT })
                 .orderBy("verify.updated", "DESC")
                 .getMany()
         } catch (error) {
