@@ -12,6 +12,8 @@ import {
     TestingHistoryToVerificationListMapper
 } from "../../../utils/mapper/common/TestingEntityToVerification.mapper"
 import TestingVerification from "../../../model/education/TestingVerification"
+import { UserVerifyToVerificationListMapper } from "../../../utils/mapper/verify/UserVerifyToIdentityVerification.mapper"
+import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
  * Service class for "v1/verify"
@@ -103,6 +105,17 @@ export class VerifyService {
         return launch( async () => {
             const result = await this.repository.getTestingVerificationDetail(requestId)
             return TestingEntityToVerificationMapper(result)
+        })
+    }
+
+    /**
+     * Get identity verification list from verification status
+     * @param status
+     */
+    getIdentityVerificationList(status: RequestStatus): Promise<IdentityVerification[]> {
+        return launch( async () => {
+            const result = await this.repository.getIdentityVerificationList(status)
+            return UserVerifyToVerificationListMapper(result)
         })
     }
 }

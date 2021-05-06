@@ -6,6 +6,8 @@ import { RequestStatus } from "../model/common/data/RequestStatus"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
 import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
+import { UserVerifyEntity } from "../entity/UserVerify.entity"
+import { UserVerify } from "../model/common/data/UserVerify.enum"
 
 /**
  * Repository for "v1/verify"
@@ -158,6 +160,24 @@ class VerifyRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+        }
+    }
+
+    /**
+     * Get identity verification list from verification status
+     * @param status
+     */
+    async getIdentityVerificationList(status: RequestStatus): Promise<UserVerifyEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .where("member.verified = :status", { "status": status })
+                .andWhere("verify.type = :type", { "type": UserVerify.IDENTITY })
+                .orderBy("verify.updated", "DESC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification list", VerificationError.CAN_NOT_GET_VERIFICATION_LIST)
         }
     }
 }

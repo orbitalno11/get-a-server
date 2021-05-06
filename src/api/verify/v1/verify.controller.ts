@@ -12,6 +12,7 @@ import IResponse from "../../../core/response/IResponse"
 import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import EducationVerification from "../../../model/education/EducationVerification"
 import TestingVerification from "../../../model/education/TestingVerification"
+import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
  * Controller class for "v1/verify"
@@ -120,7 +121,7 @@ export class VerifyController {
      */
     @Get("testing/:id")
     getTestingVerificationDetail(@Param("id") requestId: string): Promise<IResponse<TestingVerification>> {
-        return launch( async () => {
+        return launch(async () => {
             if (requestId?.toNumber()?.isSafeNumber()) {
                 const result = await this.service.getTestingVerificationDetail(requestId.toNumber())
                 return SuccessResponse.create(result)
@@ -136,8 +137,20 @@ export class VerifyController {
      */
     @Get("testings")
     getTestingVerificationList(@Query("status") status: RequestStatus): Promise<IResponse<TestingVerification[]>> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.service.getTestingVerificationList(status ? status : RequestStatus.WAITING)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get identity verification list from verification status
+     * @param status
+     */
+    @Get("identities")
+    getIdentityVerificationList(@Query("status") status: RequestStatus): Promise<IResponse<IdentityVerification[]>> {
+        return launch(async () => {
+            const result = await this.service.getIdentityVerificationList(status ? status : RequestStatus.WAITING)
             return SuccessResponse.create(result)
         })
     }

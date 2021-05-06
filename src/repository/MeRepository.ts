@@ -355,6 +355,7 @@ class MeRepository {
             userVerify.documentUrl2 = faceImgPath
             userVerify.documentUrl3 = cardFaceImgPath
             userVerify.type = UserVerify.IDENTITY
+            userVerify.created = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
