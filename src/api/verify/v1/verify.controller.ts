@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Query, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, HttpStatus, Param, Query, UseFilters, UseInterceptors } from "@nestjs/common"
 import { VerifyService } from "./verify.service"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
@@ -11,6 +11,7 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import IResponse from "../../../core/response/IResponse"
 import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import EducationVerification from "../../../model/education/EducationVerification"
+import { VerificationError } from "../../../core/exceptions/constants/verification-error.enum"
 
 /**
  * Controller class for "v1/verify"
@@ -55,13 +56,29 @@ export class VerifyController {
     }
 
     /**
+     * Get education verification detail from education history id
+     * @param requestId
+     */
+    @Get("education/:id")
+    getEducationVerificationDetail(@Param("id") requestId: string): Promise<IResponse<EducationVerification>> {
+        return launch(async () => {
+            if (requestId?.toNumber()?.isSafeNumber()) {
+                const result = await this.service.getEducationVerificationDetail(requestId.toNumber())
+                return SuccessResponse.create(result)
+            } else {
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+        })
+    }
+
+    /**
      * Get education verification list from verification status
      * @param status
      */
     @Get("educations")
     getEducationVerificationList(@Query("status") status: RequestStatus): Promise<IResponse<EducationVerification[]>> {
         return launch(async () => {
-            const result = await this.service.getEducationList(status ? status : RequestStatus.WAITING)
+            const result = await this.service.getEducationVerificationList(status ? status : RequestStatus.WAITING)
             return SuccessResponse.create(result)
         })
     }

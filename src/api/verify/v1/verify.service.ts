@@ -2,7 +2,10 @@ import { Injectable } from "@nestjs/common"
 import VerifyRepository from "../../../repository/VerifyRepository"
 import { launch } from "../../../core/common/launch"
 import { RequestStatus } from "../../../model/common/data/RequestStatus"
-import { EducationHistoryToVerificationListMapper } from "../../../utils/mapper/common/EducationEntityToVerification.mapper"
+import {
+    EducationHistoryToVerificationListMapper,
+    EducationHistoryToVerificationMapper
+} from "../../../utils/mapper/common/EducationEntityToVerification.mapper"
 import EducationVerification from "../../../model/education/EducationVerification"
 
 /**
@@ -58,10 +61,21 @@ export class VerifyService {
      * Get education verification list from verification status
      * @param status
      */
-    getEducationList(status: RequestStatus): Promise<EducationVerification[]> {
+    getEducationVerificationList(status: RequestStatus): Promise<EducationVerification[]> {
         return launch( async () => {
             const result = await this.repository.getEducationVerificationList(status)
             return  EducationHistoryToVerificationListMapper(result)
+        })
+    }
+
+    /**
+     * Get education verification detail from education history id
+     * @param requestId
+     */
+    getEducationVerificationDetail(requestId: number): Promise<EducationVerification> {
+        return launch( async () => {
+            const result = await this.repository.getEducationVerificationDetail(requestId)
+            return EducationHistoryToVerificationMapper(result)
         })
     }
 }

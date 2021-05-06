@@ -98,6 +98,27 @@ class VerifyRepository {
             throw ErrorExceptions.create("Can not get verification list", VerificationError.CAN_NOT_GET_VERIFICATION_LIST)
         }
     }
+
+    /**
+     * Get education verification detail from education history id
+     * @param requestId
+     */
+    async getEducationVerificationDetail(requestId: number): Promise<EducationHistoryEntity> {
+        try {
+            return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
+                .leftJoinAndSelect("education.verifiedData", "verifiedData")
+                .leftJoinAndSelect("education.tutor", "tutor")
+                .leftJoinAndSelect("tutor.member", "member")
+                .leftJoinAndSelect("tutor.contact", "contact")
+                .leftJoinAndSelect("education.institute", "institute")
+                .leftJoinAndSelect("education.branch", "branch")
+                .where("education.id = :requestId", { "requestId": requestId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+        }
+    }
 }
 
 export default VerifyRepository
