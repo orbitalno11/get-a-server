@@ -3,14 +3,14 @@ import VerifyRepository from "../../../repository/VerifyRepository"
 import { launch } from "../../../core/common/launch"
 import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import {
-    EducationHistoryToVerificationListMapper,
-    EducationHistoryToVerificationMapper
-} from "../../../utils/mapper/common/EducationEntityToVerification.mapper"
+    UserVerifyToEducationListMapper,
+    UserVerifyToEducationMapper
+} from "../../../utils/mapper/common/UserVerifyToEducation.mapper"
 import EducationVerification from "../../../model/education/EducationVerification"
 import {
-    TestingEntityToVerificationMapper,
+    UserVerifyToTestingMapper,
     TestingHistoryToVerificationListMapper
-} from "../../../utils/mapper/common/TestingEntityToVerification.mapper"
+} from "../../../utils/mapper/common/UserVerifyToTesting.mapper"
 import TestingVerification from "../../../model/education/TestingVerification"
 import {
     UserVerifyToIdentityVerificationMapper,
@@ -74,18 +74,18 @@ export class VerifyService {
     getEducationVerificationList(status: RequestStatus): Promise<EducationVerification[]> {
         return launch(async () => {
             const result = await this.repository.getEducationVerificationList(status)
-            return EducationHistoryToVerificationListMapper(result)
+            return UserVerifyToEducationListMapper(result)
         })
     }
 
     /**
-     * Get education verification detail from education history id
+     * Get education verification detail from request id
      * @param requestId
      */
-    getEducationVerificationDetail(requestId: number): Promise<EducationVerification> {
+    getEducationVerificationDetail(requestId: string): Promise<EducationVerification> {
         return launch(async () => {
             const result = await this.repository.getEducationVerificationDetail(requestId)
-            return EducationHistoryToVerificationMapper(result)
+            return UserVerifyToEducationMapper(result)
         })
     }
 
@@ -101,13 +101,13 @@ export class VerifyService {
     }
 
     /**
-     * Get testing verification detail from testing history id
+     * Get testing verification detail from request id
      * @param requestId
      */
-    getTestingVerificationDetail(requestId: number): Promise<TestingVerification> {
+    getTestingVerificationDetail(requestId: string): Promise<TestingVerification> {
         return launch( async () => {
             const result = await this.repository.getTestingVerificationDetail(requestId)
-            return TestingEntityToVerificationMapper(result)
+            return UserVerifyToTestingMapper(result)
         })
     }
 

@@ -2,7 +2,7 @@ import VerifyData from "../verify/VerifyData"
 import ExamResult from "./ExamResult"
 
 class TestingVerification {
-    id: number
+    id: string
     fullRequestName: string
     fullExamTitle: string
     verifiedData: VerifyData

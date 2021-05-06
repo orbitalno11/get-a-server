@@ -57,14 +57,14 @@ export class VerifyController {
     }
 
     /**
-     * Get education verification detail from education history id
+     * Get education verification detail from request id
      * @param requestId
      */
     @Get("education/:id")
     getEducationVerificationDetail(@Param("id") requestId: string): Promise<IResponse<EducationVerification>> {
         return launch(async () => {
-            if (requestId?.toNumber()?.isSafeNumber()) {
-                const result = await this.service.getEducationVerificationDetail(requestId.toNumber())
+            if (requestId?.isSafeNotBlank()) {
+                const result = await this.service.getEducationVerificationDetail(requestId)
                 return SuccessResponse.create(result)
             } else {
                 throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
@@ -116,14 +116,14 @@ export class VerifyController {
     }
 
     /**
-     * Get testing verification detail from testing history id
+     * Get testing verification detail from request id
      * @param requestId
      */
     @Get("testing/:id")
     getTestingVerificationDetail(@Param("id") requestId: string): Promise<IResponse<TestingVerification>> {
         return launch(async () => {
-            if (requestId?.toNumber()?.isSafeNumber()) {
-                const result = await this.service.getTestingVerificationDetail(requestId.toNumber())
+            if (requestId?.isSafeNotBlank()) {
+                const result = await this.service.getTestingVerificationDetail(requestId)
                 return SuccessResponse.create(result)
             } else {
                 throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)

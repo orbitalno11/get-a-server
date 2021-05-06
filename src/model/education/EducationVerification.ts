@@ -2,7 +2,7 @@ import VerifyData from "../verify/VerifyData"
 import Education from "./Education"
 
 class EducationVerification {
-    id: number
+    id: string
     fullRequestName: string
     verifiedData: VerifyData
     educationData: Education

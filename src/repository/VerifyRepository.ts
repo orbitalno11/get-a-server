@@ -86,14 +86,13 @@ class VerifyRepository {
      * Get education verification list from verification status
      * @param status
      */
-    async getEducationVerificationList(status: RequestStatus): Promise<EducationHistoryEntity[]> {
+    async getEducationVerificationList(status: RequestStatus): Promise<UserVerifyEntity[]> {
         try {
-            return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
-                .leftJoinAndSelect("education.verifiedData", "verifiedData")
-                .leftJoinAndSelect("education.tutor", "tutor")
-                .leftJoinAndSelect("tutor.member", "member")
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.educationHistory", "education")
                 .where("education.verified = :status", { "status": status })
-                .orderBy("verifiedData.updated", "DESC")
+                .orderBy("verify.updated", "DESC")
                 .getMany()
         } catch (error) {
             logger.error(error)
@@ -102,19 +101,17 @@ class VerifyRepository {
     }
 
     /**
-     * Get education verification detail from education history id
+     * Get education verification detail from request id
      * @param requestId
      */
-    async getEducationVerificationDetail(requestId: number): Promise<EducationHistoryEntity> {
+    async getEducationVerificationDetail(requestId: string): Promise<UserVerifyEntity> {
         try {
-            return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
-                .leftJoinAndSelect("education.verifiedData", "verifiedData")
-                .leftJoinAndSelect("education.tutor", "tutor")
-                .leftJoinAndSelect("tutor.member", "member")
-                .leftJoinAndSelect("tutor.contact", "contact")
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.educationHistory", "education")
                 .leftJoinAndSelect("education.institute", "institute")
                 .leftJoinAndSelect("education.branch", "branch")
-                .where("education.id = :requestId", { "requestId": requestId })
+                .where("verify.id = :requestId", { "requestId": requestId})
                 .getOne()
         } catch (error) {
             logger.error(error)
@@ -126,16 +123,15 @@ class VerifyRepository {
      * Get testing verification list from verification status
      * @param status
      */
-    async getTestingVerificationList(status: RequestStatus): Promise<TestingHistoryEntity[]> {
+    async getTestingVerificationList(status: RequestStatus): Promise<UserVerifyEntity[]> {
         try {
-            return await this.connection.createQueryBuilder(TestingHistoryEntity, "testing")
-                .leftJoinAndSelect("testing.verifiedData", "verifiedData")
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.testingHistory", "testing")
                 .leftJoinAndSelect("testing.subject", "subject")
                 .leftJoinAndSelect("testing.exam", "exam")
-                .leftJoinAndSelect("testing.tutor", "tutor")
-                .leftJoinAndSelect("tutor.member", "member")
                 .where("testing.verified = :status", { "status": status })
-                .orderBy("verifiedData.updated", "DESC")
+                .orderBy("verify.updated", "DESC")
                 .getMany()
         } catch (error) {
             logger.error(error)
@@ -144,18 +140,17 @@ class VerifyRepository {
     }
 
     /**
-     * Get testing verification detail from testing history id
+     * Get testing verification detail from request id
      * @param requestId
      */
-    async getTestingVerificationDetail(requestId: number): Promise<TestingHistoryEntity> {
+    async getTestingVerificationDetail(requestId: string): Promise<UserVerifyEntity> {
         try {
-            return await this.connection.createQueryBuilder(TestingHistoryEntity, "testing")
-                .leftJoinAndSelect("testing.verifiedData", "verifiedData")
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.testingHistory", "testing")
                 .leftJoinAndSelect("testing.subject", "subject")
                 .leftJoinAndSelect("testing.exam", "exam")
-                .leftJoinAndSelect("testing.tutor", "tutor")
-                .leftJoinAndSelect("tutor.member", "member")
-                .where("testing.id = :requestId", { "requestId": requestId })
+                .where("verify.id like :requestId", {"requestId": requestId})
                 .getOne()
         } catch (error) {
             logger.error(error)
