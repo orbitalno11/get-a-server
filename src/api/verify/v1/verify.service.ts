@@ -12,7 +12,10 @@ import {
     TestingHistoryToVerificationListMapper
 } from "../../../utils/mapper/common/TestingEntityToVerification.mapper"
 import TestingVerification from "../../../model/education/TestingVerification"
-import { UserVerifyToVerificationListMapper } from "../../../utils/mapper/verify/UserVerifyToIdentityVerification.mapper"
+import {
+    UserVerifyToIdentityVerificationMapper,
+    UserVerifyToVerificationListMapper
+} from "../../../utils/mapper/verify/UserVerifyToIdentityVerification.mapper"
 import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
@@ -116,6 +119,17 @@ export class VerifyService {
         return launch( async () => {
             const result = await this.repository.getIdentityVerificationList(status)
             return UserVerifyToVerificationListMapper(result)
+        })
+    }
+
+    /**
+     * Get identity verification list from user verify request id
+     * @param requestId
+     */
+    getIdentityVerificationDetail(requestId: string): Promise<IdentityVerification> {
+        return launch( async () => {
+            const result = await this.repository.getIdentityVerificationDetail(requestId)
+            return UserVerifyToIdentityVerificationMapper(result)
         })
     }
 }

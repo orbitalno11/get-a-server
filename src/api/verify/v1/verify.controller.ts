@@ -154,4 +154,20 @@ export class VerifyController {
             return SuccessResponse.create(result)
         })
     }
+
+    /**
+     * Get identity verification list from user verify request id
+     * @param requestId
+     */
+    @Get("identity/:id")
+    getIdentityVerificationData(@Param("id") requestId: string) {
+        return launch(async () => {
+            if (requestId?.isSafeNotBlank()) {
+                const result = await this.service.getIdentityVerificationDetail(requestId)
+                return SuccessResponse.create(result)
+            } else {
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+        })
+    }
 }

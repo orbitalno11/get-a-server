@@ -180,6 +180,22 @@ class VerifyRepository {
             throw ErrorExceptions.create("Can not get verification list", VerificationError.CAN_NOT_GET_VERIFICATION_LIST)
         }
     }
+
+    /**
+     * Get identity verification list from user verify request id
+     * @param requestId
+     */
+    async getIdentityVerificationDetail(requestId: string): Promise<UserVerifyEntity> {
+        try {
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .where("verify.id like :requestId", { "requestId": requestId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+        }
+    }
 }
 
 export default VerifyRepository
