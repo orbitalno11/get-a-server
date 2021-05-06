@@ -90,6 +90,8 @@ class TutorRepository {
             const subject = new SubjectEntity()
             subject.code = data.subjectCode
 
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl)
+
             const testingHistory = new TestingHistoryEntity()
             testingHistory.tutor = tutor
             testingHistory.exam = exam
@@ -97,13 +99,11 @@ class TutorRepository {
             testingHistory.testingScore = data.score
             testingHistory.year = data.year.toString()
             testingHistory.verified = RequestStatus.WAITING
-
-            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl)
+            testingHistory.verifiedData = userVerify
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(testingHistory)
-            await queryRunner.manager.save(userVerify)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

@@ -119,6 +119,27 @@ class VerifyRepository {
             throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
         }
     }
+
+    /**
+     * Get testing verification list from verification status
+     * @param status
+     */
+    async getTestingVerificationList(status: RequestStatus): Promise<TestingHistoryEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(TestingHistoryEntity, "testing")
+                .leftJoinAndSelect("testing.verifiedData", "verifiedData")
+                .leftJoinAndSelect("testing.subject", "subject")
+                .leftJoinAndSelect("testing.exam", "exam")
+                .leftJoinAndSelect("testing.tutor", "tutor")
+                .leftJoinAndSelect("tutor.member", "member")
+                .where("testing.verified = :status", { "status": status })
+                .orderBy("verifiedData.updated", "DESC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification list", VerificationError.CAN_NOT_GET_VERIFICATION_LIST)
+        }
+    }
 }
 
 export default VerifyRepository

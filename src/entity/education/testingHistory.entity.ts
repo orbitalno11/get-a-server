@@ -31,7 +31,7 @@ export class TestingHistoryEntity {
     @JoinColumn({ name: "subject_code" })
     subject: SubjectEntity
 
-    @OneToOne(() => UserVerifyEntity)
-    @JoinColumn({ name: "verified_id"})
+    @OneToOne(() => UserVerifyEntity, { cascade: true })
+    @JoinColumn({ name: "verified_id" })
     verifiedData: UserVerifyEntity
 }

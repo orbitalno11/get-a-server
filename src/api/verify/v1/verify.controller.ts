@@ -11,7 +11,7 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import IResponse from "../../../core/response/IResponse"
 import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import EducationVerification from "../../../model/education/EducationVerification"
-import { VerificationError } from "../../../core/exceptions/constants/verification-error.enum"
+import TestingVerification from "../../../model/education/TestingVerification"
 
 /**
  * Controller class for "v1/verify"
@@ -111,6 +111,18 @@ export class VerifyController {
                 logger.error("Invalid approve data.")
                 throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
             }
+        })
+    }
+
+    /**
+     * Get testing verification list from verification status
+     * @param status
+     */
+    @Get("testings")
+    getTestingVerificationList(@Query("status") status: RequestStatus): Promise<IResponse<TestingVerification[]>> {
+        return launch( async () => {
+            const result = await this.service.getTestingVerificationList(status ? status : RequestStatus.WAITING)
+            return SuccessResponse.create(result)
         })
     }
 }
