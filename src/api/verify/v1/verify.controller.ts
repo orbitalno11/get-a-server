@@ -119,7 +119,7 @@ export class VerifyController {
      * @param requestId
      */
     @Get("testing/:id")
-    getTestingVerificationDetail(@Param("id") requestId: string) {
+    getTestingVerificationDetail(@Param("id") requestId: string): Promise<IResponse<TestingVerification>> {
         return launch( async () => {
             if (requestId?.toNumber()?.isSafeNumber()) {
                 const result = await this.service.getTestingVerificationDetail(requestId.toNumber())
