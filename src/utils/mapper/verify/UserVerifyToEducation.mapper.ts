@@ -1,6 +1,6 @@
 import EducationVerification from "../../../model/education/EducationVerification"
-import { UserVerifyToVerifyDataMapper } from "../verify/UserVerifyToVerifyData.mapper"
-import { EducationEntityToEducationMapper } from "./EducationEntityToEducationMapper"
+import { UserVerifyToVerifyDataMapper } from "./UserVerifyToVerifyData.mapper"
+import { EducationEntityToEducationMapper } from "../common/EducationEntityToEducationMapper"
 import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
 
 export const UserVerifyToEducationMapper = (from: UserVerifyEntity): EducationVerification => {

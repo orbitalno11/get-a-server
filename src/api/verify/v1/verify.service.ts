@@ -5,12 +5,12 @@ import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import {
     UserVerifyToEducationListMapper,
     UserVerifyToEducationMapper
-} from "../../../utils/mapper/common/UserVerifyToEducation.mapper"
+} from "../../../utils/mapper/verify/UserVerifyToEducation.mapper"
 import EducationVerification from "../../../model/education/EducationVerification"
 import {
     UserVerifyToTestingMapper,
     TestingHistoryToVerificationListMapper
-} from "../../../utils/mapper/common/UserVerifyToTesting.mapper"
+} from "../../../utils/mapper/verify/UserVerifyToTesting.mapper"
 import TestingVerification from "../../../model/education/TestingVerification"
 import {
     UserVerifyToIdentityVerificationMapper,

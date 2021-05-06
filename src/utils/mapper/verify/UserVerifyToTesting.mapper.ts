@@ -1,6 +1,6 @@
 import TestingVerification from "../../../model/education/TestingVerification"
-import { UserVerifyToVerifyDataMapper } from "../verify/UserVerifyToVerifyData.mapper"
-import { ExamResultEntityToExamResultMapper } from "./ExamResultEntityToExamResultMapper"
+import { UserVerifyToVerifyDataMapper } from "./UserVerifyToVerifyData.mapper"
+import { ExamResultEntityToExamResultMapper } from "../common/ExamResultEntityToExamResultMapper"
 import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
 
 export const UserVerifyToTestingMapper = (from: UserVerifyEntity): TestingVerification => {
