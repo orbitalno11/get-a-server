@@ -7,7 +7,10 @@ import {
     EducationHistoryToVerificationMapper
 } from "../../../utils/mapper/common/EducationEntityToVerification.mapper"
 import EducationVerification from "../../../model/education/EducationVerification"
-import { TestingHistoryToVerificationListMapper } from "../../../utils/mapper/common/TestingEntityToVerification.mapper"
+import {
+    TestingEntityToVerificationMapper,
+    TestingHistoryToVerificationListMapper
+} from "../../../utils/mapper/common/TestingEntityToVerification.mapper"
 import TestingVerification from "../../../model/education/TestingVerification"
 
 /**
@@ -89,6 +92,17 @@ export class VerifyService {
         return launch(async () => {
             const result = await this.repository.getTestingVerificationList(status)
             return TestingHistoryToVerificationListMapper(result)
+        })
+    }
+
+    /**
+     * Get testing verification detail from testing history id
+     * @param requestId
+     */
+    getTestingVerificationDetail(requestId: number): Promise<TestingVerification> {
+        return launch( async () => {
+            const result = await this.repository.getTestingVerificationDetail(requestId)
+            return TestingEntityToVerificationMapper(result)
         })
     }
 }

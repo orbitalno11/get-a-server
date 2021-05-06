@@ -115,6 +115,22 @@ export class VerifyController {
     }
 
     /**
+     * Get testing verification detail from testing history id
+     * @param requestId
+     */
+    @Get("testing/:id")
+    getTestingVerificationDetail(@Param("id") requestId: string) {
+        return launch( async () => {
+            if (requestId?.toNumber()?.isSafeNumber()) {
+                const result = await this.service.getTestingVerificationDetail(requestId.toNumber())
+                return SuccessResponse.create(result)
+            } else {
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+        })
+    }
+
+    /**
      * Get testing verification list from verification status
      * @param status
      */
