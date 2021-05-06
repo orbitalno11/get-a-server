@@ -79,6 +79,25 @@ class VerifyRepository {
             throw ErrorExceptions.create("Can not denied verification", VerificationError.CAN_NOT_DENIED)
         }
     }
+
+    /**
+     * Get education verification list from verification status
+     * @param status
+     */
+    async getEducationVerificationList(status: RequestStatus): Promise<EducationHistoryEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
+                .leftJoinAndSelect("education.verifiedData", "verifiedData")
+                .leftJoinAndSelect("education.tutor", "tutor")
+                .leftJoinAndSelect("tutor.member", "member")
+                .where("education.verified = :status", { "status": status })
+                .orderBy("verifiedData.updated", "DESC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification list", VerificationError.CAN_NOT_GET_VERIFICATION_LIST)
+        }
+    }
 }
 
 export default VerifyRepository

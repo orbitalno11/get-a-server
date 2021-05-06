@@ -1,16 +1,16 @@
-import { Controller, Get, HttpStatus, Post, Query, UploadedFiles, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, HttpStatus, Query, UseFilters, UseInterceptors } from "@nestjs/common"
 import { VerifyService } from "./verify.service"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
-import { FileFieldsInterceptor } from "@nestjs/platform-express"
-import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import { launch } from "../../../core/common/launch"
 import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { logger } from "../../../core/logging/Logger"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import IResponse from "../../../core/response/IResponse"
+import { RequestStatus } from "../../../model/common/data/RequestStatus"
+import EducationVerification from "../../../model/education/EducationVerification"
 
 /**
  * Controller class for "v1/verify"
@@ -51,6 +51,18 @@ export class VerifyController {
                 logger.error("Invalid approve data.")
                 throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
             }
+        })
+    }
+
+    /**
+     * Get education verification list from verification status
+     * @param status
+     */
+    @Get("educations")
+    getEducationVerificationList(@Query("status") status: RequestStatus): Promise<IResponse<EducationVerification[]>> {
+        return launch(async () => {
+            const result = await this.service.getEducationList(status ? status : RequestStatus.WAITING)
+            return SuccessResponse.create(result)
         })
     }
 

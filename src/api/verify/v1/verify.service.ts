@@ -1,6 +1,9 @@
 import { Injectable } from "@nestjs/common"
 import VerifyRepository from "../../../repository/VerifyRepository"
 import { launch } from "../../../core/common/launch"
+import { RequestStatus } from "../../../model/common/data/RequestStatus"
+import { EducationHistoryToVerificationListMapper } from "../../../utils/mapper/common/EducationEntityToVerification.mapper"
+import EducationVerification from "../../../model/education/EducationVerification"
 
 /**
  * Service class for "v1/verify"
@@ -48,6 +51,17 @@ export class VerifyService {
     deniedTesting(requestId: string) {
         return launch(async () => {
             await this.repository.deniedTesting(requestId)
+        })
+    }
+
+    /**
+     * Get education verification list from verification status
+     * @param status
+     */
+    getEducationList(status: RequestStatus): Promise<EducationVerification[]> {
+        return launch( async () => {
+            const result = await this.repository.getEducationVerificationList(status)
+            return  EducationHistoryToVerificationListMapper(result)
         })
     }
 }

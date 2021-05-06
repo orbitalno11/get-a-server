@@ -47,6 +47,8 @@ class TutorRepository {
             const institute = new InstituteEntity()
             institute.id = data.institute
 
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION ,fileUrl)
+
             const educationHistory = new EducationHistoryEntity()
             educationHistory.tutor = tutor
             educationHistory.branch = branch
@@ -54,13 +56,11 @@ class TutorRepository {
             educationHistory.gpax = data.gpax
             educationHistory.status = data.status
             educationHistory.verified = RequestStatus.WAITING
-
-            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION ,fileUrl)
+            educationHistory.verifiedData = userVerify
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(educationHistory)
-            await queryRunner.manager.save(userVerify)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -142,6 +142,7 @@ class TutorRepository {
         entity.documentUrl1 = doc1Url
         entity.documentUrl2 = doc2Url ? doc2Url : null
         entity.documentUrl3 = doc3Url ? doc3Url : null
+        entity.created = new Date()
         return entity
     }
 }

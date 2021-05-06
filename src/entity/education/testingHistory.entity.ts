@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm"
 import { TutorEntity } from "../profile/tutor.entity"
 import { ExamTypeEntity } from "./examType.entity"
 import { SubjectEntity } from "../common/subject.entity"
+import { UserVerifyEntity } from "../UserVerify.entity"
 
 @Entity("testing_history")
 export class TestingHistoryEntity {
@@ -29,4 +30,8 @@ export class TestingHistoryEntity {
     @ManyToOne(() => SubjectEntity, (subject) => subject.testingHistory)
     @JoinColumn({ name: "subject_code" })
     subject: SubjectEntity
+
+    @OneToOne(() => UserVerifyEntity)
+    @JoinColumn({ name: "verified_id"})
+    verifiedData: UserVerifyEntity
 }

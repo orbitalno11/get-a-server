@@ -163,13 +163,15 @@ create table testing_history(
     tutorId varchar(255) not null,
     examId int not null,
     testingScore float(10, 3) not null,
-    verified smallint not null,
     subject_code varchar(50) not null,
     year varchar(4) not null,
+    verified smallint not null,
+    verified_id varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_TESTING_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_TESTING_TYPE` FOREIGN KEY(examId) REFERENCES exam_type (id),
-    CONSTRAINT `FK_TESTING_SUBJECT` FOREIGN KEY(subject_code) REFERENCES subject (code)
+    CONSTRAINT `FK_TESTING_SUBJECT` FOREIGN KEY(subject_code) REFERENCES subject (code),
+    CONSTRAINT `FK_TESTING_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
 );
 
 create table education_history(
@@ -180,10 +182,12 @@ create table education_history(
     gpax float(3,2) not null,
     status varchar(10) not null,
     verified smallint not null,
+    verified_id varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_EDUCATION_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_EDUCATION_INSTITUTE` FOREIGN KEY(instituteId) REFERENCES institute (id),
-    CONSTRAINT `FK_ECUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id)
+    CONSTRAINT `FK_EDUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id),
+    CONSTRAINT `FK_EDUCATION_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
 );
 
 create table user_verify(
