@@ -23,6 +23,8 @@ import { launch } from "../../../core/common/launch"
 import { EducationEntityToEducationMapper } from "../../../utils/mapper/common/EducationEntityToEducationMapper"
 import Education from "../../../model/education/Education"
 import TutorProfile from "../../../model/profile/TutorProfile"
+import EducationVerification from "../../../model/education/EducationVerification"
+import { UserVerifyToEducationMapper } from "../../../utils/mapper/verify/UserVerifyToEducation.mapper"
 
 /**
  * Service for tutor controller
@@ -148,6 +150,19 @@ export class TutorService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Get education with verification data
+     * @param id
+     * @param user
+     */
+    getEducation(id: string, user: User): Promise<EducationVerification> {
+        return launch(async () => {
+            const tutorId = TutorProfile.getTutorId(user.id)
+            const education = await this.repository.getEducation(id, tutorId)
+            return UserVerifyToEducationMapper(education)
+        })
     }
 
     /**

@@ -36,6 +36,7 @@ import IResponse from "../../../core/response/IResponse"
 import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 import TestingVerifyFormValidator from "../../../utils/validator/verify/TestingVerifyFormValidator"
 import Education from "../../../model/education/Education"
+import EducationVerification from "../../../model/education/EducationVerification"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -100,7 +101,7 @@ export class TutorController {
      * @param currentUser
      */
     @Get(":id/educations")
-    getEducation(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<Education[]>> {
+    getEducations(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<Education[]>> {
         return launch(async () => {
             if (!id?.isSafeNotBlank()) {
                 throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
@@ -138,6 +139,19 @@ export class TutorController {
 
             const result = await this.tutorService.requestEducationVerify(currentUser, data, file)
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get education with verification data
+     * @param id
+     * @param currentUser
+     */
+    @Get(":education/:id")
+    getEducation(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<EducationVerification>> {
+        return launch(async () => {
+            const education = await this.tutorService.getEducation(id, currentUser)
+            return SuccessResponse.create(education)
         })
     }
 

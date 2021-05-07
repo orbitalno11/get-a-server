@@ -29,6 +29,27 @@ class TutorRepository {
     }
 
     /**
+     * Get education with verification data
+     * @param id
+     * @param tutorId
+     */
+    async getEducation(id: string, tutorId: string): Promise<UserVerifyEntity> {
+        try {
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.educationHistory", "education")
+                .leftJoinAndSelect("education.institute", "institute")
+                .leftJoinAndSelect("education.branch", "branch")
+                .where("education.id = :id", { "id": id})
+                .andWhere("education.tutor like :tutorId", { "tutorId": tutorId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get education history", TutorError.CAN_NOT_GET_EDUCATION_HISTORY)
+        }
+    }
+
+    /**
      * Get tutor education list
      * @param id
      * @param isOwner
