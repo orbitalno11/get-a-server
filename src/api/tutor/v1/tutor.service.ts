@@ -25,6 +25,10 @@ import Education from "../../../model/education/Education"
 import TutorProfile from "../../../model/profile/TutorProfile"
 import EducationVerification from "../../../model/education/EducationVerification"
 import { UserVerifyToEducationMapper } from "../../../utils/mapper/verify/UserVerifyToEducation.mapper"
+import { ExamResultEntityToExamResultMapper } from "../../../utils/mapper/common/ExamResultEntityToExamResultMapper"
+import ExamResult from "../../../model/education/ExamResult"
+import TestingVerification from "../../../model/education/TestingVerification"
+import { UserVerifyToTestingMapper } from "../../../utils/mapper/verify/UserVerifyToTesting.mapper"
 
 /**
  * Service for tutor controller
@@ -201,6 +205,33 @@ export class TutorService {
             }
             throw error
         }
+    }
+
+    /**
+     * Get tutor testing list
+     * @param id
+     * @param user
+     */
+    getTestings(id: string, user: User): Promise<ExamResult[]> {
+        return launch(async () => {
+            const isOwner = id === user?.id
+            const tutorId = TutorProfile.getTutorId(id)
+            const testings = await this.repository.getTestings(tutorId, isOwner)
+            return new ExamResultEntityToExamResultMapper().toExamResultArray(testings)
+        })
+    }
+
+    /**
+     * Get testing with verification data
+     * @param id
+     * @param user
+     */
+    getTesting(id: string, user: User): Promise<TestingVerification> {
+        return launch(async () => {
+            const tutorId = TutorProfile.getTutorId(user.id)
+            const testing = await this.repository.getTesting(id, tutorId)
+            return UserVerifyToTestingMapper(testing)
+        })
     }
 
     /**

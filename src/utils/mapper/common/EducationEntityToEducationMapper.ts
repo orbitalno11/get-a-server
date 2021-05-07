@@ -8,6 +8,7 @@ import { EducationStatus } from "../../../model/education/data/EducationStatus.e
 export class EducationEntityToEducationMapper implements Mapper<EducationHistoryEntity, Education> {
     map(from: EducationHistoryEntity): Education {
         const education = new Education()
+        education.id = from.id
         education.institute = InstituteEntityToInstituteMapper(from.institute)
         education.instituteText = from.institute.title
         education.branch = BranchEntityToBranchMapper(from.branch)

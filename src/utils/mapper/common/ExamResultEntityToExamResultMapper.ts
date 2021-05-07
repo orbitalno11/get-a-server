@@ -8,6 +8,7 @@ import Subject from "../../../model/common/Subject"
 export class ExamResultEntityToExamResultMapper implements Mapper<TestingHistoryEntity, ExamResult> {
     map(from: TestingHistoryEntity): ExamResult {
         const result = new ExamResult()
+        result.id = from.id
         result.exam = new ExamEntityToExamMapper().map(from.exam)
         result.examText = result.exam.title
         result.subject = new Subject(from.subject?.code, from.subject?.title)

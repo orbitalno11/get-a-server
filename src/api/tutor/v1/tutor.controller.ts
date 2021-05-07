@@ -37,6 +37,8 @@ import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 import TestingVerifyFormValidator from "../../../utils/validator/verify/TestingVerifyFormValidator"
 import Education from "../../../model/education/Education"
 import EducationVerification from "../../../model/education/EducationVerification"
+import ExamResult from "../../../model/education/ExamResult"
+import TestingVerification from "../../../model/education/TestingVerification"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -113,6 +115,23 @@ export class TutorController {
     }
 
     /**
+     * Get tutor testing list
+     * @param id
+     * @param currentUser
+     */
+    @Get(":id/testings")
+    getTestings(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<ExamResult[]>> {
+        return launch(async () => {
+            if (!id?.isSafeNotBlank()) {
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+
+            const testings = await this.tutorService.getTestings(id, currentUser)
+            return SuccessResponse.create(testings)
+        })
+    }
+
+    /**
      * Tutor request education verification
      * @param body
      * @param file
@@ -147,7 +166,7 @@ export class TutorController {
      * @param id
      * @param currentUser
      */
-    @Get(":education/:id")
+    @Get("/education/:id")
     getEducation(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<EducationVerification>> {
         return launch(async () => {
             const education = await this.tutorService.getEducation(id, currentUser)
@@ -182,6 +201,19 @@ export class TutorController {
 
             const result = await this.tutorService.requestTestingVerify(currentUser, data, file)
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get testing with verification data
+     * @param id
+     * @param currentUser
+     */
+    @Get("testing/:id")
+    getTesting(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<TestingVerification>> {
+        return launch(async () => {
+            const testing = await this.tutorService.getTesting(id, currentUser)
+            return SuccessResponse.create(testing)
         })
     }
 }

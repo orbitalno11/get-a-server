@@ -40,7 +40,7 @@ class TutorRepository {
                 .leftJoinAndSelect("verify.educationHistory", "education")
                 .leftJoinAndSelect("education.institute", "institute")
                 .leftJoinAndSelect("education.branch", "branch")
-                .where("education.id = :id", { "id": id})
+                .where("education.id = :id", { "id": id })
                 .andWhere("education.tutor like :tutorId", { "tutorId": tutorId })
                 .getOne()
         } catch (error) {
@@ -120,6 +120,58 @@ class TutorRepository {
             throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get testing with verification data
+     * @param id
+     * @param tutorId
+     */
+    async getTesting(id: string, tutorId: string): Promise<UserVerifyEntity> {
+        try {
+            return await this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .leftJoinAndSelect("verify.testingHistory", "testing")
+                .leftJoinAndSelect("testing.subject", "subject")
+                .leftJoinAndSelect("testing.exam", "exam")
+                .where("testing.id = :id", { "id": id })
+                .andWhere("testing.tutor like :tutorId", { "tutorId": tutorId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get education history", TutorError.CAN_NOT_GET_EDUCATION_HISTORY)
+        }
+    }
+
+    /**
+     * Get tutor testing list
+     * @param id
+     * @param isOwner
+     */
+    async getTestings(id: string, isOwner: boolean): Promise<TestingHistoryEntity[]> {
+        try {
+            if (isOwner) {
+                return await this.connection.createQueryBuilder(TestingHistoryEntity, "testing")
+                    .leftJoinAndSelect("testing.exam", "exam")
+                    .leftJoinAndSelect("testing.subject", "subject")
+                    .leftJoinAndSelect("testing.verifiedData", "verify")
+                    .where("testing.tutor like :id", { "id": id })
+                    .orderBy("verify.updated", "DESC")
+                    .getMany()
+            } else {
+                return await this.connection.createQueryBuilder(TestingHistoryEntity, "testing")
+                    .leftJoinAndSelect("testing.exam", "exam")
+                    .leftJoinAndSelect("testing.subject", "subject")
+                    .leftJoinAndSelect("testing.verifiedData", "verify")
+                    .where("testing.tutor like :id", { "id": id })
+                    .andWhere("testing.verified = :status", { "status": RequestStatus.APPROVE })
+                    .orderBy("verify.updated", "DESC")
+                    .getMany()
+            }
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get testing history", TutorError.CAN_NOT_GET_TESTING_HISTORY)
         }
     }
 

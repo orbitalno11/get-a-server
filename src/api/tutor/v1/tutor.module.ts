@@ -18,12 +18,14 @@ export class TutorModule implements NestModule {
             .exclude(
                 { path: "v1/tutor/create", method: RequestMethod.POST },
                 { path: "v1/tutor/:id", method: RequestMethod.GET },
-                { path: "v1/tutor/:id/educations", method: RequestMethod.GET}
+                { path: "v1/tutor/:id/educations", method: RequestMethod.GET},
+                { path: "v1/tutor/:id/testings", method: RequestMethod.GET}
             )
             .forRoutes(TutorController)
             .apply(AuthenticatedRequest)
             .forRoutes(
-                { path: "v1/tutor/:id/educations", method: RequestMethod.GET}
+                { path: "v1/tutor/:id/educations", method: RequestMethod.GET},
+                { path: "v1/tutor/:id/testings", method: RequestMethod.GET}
             )
     }
 }

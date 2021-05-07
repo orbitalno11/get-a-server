@@ -4,6 +4,7 @@ import {RequestStatus} from "../common/data/RequestStatus";
 import { EducationStatus } from "./data/EducationStatus.enum"
 
 class Education {
+    id: number
     institute: Institute
     instituteText: string
     branch: Branch
