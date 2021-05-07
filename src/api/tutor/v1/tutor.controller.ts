@@ -35,6 +35,7 @@ import EducationVerifyFormValidator from "../../../utils/validator/verify/Educat
 import IResponse from "../../../core/response/IResponse"
 import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
 import TestingVerifyFormValidator from "../../../utils/validator/verify/TestingVerifyFormValidator"
+import Education from "../../../model/education/Education"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -90,6 +91,23 @@ export class TutorController {
             }
 
             return SuccessResponse.create(new TutorEntityToTutorProfile().map(tutorData))
+        })
+    }
+
+    /**
+     * Get tutor education list
+     * @param id
+     * @param currentUser
+     */
+    @Get(":id/educations")
+    getEducation(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<Education[]>> {
+        return launch(async () => {
+            if (!id?.isSafeNotBlank()) {
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+
+            const educations = await this.tutorService.getEducations(id, currentUser)
+            return SuccessResponse.create(educations)
         })
     }
 

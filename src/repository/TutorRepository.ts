@@ -29,6 +29,37 @@ class TutorRepository {
     }
 
     /**
+     * Get tutor education list
+     * @param id
+     * @param isOwner
+     */
+    async getEducations(id: string, isOwner: boolean): Promise<EducationHistoryEntity[]> {
+        try {
+            if (isOwner) {
+                return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
+                    .leftJoinAndSelect("education.institute", "institute")
+                    .leftJoinAndSelect("education.branch", "branch")
+                    .leftJoinAndSelect("education.verifiedData", "verify")
+                    .where("education.tutor like :id", { "id": id })
+                    .orderBy("verify.updated", "DESC")
+                    .getMany()
+            } else {
+                return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
+                    .leftJoinAndSelect("education.institute", "institute")
+                    .leftJoinAndSelect("education.branch", "branch")
+                    .leftJoinAndSelect("education.verifiedData", "verify")
+                    .where("education.tutor like :id", { "id": id })
+                    .andWhere("education.verified = :status", { "status": RequestStatus.APPROVE })
+                    .orderBy("verify.updated", "DESC")
+                    .getMany()
+            }
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get education history", TutorError.CAN_NOT_GET_EDUCATION_HISTORY)
+        }
+    }
+
+    /**
      * Create education verification request
      * @param requestId
      * @param user
@@ -47,7 +78,7 @@ class TutorRepository {
             const institute = new InstituteEntity()
             institute.id = data.institute
 
-            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION ,fileUrl)
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl)
 
             const educationHistory = new EducationHistoryEntity()
             educationHistory.tutor = tutor

@@ -13,12 +13,16 @@ import UserManager from "../../../utils/UserManager"
 import { TutorEntity } from "../../../entity/profile/tutor.entity"
 import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
-import {UserRole} from "../../../core/constant/UserRole"
+import { UserRole } from "../../../core/constant/UserRole"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import EducationVerifyForm from "../../../model/education/EducationVerifyForm"
 import TutorRepository from "../../../repository/TutorRepository"
 import User from "../../../model/User"
 import TestingVerifyForm from "../../../model/education/TestingVerifyForm"
+import { launch } from "../../../core/common/launch"
+import { EducationEntityToEducationMapper } from "../../../utils/mapper/common/EducationEntityToEducationMapper"
+import Education from "../../../model/education/Education"
+import TutorProfile from "../../../model/profile/TutorProfile"
 
 /**
  * Service for tutor controller
@@ -144,6 +148,20 @@ export class TutorService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Get tutor education list
+     * @param id
+     * @param user
+     */
+    getEducations(id: string, user?: User | null): Promise<Education[]> {
+        return launch(async () => {
+            const isOwner = id === user?.id
+            const tutorId = TutorProfile.getTutorId(id)
+            const educations = await this.repository.getEducations(tutorId, isOwner)
+            return new EducationEntityToEducationMapper().toEducationArray(educations)
+        })
     }
 
     /**
