@@ -337,14 +337,22 @@ class MeRepository {
     }
 
     /**
-     * Create identity verification request
+     * Create and update identity verification request
      * @param requestId
      * @param user
      * @param cardImgPath
      * @param faceImgPath
      * @param cardFaceImgPath
+     * @param isUpdate
      */
-    async requestVerifyIdentity(requestId: string, user: User, cardImgPath: string, faceImgPath: string, cardFaceImgPath: string): Promise<boolean> {
+    async requestVerifyIdentity(
+        requestId: string,
+        user: User,
+        cardImgPath: string,
+        faceImgPath: string,
+        cardFaceImgPath: string,
+        isUpdate: boolean
+    ): Promise<boolean> {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const member = new MemberEntity()
@@ -357,7 +365,10 @@ class MeRepository {
             userVerify.documentUrl2 = faceImgPath
             userVerify.documentUrl3 = cardFaceImgPath
             userVerify.type = UserVerify.IDENTITY
-            userVerify.created = new Date()
+
+            if (!isUpdate) {
+                userVerify.created = new Date()
+            }
 
             await queryRunner.connect()
             await queryRunner.startTransaction()

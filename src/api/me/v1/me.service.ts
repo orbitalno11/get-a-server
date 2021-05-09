@@ -24,6 +24,7 @@ import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import { UserVerifyToIdentityVerificationMapper } from "../../../utils/mapper/verify/UserVerifyToIdentityVerification.mapper"
 import IdentityVerification from "../../../model/verify/IdentityVerification"
+import { VerificationError } from "../../../core/exceptions/constants/verification-error.enum"
 
 /**
  * Service for "v1/me"
@@ -175,7 +176,7 @@ export class MeService {
             cardUrl = await this.fileStorageUtils.uploadImageTo(idCard, user.id, "verify", 1280, 720)
             faceUrl = await this.fileStorageUtils.uploadImageTo(face, user.id, "verify", 1280, 720)
             cardFaceUrl = await this.fileStorageUtils.uploadImageTo(idCardWithFace, user.id, "verify", 1280, 720)
-            return await this.repository.requestVerifyIdentity(requestId, user, cardUrl, faceUrl, cardFaceUrl)
+            return await this.repository.requestVerifyIdentity(requestId, user, cardUrl, faceUrl, cardFaceUrl, false)
         } catch (error) {
             logger.error(error)
             if (cardUrl.isSafeNotBlank()) {
@@ -200,5 +201,83 @@ export class MeService {
             const result = await this.repository.getIdentityVerification(user)
             return UserVerifyToIdentityVerificationMapper(result)
         })
+    }
+
+    /**
+     * Update user identity request data
+     * @param user
+     * @param idCard
+     * @param face
+     * @param idCardWithFace
+     */
+    async updateUserIdentity(
+        user: User,
+        idCard?: Express.Multer.File,
+        face?: Express.Multer.File,
+        idCardWithFace?: Express.Multer.File
+    ) {
+        let cardUrl = ""
+        let oldCardUrl = ""
+        let faceUrl = ""
+        let oldFaceUrl = ""
+        let cardFaceUrl = ""
+        let oldFaceCardUrl = ""
+        try {
+            const userVerificationData = await this.repository.getIdentityVerification(user)
+
+            if (!userVerificationData) {
+                logger.error("Ca not get verification detail")
+                throw FailureResponse.create(VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+            }
+
+            if (idCard) {
+                cardUrl = await this.fileStorageUtils.uploadImageTo(idCard, user.id, "verify", 1280, 720)
+                oldCardUrl = userVerificationData.documentUrl1
+            } else {
+                cardUrl = userVerificationData.documentUrl1
+            }
+
+            if (face) {
+                faceUrl = await this.fileStorageUtils.uploadImageTo(face, user.id, "verify", 1280, 720)
+                oldFaceUrl = userVerificationData.documentUrl2
+            } else {
+                faceUrl = userVerificationData.documentUrl2
+            }
+
+            if (idCardWithFace) {
+                cardFaceUrl = await this.fileStorageUtils.uploadImageTo(idCardWithFace, user.id, "verify", 1280, 720)
+                oldFaceCardUrl = userVerificationData.documentUrl3
+            } else {
+                cardFaceUrl = userVerificationData.documentUrl3
+            }
+
+            const result = await this.repository.requestVerifyIdentity(userVerificationData.id, user, cardUrl, faceUrl, cardFaceUrl, true)
+
+            if (result) {
+                if (oldCardUrl.isSafeNotBlank()) {
+                    await this.fileStorageUtils.deleteFileFromUrl(oldCardUrl)
+                }
+                if (oldFaceUrl.isSafeNotBlank()) {
+                    await this.fileStorageUtils.deleteFileFromUrl(oldFaceUrl)
+                }
+                if (oldFaceCardUrl.isSafeNotBlank()) {
+                    await this.fileStorageUtils.deleteFileFromUrl(oldFaceCardUrl)
+                }
+            }
+
+            return result
+        } catch (error) {
+            logger.error(error)
+            if (cardFaceUrl.isSafeNotBlank() && oldFaceCardUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(cardFaceUrl)
+            }
+            if (faceUrl.isSafeNotBlank() && oldFaceUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(faceUrl)
+            }
+            if (cardFaceUrl.isSafeNotBlank() && oldFaceCardUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(cardFaceUrl)
+            }
+            throw ErrorExceptions.create("Can not update user verification data", VerificationError.CAN_NOT_UPDATE_VERIFICATION_DETAIL)
+        }
     }
 }

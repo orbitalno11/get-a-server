@@ -200,4 +200,28 @@ export class MeController {
             return SuccessResponse.create(result)
         })
     }
+
+    /**
+     * Update user identity data
+     * @param files
+     * @param currentUser
+     */
+    @Post("identity/update")
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "idCard", maxCount: 1 },
+            { name: "face", maxCount: 1 },
+            { name: "idCardWithFace", maxCount: 1 }
+        ], new UploadFileUtils().uploadImage())
+    )
+    updateUserIdentityRequest(@UploadedFiles() files, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            const card = files.idCard ? files.idCard[0] : undefined
+            const face = files.face ? files.face[0] : undefined
+            const cardFace = files.idCardWithFace ? files.idCardWithFace[0] : undefined
+
+            const result = await this.service.updateUserIdentity(currentUser, card, face, cardFace)
+            return SuccessResponse.create(result)
+        })
+    }
 }
