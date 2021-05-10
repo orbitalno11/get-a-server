@@ -86,28 +86,43 @@ class TutorRepository {
      * @param user
      * @param data
      * @param fileUrl
+     * @param isUpdate
      */
-    async requestEducationVerify(requestId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
+    async createEducationVerification(requestId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const tutor = new TutorEntity()
-            tutor.id = TutorProfile.getTutorId(user.id)
-
-            const branch = new BranchEntity()
-            branch.id = data.branch
-
-            const institute = new InstituteEntity()
-            institute.id = data.institute
-
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl)
 
-            const educationHistory = new EducationHistoryEntity()
-            educationHistory.tutor = tutor
-            educationHistory.branch = branch
-            educationHistory.institute = institute
-            educationHistory.gpax = data.gpax
-            educationHistory.status = data.status
-            educationHistory.verified = RequestStatus.WAITING
+            const educationHistory = this.getEducationHistoryEntity(user.id, data)
+            educationHistory.verifiedData = userVerify
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(educationHistory)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Tutor update verification
+     * @param requestId
+     * @param educationId
+     * @param user
+     * @param data
+     * @param fileUrl
+     */
+    async updateEducationData(requestId: string, educationId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl, true)
+
+            const educationHistory = this.getEducationHistoryEntity(user.id, data, educationId)
             educationHistory.verifiedData = userVerify
 
             await queryRunner.connect()
@@ -224,8 +239,7 @@ class TutorRepository {
      * @param user
      * @param type
      * @param doc1Url
-     * @param doc2Url
-     * @param doc3Url
+     * @param isUpdate
      * @private
      */
     private getUserVerifyEntity(
@@ -233,8 +247,7 @@ class TutorRepository {
         user: User,
         type: UserVerify,
         doc1Url: string,
-        doc2Url?: string,
-        doc3Url?: string
+        isUpdate: boolean = false
     ): UserVerifyEntity {
         const member = new MemberEntity()
         member.id = user.id
@@ -244,10 +257,43 @@ class TutorRepository {
         entity.member = member
         entity.type = type
         entity.documentUrl1 = doc1Url
-        entity.documentUrl2 = doc2Url ? doc2Url : null
-        entity.documentUrl3 = doc3Url ? doc3Url : null
-        entity.created = new Date()
+
+        if (!isUpdate) {
+            entity.created = new Date()
+        }
+
         return entity
+    }
+
+    /**
+     * Create education history entity object
+     * @param userId
+     * @param data
+     * @param educationId
+     * @private
+     */
+    private getEducationHistoryEntity(userId: string, data: EducationVerifyForm, educationId?: string) {
+        const tutor = new TutorEntity()
+        tutor.id = TutorProfile.getTutorId(userId)
+
+        const branch = new BranchEntity()
+        branch.id = data.branch
+
+        const institute = new InstituteEntity()
+        institute.id = data.institute
+
+        const educationHistory = new EducationHistoryEntity()
+        if (educationId?.isSafeNotBlank()) {
+            educationHistory.id = educationId.toNumber()
+        }
+        educationHistory.tutor = tutor
+        educationHistory.branch = branch
+        educationHistory.institute = institute
+        educationHistory.gpax = data.gpax
+        educationHistory.status = data.status
+        educationHistory.verified = RequestStatus.WAITING
+
+        return educationHistory
     }
 }
 

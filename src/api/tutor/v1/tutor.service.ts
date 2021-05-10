@@ -29,6 +29,9 @@ import { ExamResultEntityToExamResultMapper } from "../../../utils/mapper/common
 import ExamResult from "../../../model/education/ExamResult"
 import TestingVerification from "../../../model/education/TestingVerification"
 import { UserVerifyToTestingMapper } from "../../../utils/mapper/verify/UserVerifyToTesting.mapper"
+import FailureResponse from "../../../core/response/FailureResponse"
+import { VerificationError } from "../../../core/exceptions/constants/verification-error.enum"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 
 /**
  * Service for tutor controller
@@ -189,18 +192,59 @@ export class TutorService {
      * @param data
      * @param file
      */
-    async requestEducationVerify(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
+    async requestEducationVerification(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
         let fileUrl = ""
         try {
             fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
             const requestId = uuid()
 
-            await this.repository.requestEducationVerify(requestId, user, data, fileUrl)
+            await this.repository.createEducationVerification(requestId, user, data, fileUrl)
 
             return "Successful"
         } catch (error) {
             logger.error(error)
             if (fileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            }
+            throw error
+        }
+    }
+
+    /**
+     * Tutor update education verification
+     * @param educationId
+     * @param user
+     * @param data
+     * @param file
+     */
+    async updateEducationVerification(educationId: string, user: User, data: EducationVerifyForm, file?: Express.Multer.File) {
+        let fileUrl = ""
+        let oldFileUrl = ""
+        try {
+            const verificationData = await this.repository.getEducation(educationId, TutorProfile.getTutorId(user.id))
+
+            if (!verificationData) {
+                logger.error("Can not found verification data")
+                throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+            }
+
+            if (file) {
+                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
+                oldFileUrl = verificationData.documentUrl1
+            } else {
+                fileUrl = verificationData.documentUrl1
+            }
+
+            await this.repository.updateEducationData(verificationData.id, educationId, user, data, fileUrl)
+
+            if (oldFileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            }
+
+            return "Successful"
+        } catch (error) {
+            logger.error(error)
+            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
             }
             throw error

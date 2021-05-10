@@ -139,7 +139,11 @@ export class TutorController {
      */
     @Post("education/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
-    requestEducationVerify(@Body() body: EducationVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+    requestEducationVerify(
+        @Body() body: EducationVerifyForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = EducationVerifyForm.createFormBody(body)
             const validator = new EducationVerifyFormValidator()
@@ -156,7 +160,7 @@ export class TutorController {
                 throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
             }
 
-            const result = await this.tutorService.requestEducationVerify(currentUser, data, file)
+            const result = await this.tutorService.requestEducationVerification(currentUser, data, file)
             return SuccessResponse.create(result)
         })
     }
@@ -175,6 +179,38 @@ export class TutorController {
     }
 
     /**
+     * Update education verification data
+     * @param id
+     * @param currentUser
+     * @param body
+     * @param file
+     */
+    @Post("/education/:id")
+    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    updateEducation(
+        @Param("id") id: string,
+        @CurrentUser() currentUser: User,
+        @Body() body: EducationVerifyForm,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        return launch(async () => {
+            const data = EducationVerifyForm.createFormBody(body)
+
+            const validator = new EducationVerifyFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("validation error")
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            const result = await this.tutorService.updateEducationVerification(id, currentUser, data, file)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
      * Tutor request testing verification
      * @param body
      * @param file
@@ -182,7 +218,11 @@ export class TutorController {
      */
     @Post("testing/verify")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
-    requestTestingVerify(@Body() body: TestingVerifyForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+    requestTestingVerify(
+        @Body() body: TestingVerifyForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = TestingVerifyForm.createFormBody(body)
             const validator = new TestingVerifyFormValidator()
