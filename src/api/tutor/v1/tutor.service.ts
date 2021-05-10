@@ -359,7 +359,7 @@ export class TutorService {
      * @param data
      * @param file
      */
-    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, file: Express.Multer.File) {
+    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
         let fileUrl = ""
         let oldFileUrl = ""
         try {
@@ -386,6 +386,18 @@ export class TutorService {
             }
             throw error
         }
+    }
+
+    /**
+     * Delete testing verification data
+     * @param testingId
+     * @param user
+     */
+    deleteTestingVerificationData(testingId: string, user: User) {
+        return launch(async () => {
+            const verificationData = await this.checkTestingOwner(testingId, user)
+            await this.repository.deleteTestingVerificationData(testingId, verificationData.id)
+        })
     }
 
     /**

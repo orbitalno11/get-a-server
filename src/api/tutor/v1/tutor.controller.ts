@@ -192,7 +192,7 @@ export class TutorController {
         @CurrentUser() currentUser: User,
         @Body() body: EducationVerifyForm,
         @UploadedFile() file: Express.Multer.File
-    ) {
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = EducationVerifyForm.createFormBody(body)
 
@@ -284,7 +284,7 @@ export class TutorController {
         @Body() body: TestingVerifyForm,
         @UploadedFile() file: Express.Multer.File,
         @CurrentUser() currentUser: User
-    ) {
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = TestingVerifyForm.createFormBody(body)
             const validator = new TestingVerifyFormValidator()
@@ -298,6 +298,19 @@ export class TutorController {
 
             const result = await this.tutorService.updateTestingVerificationData(id, currentUser, data, file)
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Delete testing verification data
+     * @param id
+     * @param currentUser
+     */
+    @Delete("testing/:id")
+    deleteTestingVerificationData(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            await this.tutorService.deleteTestingVerificationData(id, currentUser)
+            return SuccessResponse.create("Successful")
         })
     }
 }

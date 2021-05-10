@@ -281,6 +281,34 @@ class TutorRepository {
     }
 
     /**
+     * Delete testing verification data
+     * @param testingId
+     * @param requestId
+     */
+    async deleteTestingVerificationData(testingId: string, requestId: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const userVerify = new UserVerifyEntity()
+            userVerify.id = requestId
+
+            const testingHistory = new TestingHistoryEntity()
+            testingHistory.id = testingId.toNumber()
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.remove(testingHistory)
+            await queryRunner.manager.remove(userVerify)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not delete verification", TutorError.CAN_NOT_DELETE_TESTING_HISTORY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
      * Create user verify entity object
      * @param requestId
      * @param user
