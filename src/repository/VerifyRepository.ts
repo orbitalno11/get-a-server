@@ -25,10 +25,14 @@ class VerifyRepository {
      */
     async approvedEducation(requestId: string) {
         try {
-            await this.connection.getRepository(EducationHistoryEntity).save({
-                id: requestId.toNumber(),
-                verified: RequestStatus.APPROVE
-            })
+            const verification = await this.getUserVerificationDetail(requestId)
+            await this.connection.createQueryBuilder()
+                .update(EducationHistoryEntity)
+                .set({
+                    verified: RequestStatus.APPROVE
+                })
+                .where("verified_id like :requestId", { "requestId": verification.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
@@ -41,10 +45,14 @@ class VerifyRepository {
      */
     async deniedEducation(requestId: string) {
         try {
-            await this.connection.getRepository(EducationHistoryEntity).save({
-                id: requestId.toNumber(),
-                verified: RequestStatus.DENIED
-            })
+            const verification = await this.getUserVerificationDetail(requestId)
+            await this.connection.createQueryBuilder()
+                .update(EducationHistoryEntity)
+                .set({
+                    verified: RequestStatus.DENIED
+                })
+                .where("verified_id like :requestId", { "requestId": verification.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not denied verification", VerificationError.CAN_NOT_DENIED)
@@ -57,10 +65,14 @@ class VerifyRepository {
      */
     async approvedTesting(requestId: string) {
         try {
-            await this.connection.getRepository(TestingHistoryEntity).save({
-                id: requestId.toNumber(),
-                verified: RequestStatus.APPROVE
-            })
+            const verification = await this.getUserVerificationDetail(requestId)
+            await this.connection.createQueryBuilder()
+                .update(TestingHistoryEntity)
+                .set({
+                    verified: RequestStatus.APPROVE
+                })
+                .where("verified_id like :requestId", { "requestId": verification.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
@@ -73,10 +85,14 @@ class VerifyRepository {
      */
     async deniedTesting(requestId: string) {
         try {
-            await this.connection.getRepository(TestingHistoryEntity).save({
-                id: requestId.toNumber(),
-                verified: RequestStatus.DENIED
-            })
+            const verification = await this.getUserVerificationDetail(requestId)
+            await this.connection.createQueryBuilder()
+                .update(TestingHistoryEntity)
+                .set({
+                    verified: RequestStatus.DENIED
+                })
+                .where("verified_id like :requestId", { "requestId": verification.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not denied verification", VerificationError.CAN_NOT_DENIED)
@@ -91,10 +107,13 @@ class VerifyRepository {
         try {
             const verificationData = await this.getUserVerificationDetail(requestId)
 
-            await this.connection.getRepository(MemberEntity).save({
-                id: verificationData.member?.id,
-                verified: true
-            })
+            await this.connection.createQueryBuilder()
+                .update(MemberEntity)
+                .set({
+                    verified: true
+                })
+                .where("id like :userId", { "userId": verificationData.member?.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
@@ -109,10 +128,13 @@ class VerifyRepository {
         try {
             const verificationData = await this.getUserVerificationDetail(requestId)
 
-            await this.connection.getRepository(MemberEntity).save({
-                id: verificationData.member?.id,
-                verified: false
-            })
+            await this.connection.createQueryBuilder()
+                .update(MemberEntity)
+                .set({
+                    verified: false
+                })
+                .where("id like :userId", { "userId": verificationData.member?.id })
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
