@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { HttpStatus, Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import { v4 as uuid } from "uuid"
 import { logger } from "../../../core/logging/Logger"
@@ -32,6 +32,8 @@ import { UserVerifyToTestingMapper } from "../../../utils/mapper/verify/UserVeri
 import FailureResponse from "../../../core/response/FailureResponse"
 import { VerificationError } from "../../../core/exceptions/constants/verification-error.enum"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
+import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
 
 /**
  * Service for tutor controller
@@ -164,11 +166,15 @@ export class TutorService {
      * @param id
      * @param user
      */
-    getEducation(id: string, user: User): Promise<EducationVerification> {
+    getEducation(id: string, user: User): Promise<EducationVerification | null> {
         return launch(async () => {
             const tutorId = TutorProfile.getTutorId(user.id)
             const education = await this.repository.getEducation(id, tutorId)
-            return UserVerifyToEducationMapper(education)
+            if (education) {
+                return UserVerifyToEducationMapper(education)
+            } else {
+                return null
+            }
         })
     }
 
@@ -221,12 +227,7 @@ export class TutorService {
         let fileUrl = ""
         let oldFileUrl = ""
         try {
-            const verificationData = await this.repository.getEducation(educationId, TutorProfile.getTutorId(user.id))
-
-            if (!verificationData) {
-                logger.error("Can not found verification data")
-                throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
-            }
+            const verificationData = await this.checkEducationOwner(educationId, user)
 
             if (file) {
                 fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
@@ -247,6 +248,43 @@ export class TutorService {
             if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
             }
+            throw error
+        }
+    }
+
+    /**
+     * Delete education verification data
+     * @param educationId
+     * @param user
+     */
+    deleteEducation(educationId: string, user: User) {
+        return launch(async () => {
+            const verificationData = await this.checkEducationOwner(educationId, user)
+            await this.repository.deleteEducationVerification(verificationData.id, educationId)
+        })
+    }
+
+    /**
+     * Check request user is an owner
+     * @param educationId
+     * @param user
+     * @private
+     */
+    private async checkEducationOwner(educationId: string, user: User): Promise<UserVerifyEntity> {
+        try {
+            const verificationData = await this.repository.getEducation(educationId, TutorProfile.getTutorId(user.id))
+            if (!verificationData) {
+                logger.error("Can not found verification data")
+                throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+            }
+
+            if (verificationData.member?.id !== user.id) {
+                logger.error("Permission Error")
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+            return verificationData
+        } catch (error) {
+            logger.error(error)
             throw error
         }
     }

@@ -1,11 +1,11 @@
 import { Express } from "express"
 import {
     Body,
-    Controller,
+    Controller, Delete,
     Get,
     HttpStatus,
-    Param,
-    Post,
+    Param, Patch,
+    Post, Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -170,7 +170,7 @@ export class TutorController {
      * @param id
      * @param currentUser
      */
-    @Get("/education/:id")
+    @Get("education/:id")
     getEducation(@Param("id") id: string, @CurrentUser() currentUser: User): Promise<IResponse<EducationVerification>> {
         return launch(async () => {
             const education = await this.tutorService.getEducation(id, currentUser)
@@ -185,7 +185,7 @@ export class TutorController {
      * @param body
      * @param file
      */
-    @Post("/education/:id")
+    @Put("education/:id")
     @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
     updateEducation(
         @Param("id") id: string,
@@ -207,6 +207,19 @@ export class TutorController {
 
             const result = await this.tutorService.updateEducationVerification(id, currentUser, data, file)
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Delete education verification data
+     * @param id
+     * @param currentUser
+     */
+    @Delete("education/:id")
+    deleteEducation(@Param("id") id: string, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            await this.tutorService.deleteEducation(id, currentUser)
+            return SuccessResponse.create("Successful")
         })
     }
 

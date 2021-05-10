@@ -132,7 +132,35 @@ class TutorRepository {
         } catch (error) {
             logger.error(error)
             await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
+            throw ErrorExceptions.create("Can not update verification", TutorError.CAN_NOT_UPDATE_EDUCATION_HISTORY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Delete education verification data
+     * @param requestId
+     * @param educationId
+     */
+    async deleteEducationVerification(requestId: string, educationId: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const userVerify = new UserVerifyEntity()
+            userVerify.id = requestId
+
+            const educationHistory = new EducationHistoryEntity()
+            educationHistory.id = educationId.toNumber()
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.remove(educationHistory)
+            await queryRunner.manager.remove(userVerify)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not delete verification", TutorError.CAN_NOT_DELETE_EDUCATION_HISTORY)
         } finally {
             await queryRunner.release()
         }
