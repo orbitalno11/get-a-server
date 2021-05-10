@@ -188,7 +188,11 @@ export class TutorService {
             const isOwner = id === user?.id
             const tutorId = TutorProfile.getTutorId(id)
             const educations = await this.repository.getEducations(tutorId, isOwner)
-            return new EducationEntityToEducationMapper().toEducationArray(educations)
+            if (educations) {
+                return new EducationEntityToEducationMapper().toEducationArray(educations)
+            } else {
+                return []
+            }
         })
     }
 
@@ -236,7 +240,7 @@ export class TutorService {
                 fileUrl = verificationData.documentUrl1
             }
 
-            await this.repository.updateEducationData(verificationData.id, educationId, user, data, fileUrl)
+            await this.repository.updateEducationVerificationData(verificationData.id, educationId, user, data, fileUrl)
 
             if (oldFileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
@@ -299,7 +303,11 @@ export class TutorService {
             const isOwner = id === user?.id
             const tutorId = TutorProfile.getTutorId(id)
             const testings = await this.repository.getTestings(tutorId, isOwner)
-            return new ExamResultEntityToExamResultMapper().toExamResultArray(testings)
+            if (testings) {
+                return new ExamResultEntityToExamResultMapper().toExamResultArray(testings)
+            } else {
+                return []
+            }
         })
     }
 
@@ -308,11 +316,15 @@ export class TutorService {
      * @param id
      * @param user
      */
-    getTesting(id: string, user: User): Promise<TestingVerification> {
+    getTesting(id: string, user: User): Promise<TestingVerification | null> {
         return launch(async () => {
             const tutorId = TutorProfile.getTutorId(user.id)
             const testing = await this.repository.getTesting(id, tutorId)
-            return UserVerifyToTestingMapper(testing)
+            if (testing) {
+                return UserVerifyToTestingMapper(testing)
+            } else {
+                return null
+            }
         })
     }
 
@@ -322,13 +334,13 @@ export class TutorService {
      * @param data
      * @param file
      */
-    async requestTestingVerify(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
+    async createTestingVerificationData(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
         let fileUrl = ""
         try {
             fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
             const requestId = uuid()
 
-            await this.repository.requestTestingVerify(requestId, user, data, fileUrl)
+            await this.repository.createTestingVerificationData(requestId, user, data, fileUrl)
 
             return "Successful"
         } catch (error) {
@@ -336,6 +348,67 @@ export class TutorService {
             if (fileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
             }
+            throw error
+        }
+    }
+
+    /**
+     * Update testing verification data
+     * @param testingId
+     * @param user
+     * @param data
+     * @param file
+     */
+    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, file: Express.Multer.File) {
+        let fileUrl = ""
+        let oldFileUrl = ""
+        try {
+            const verificationData = await this.checkTestingOwner(testingId, user)
+
+            if (file) {
+                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
+                oldFileUrl = verificationData.documentUrl1
+            } else {
+                fileUrl = verificationData.documentUrl1
+            }
+
+            await this.repository.updateTestingVerificationData(verificationData.id, testingId, user, data, fileUrl)
+
+            if (oldFileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            }
+
+            return "Successful"
+        } catch (error) {
+            logger.error(error)
+            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            }
+            throw error
+        }
+    }
+
+    /**
+     * Check request user is an owner
+     * @param testingId
+     * @param user
+     * @private
+     */
+    private async checkTestingOwner(testingId: string, user: User): Promise<UserVerifyEntity> {
+        try {
+            const verificationData = await this.repository.getTesting(testingId, TutorProfile.getTutorId(user.id))
+            if (!verificationData) {
+                logger.error("Can not found verification data")
+                throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+            }
+
+            if (verificationData.member?.id !== user.id) {
+                logger.error("Permission Error")
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+            return verificationData
+        } catch (error) {
+            logger.error(error)
             throw error
         }
     }

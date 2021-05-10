@@ -86,7 +86,6 @@ class TutorRepository {
      * @param user
      * @param data
      * @param fileUrl
-     * @param isUpdate
      */
     async createEducationVerification(requestId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
@@ -117,7 +116,7 @@ class TutorRepository {
      * @param data
      * @param fileUrl
      */
-    async updateEducationData(requestId: string, educationId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
+    async updateEducationVerificationData(requestId: string, educationId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl, true)
@@ -225,27 +224,12 @@ class TutorRepository {
      * @param data
      * @param fileUrl
      */
-    async requestTestingVerify(requestId: string, user: User, data: TestingVerifyForm, fileUrl: string) {
+    async createTestingVerificationData(requestId: string, user: User, data: TestingVerifyForm, fileUrl: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const tutor = new TutorEntity()
-            tutor.id = TutorProfile.getTutorId(user.id)
-
-            const exam = new ExamTypeEntity()
-            exam.id = data.examId
-
-            const subject = new SubjectEntity()
-            subject.code = data.subjectCode
-
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl)
 
-            const testingHistory = new TestingHistoryEntity()
-            testingHistory.tutor = tutor
-            testingHistory.exam = exam
-            testingHistory.subject = subject
-            testingHistory.testingScore = data.score
-            testingHistory.year = data.year.toString()
-            testingHistory.verified = RequestStatus.WAITING
+            const testingHistory = this.getTestingHistoryEntity(user.id, data)
             testingHistory.verifiedData = userVerify
 
             await queryRunner.connect()
@@ -256,6 +240,41 @@ class TutorRepository {
             logger.error(error)
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not request verification", TutorError.CAN_NOT_REQUEST_VERIFY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Update testing verification data
+     * @param requestId
+     * @param testingId
+     * @param user
+     * @param data
+     * @param fileUrl
+     */
+    async updateTestingVerificationData(
+        requestId: string,
+        testingId: string,
+        user: User,
+        data: TestingVerifyForm,
+        fileUrl: string
+    ) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl, true)
+
+            const testingHistory = this.getTestingHistoryEntity(user.id, data, testingId)
+            testingHistory.verifiedData = userVerify
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(testingHistory)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update verification", TutorError.CAN_NOT_UPDATE_TESTING_HISTORY)
         } finally {
             await queryRunner.release()
         }
@@ -300,7 +319,7 @@ class TutorRepository {
      * @param educationId
      * @private
      */
-    private getEducationHistoryEntity(userId: string, data: EducationVerifyForm, educationId?: string) {
+    private getEducationHistoryEntity(userId: string, data: EducationVerifyForm, educationId?: string): EducationHistoryEntity {
         const tutor = new TutorEntity()
         tutor.id = TutorProfile.getTutorId(userId)
 
@@ -322,6 +341,37 @@ class TutorRepository {
         educationHistory.verified = RequestStatus.WAITING
 
         return educationHistory
+    }
+
+    /**
+     * Create testing history entity object
+     * @param userId
+     * @param data
+     * @param testingId
+     * @private
+     */
+    private getTestingHistoryEntity(userId: string, data: TestingVerifyForm, testingId?: string): TestingHistoryEntity {
+        const tutor = new TutorEntity()
+        tutor.id = TutorProfile.getTutorId(userId)
+
+        const exam = new ExamTypeEntity()
+        exam.id = data.examId
+
+        const subject = new SubjectEntity()
+        subject.code = data.subjectCode
+
+        const testingHistory = new TestingHistoryEntity()
+        if (testingId?.isSafeNotBlank()) {
+            testingHistory.id = testingId.toNumber()
+        }
+        testingHistory.tutor = tutor
+        testingHistory.exam = exam
+        testingHistory.subject = subject
+        testingHistory.testingScore = data.score
+        testingHistory.year = data.year.toString()
+        testingHistory.verified = RequestStatus.WAITING
+
+        return testingHistory
     }
 }
 

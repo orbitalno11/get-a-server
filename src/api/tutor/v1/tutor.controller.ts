@@ -2,7 +2,7 @@ import { Express } from "express"
 import {
     Body,
     Controller, Delete,
-    Get,
+    Get, HttpCode,
     HttpStatus,
     Param, Patch,
     Post, Put,
@@ -252,7 +252,7 @@ export class TutorController {
                 throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
             }
 
-            const result = await this.tutorService.requestTestingVerify(currentUser, data, file)
+            const result = await this.tutorService.createTestingVerificationData(currentUser, data, file)
             return SuccessResponse.create(result)
         })
     }
@@ -267,6 +267,37 @@ export class TutorController {
         return launch(async () => {
             const testing = await this.tutorService.getTesting(id, currentUser)
             return SuccessResponse.create(testing)
+        })
+    }
+
+    /**
+     * Update testing verification data
+     * @param id
+     * @param body
+     * @param file
+     * @param currentUser
+     */
+    @Put("testing/:id")
+    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    updateTestingVerificationData(
+        @Param("id") id,
+        @Body() body: TestingVerifyForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ) {
+        return launch(async () => {
+            const data = TestingVerifyForm.createFormBody(body)
+            const validator = new TestingVerifyFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("validation error")
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            const result = await this.tutorService.updateTestingVerificationData(id, currentUser, data, file)
+            return SuccessResponse.create(result)
         })
     }
 }
