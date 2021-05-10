@@ -156,6 +156,37 @@ export class VerifyController {
     }
 
     /**
+     * Manage identity verification
+     * @param id
+     * @param approved
+     */
+    @Get("identity")
+    manageIdentityVerification(@Query("id") id: string, @Query("approved") approved: string) {
+        return launch(async () => {
+            if (id?.isSafeNotBlank() && approved?.isSafeNotBlank()) {
+                switch (approved) {
+                    case "true": {
+                        await this.service.approveIdentity(id)
+                        break
+                    }
+                    case "false": {
+                        await this.service.deniedIdentity(id)
+                        break
+                    }
+                    default: {
+                        logger.error("Invalid approve key.")
+                        throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+                    }
+                }
+                return SuccessResponse.create("Successful")
+            } else {
+                logger.error("Invalid approve data.")
+                throw FailureResponse.create(CommonError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+        })
+    }
+
+    /**
      * Get identity verification list from user verify request id
      * @param requestId
      */

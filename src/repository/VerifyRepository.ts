@@ -8,6 +8,7 @@ import { VerificationError } from "../core/exceptions/constants/verification-err
 import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { UserVerifyEntity } from "../entity/UserVerify.entity"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
+import { MemberEntity } from "../entity/member/member.entitiy"
 
 /**
  * Repository for "v1/verify"
@@ -83,6 +84,74 @@ class VerifyRepository {
     }
 
     /**
+     * Approved identity verification
+     * @param requestId
+     */
+    async approvedIdentity(requestId: string) {
+        try {
+            const verificationData = await this.getUserVerificationDetail(requestId)
+
+            await this.connection.getRepository(MemberEntity).save({
+                id: verificationData.member?.id,
+                verified: true
+            })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
+        }
+    }
+
+    /**
+     * Denied identity verification
+     * @param requestId
+     */
+    async deniedIdentity(requestId: string) {
+        try {
+            const verificationData = await this.getUserVerificationDetail(requestId)
+
+            await this.connection.getRepository(MemberEntity).save({
+                id: verificationData.member?.id,
+                verified: false
+            })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not approved verification", VerificationError.CAN_NOT_APPROVE)
+        }
+    }
+
+    /**
+     * Get user verification detail
+     * @param requestId
+     * @private
+     */
+    private async getUserVerificationDetail(requestId: string): Promise<UserVerifyEntity> {
+        try {
+            const verificationData = await this.connection.getRepository(UserVerifyEntity).findOne({
+                where: {
+                    id: requestId
+                },
+                join: {
+                    alias: "verify",
+                    leftJoinAndSelect: {
+                        member: "verify.member"
+                    }
+                }
+            })
+
+            if (!verificationData) {
+                logger.error("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+                throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+            }
+
+            return verificationData
+        } catch (error) {
+            logger.error(error)
+            if (error instanceof ErrorExceptions) throw error
+            throw ErrorExceptions.create("Can not found verification data", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
+        }
+    }
+
+    /**
      * Get education verification list from verification status
      * @param status
      */
@@ -112,7 +181,7 @@ class VerifyRepository {
                 .leftJoinAndSelect("verify.educationHistory", "education")
                 .leftJoinAndSelect("education.institute", "institute")
                 .leftJoinAndSelect("education.branch", "branch")
-                .where("verify.id = :requestId", { "requestId": requestId})
+                .where("verify.id = :requestId", { "requestId": requestId })
                 .getOne()
         } catch (error) {
             logger.error(error)
@@ -152,7 +221,7 @@ class VerifyRepository {
                 .leftJoinAndSelect("verify.testingHistory", "testing")
                 .leftJoinAndSelect("testing.subject", "subject")
                 .leftJoinAndSelect("testing.exam", "exam")
-                .where("verify.id like :requestId", {"requestId": requestId})
+                .where("verify.id like :requestId", { "requestId": requestId })
                 .getOne()
         } catch (error) {
             logger.error(error)

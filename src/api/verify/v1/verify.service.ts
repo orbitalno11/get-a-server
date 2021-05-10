@@ -68,6 +68,26 @@ export class VerifyService {
     }
 
     /**
+     * Approved identity verification
+     * @param requestId
+     */
+    approveIdentity(requestId: string) {
+        return launch(async() => {
+            await this.repository.approvedIdentity(requestId)
+        })
+    }
+
+    /**
+     * Denied identity verification
+     * @param requestId
+     */
+    deniedIdentity(requestId: string) {
+        return launch(async () => {
+            await this.repository.deniedIdentity(requestId)
+        })
+    }
+
+    /**
      * Get education verification list from verification status
      * @param status
      */
@@ -105,7 +125,7 @@ export class VerifyService {
      * @param requestId
      */
     getTestingVerificationDetail(requestId: string): Promise<TestingVerification> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getTestingVerificationDetail(requestId)
             return UserVerifyToTestingMapper(result)
         })
@@ -116,7 +136,7 @@ export class VerifyService {
      * @param status
      */
     getIdentityVerificationList(status: RequestStatus): Promise<IdentityVerification[]> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getIdentityVerificationList(status)
             return UserVerifyToVerificationListMapper(result)
         })
@@ -127,7 +147,7 @@ export class VerifyService {
      * @param requestId
      */
     getIdentityVerificationDetail(requestId: string): Promise<IdentityVerification> {
-        return launch( async () => {
+        return launch(async () => {
             const result = await this.repository.getIdentityVerificationDetail(requestId)
             return UserVerifyToIdentityVerificationMapper(result)
         })
