@@ -28,6 +28,8 @@ import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.e
 import { UserVerifyEntity } from "../entity/UserVerify.entity"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
 import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
+import { InterestedSubjectEntity } from "../entity/member/interestedSubject.entity"
+import { SubjectEntity } from "../entity/common/subject.entity"
 
 /**
  * Repository for "v1/me"
@@ -50,7 +52,12 @@ class MeRepository {
                     return await this.connection.createQueryBuilder(TutorEntity, "tutor")
                         .leftJoinAndSelect("tutor.member", "member")
                         .leftJoinAndSelect("tutor.contact", "contact")
-                        .leftJoinAndSelect("member.memberAddress", "memberAddress")
+                        .leftJoinAndSelect("member.interestedSubject", "interestedSubject")
+                        .leftJoinAndSelect("member.memberAddress", "address")
+                        .leftJoinAndSelect("address.subDistrict", "subDistrict")
+                        .leftJoinAndSelect("address.district", "district")
+                        .leftJoinAndSelect("address.province", "province")
+                        .leftJoinAndSelect("interestedSubject.subject", "subject")
                         .where("tutor.id like :id")
                         .setParameter("id", TutorProfile.getTutorId(user.id))
                         .getOne()
@@ -61,6 +68,10 @@ class MeRepository {
                         .leftJoinAndSelect("learner.member", "member")
                         .leftJoinAndSelect("learner.contact", "contact")
                         .leftJoinAndSelect("learner.grade", "grade")
+                        .leftJoinAndSelect("member.memberAddress", "address")
+                        .leftJoinAndSelect("address.subDistrict", "subDistrict")
+                        .leftJoinAndSelect("address.district", "district")
+                        .leftJoinAndSelect("address.province", "province")
                         .where("learner.id like :id")
                         .setParameter("id", LearnerProfile.getLearnerId(user.id))
                         .getOne()
@@ -82,7 +93,6 @@ class MeRepository {
      * @param pictureUrl
      */
     async updateLearnerProfile(updateData: UpdateProfileForm, userProfile: LearnerEntity, pictureUrl?: string) {
-        const queryRunner = this.connection.createQueryRunner()
         try {
             // update contact
             const contact = this.createContactEntity(updateData, userProfile)
@@ -125,11 +135,39 @@ class MeRepository {
             const member = this.createMemberEntity(updateData, userProfile, pictureUrl)
             member.tutorProfile = tutorProfile
 
-            await this.saveUserData(member, contact)
+            const interestedSubjects = this.getInterestedSubjectArray(updateData).map((item, index) => {
+                const subject = new SubjectEntity()
+                subject.code = item
+                const interested = new InterestedSubjectEntity()
+                interested.member = member
+                interested.subject = subject
+                interested.subjectRank = index + 1
+                return interested
+            })
+
+            await this.saveUserData(member, contact, interestedSubjects)
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not update tutor profile", UserError.CAN_NOT_UPDATE)
         }
+    }
+
+    /**
+     * Get interested subject code list
+     * @param params
+     * @private
+     */
+    private getInterestedSubjectArray(params: UpdateProfileForm): Array<string> {
+        const interestedSubject = [params["subject1"]]
+        const subject2 = params["subject2"]
+        if (subject2?.isSafeNotBlank()) {
+            interestedSubject.push(subject2)
+            const subject3 = params["subject3"]
+            if (subject3?.isSafeNotBlank()) {
+                interestedSubject.push(subject3)
+            }
+        }
+        return interestedSubject
     }
 
     /**
@@ -179,15 +217,28 @@ class MeRepository {
      * Save member and contact data
      * @param member
      * @param contact
+     * @param interestedSubject
      * @private
      */
-    private async saveUserData(member: MemberEntity, contact: ContactEntity) {
+    private async saveUserData(member: MemberEntity, contact: ContactEntity, interestedSubject?: InterestedSubjectEntity[]) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(contact)
             await queryRunner.manager.save(member)
+
+            if (!isEmpty(interestedSubject)) {
+                const interested = await queryRunner.manager.find(InterestedSubjectEntity,
+                    {
+                        where: {
+                            member: member
+                        }
+                    })
+                await queryRunner.manager.remove(interested)
+                await queryRunner.manager.save(interestedSubject)
+            }
+
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
