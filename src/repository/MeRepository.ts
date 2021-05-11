@@ -16,7 +16,6 @@ import { SubDistrictEntity } from "../entity/contact/subDistrict.entity"
 import { DistrictEntity } from "../entity/contact/district.entity"
 import { ProvinceEntity } from "../entity/contact/province.entity"
 import { LocationError } from "../core/exceptions/constants/location-error.enum"
-import UserManager from "../utils/UserManager"
 import UserError from "../core/exceptions/constants/user-error.enum"
 import UpdateProfileForm from "../model/form/update/UpdateProfileForm"
 import { ContactEntity } from "../entity/contact/contact.entitiy"
@@ -37,8 +36,7 @@ import { VerificationError } from "../core/exceptions/constants/verification-err
 @Injectable()
 class MeRepository {
     constructor(
-        private readonly connection: Connection,
-        private readonly userManager: UserManager) {
+        private readonly connection: Connection) {
     }
 
     /**
@@ -225,7 +223,8 @@ class MeRepository {
      */
     async updateUserAddress(userId: string, address: Address): Promise<void> {
         try {
-            const member = await this.userManager.getMember(userId)
+            const member = new MemberEntity()
+            member.id = userId
             const addressList = await this.getUserAddress(userId)
             let addressData = addressList.filter(data => data.type === address.type)[0]
 
