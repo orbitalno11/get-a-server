@@ -16,6 +16,7 @@ import { ExchangeTransactionEntity } from "../coins/exchangeTransaction.entity"
 import { LearnerEntity } from "../profile/learner.entity"
 import { PaymentTransactionEntity } from "../payment/PaymentTransaction.entity"
 import { CoinTransactionEntity } from "../coins/CoinTransaction.entity"
+import { UserVerifyEntity } from "../UserVerify.entity"
 
 @Entity("member")
 export class MemberEntity {
@@ -43,11 +44,16 @@ export class MemberEntity {
     @Column()
     username: string
 
-    @UpdateDateColumn()
+    @Column()
+    @UpdateDateColumn({ default: new Date() })
     updated: Date | null
 
-    @CreateDateColumn({ default: new Date() })
+    @Column()
+    @CreateDateColumn()
     created: Date | null
+
+    @Column()
+    verified: boolean
 
     // entity relation
     @OneToOne(
@@ -103,4 +109,10 @@ export class MemberEntity {
         () => PaymentTransactionEntity,
         (transaction) => transaction.member)
     paymentTransaction: PaymentTransactionEntity[]
+
+    @OneToMany(
+        () => UserVerifyEntity,
+        (verify) => verify.member
+    )
+    verifyRequest: UserVerifyEntity[]
 }

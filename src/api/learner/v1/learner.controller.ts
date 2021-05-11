@@ -17,7 +17,6 @@ import FailureResponse from "../../../core/response/FailureResponse"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
 import LearnerForm from "../../../model/form/register/LearnerForm"
-import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
 import LearnerRegisterFromValidator from "../../../utils/validator/register/LearnerRegisterFormValidator"
 import { LearnerService } from "./learner.service"
 import { isEmpty } from "../../../core/extension/CommonExtension"
@@ -27,6 +26,7 @@ import FileError from "../../../core/exceptions/constants/file-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import SimpleProfile from "../../../model/profile/SimpleProfile"
 import { LearnerEntityToSimpleProfile } from "../../../utils/mapper/learner/LearnerEntityToPublicProfile.mapper"
+import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 
 @Controller("v1/learner")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -39,7 +39,7 @@ export class LearnerController {
     @UseInterceptors(
         FileInterceptor(
             "image",
-            new UploadImageUtils().uploadImage2MbProperty("profile")
+            new UploadFileUtils().uploadImage2MbProperty()
         )
     )
     createLearner(

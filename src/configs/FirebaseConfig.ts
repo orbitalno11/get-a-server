@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 import * as serviceAccount from '../../serviceAccountKey.json';
-import { getFirebaseStorageBucketUrl } from "../configs/EnvironmentConfig"
+import { FIREBASE_STORAGE_URL } from "./EnvironmentConfig"
 
 const credentialData = {
   type: serviceAccount.type,
@@ -17,7 +17,7 @@ const credentialData = {
 
 admin.initializeApp({
   credential: admin.credential.cert(credentialData),
-  storageBucket: getFirebaseStorageBucketUrl()
+  storageBucket: FIREBASE_STORAGE_URL
 });
 
 const authentication = admin.auth();

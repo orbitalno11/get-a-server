@@ -1,5 +1,5 @@
 String.prototype.isSafeNotNull = function (): boolean {
-    return this !== null && String && this !== undefined;
+    return this !== null && String && this !== undefined
 }
 
 String.prototype.isSafeNotBlank = function (): boolean {
@@ -7,9 +7,13 @@ String.prototype.isSafeNotBlank = function (): boolean {
 }
 
 String.prototype.isBlank = function (): boolean {
-    return this.trim().length === 0;
+    return this.trim().length === 0
 }
 
 String.prototype.isNotBlank = function (): boolean {
-    return !this.isBlank();
+    return !this.isBlank()
+}
+
+String.prototype.toNumber = function (): number {
+    return Number(this)
 }

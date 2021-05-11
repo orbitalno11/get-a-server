@@ -1,7 +1,10 @@
+import * as dotenv from "dotenv"
+dotenv.config({ path: `../.env.${process.env.NODE_ENV}` })
+
 import { HttpAdapterHost, NestFactory } from "@nestjs/core"
+import { SERVER_PORT } from "./configs/EnvironmentConfig"
 import * as helmet from "helmet"
 import { AppModule } from "./app.module"
-import { getPortNumber } from "./configs/EnvironmentConfig"
 import { UnexpectedExceptionFilter } from "./core/exceptions/filters/UnexpectedException.filter"
 import { logger } from "./core/logging/Logger"
 import { ErrorExceptionFilter } from "./core/exceptions/filters/ErrorException.filter"
@@ -19,9 +22,9 @@ async function bootstrap() {
     app.use(helmet())
     app.useGlobalFilters(new UnexpectedExceptionFilter(httpAdapter), new ErrorExceptionFilter(), new FailureResponseExceptionFilter())
 
-    const portNumber = getPortNumber()
+    const portNumber = SERVER_PORT
     await app.listen(portNumber)
-    logger.info(`[GET-A SERVER] WAS STARTED AT ${ portNumber }`)
+    logger.info(`[GET-A SERVER] WAS STARTED AT ${portNumber}`)
 }
 
 bootstrap()

@@ -26,6 +26,9 @@ import { CoinEntity } from "../entity/coins/coin.entity"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
 import { CoinError } from "../core/exceptions/constants/coin.error"
 import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
+import { UserVerifyEntity } from "../entity/UserVerify.entity"
+import { UserVerify } from "../model/common/data/UserVerify.enum"
+import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
 
 /**
  * Repository for "v1/me"
@@ -59,6 +62,7 @@ class MeRepository {
                         .createQueryBuilder(LearnerEntity, "learner")
                         .leftJoinAndSelect("learner.member", "member")
                         .leftJoinAndSelect("learner.contact", "contact")
+                        .leftJoinAndSelect("learner.grade", "grade")
                         .where("learner.id like :id")
                         .setParameter("id", LearnerProfile.getLearnerId(user.id))
                         .getOne()
@@ -323,12 +327,79 @@ class MeRepository {
                         }
                     },
                     order: {
-                        requestDate: "ASC",
+                        requestDate: "ASC"
                     }
                 })
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not found coin redeem transaction", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
+        }
+    }
+
+    /**
+     * Create and update identity verification request
+     * @param requestId
+     * @param user
+     * @param cardImgPath
+     * @param faceImgPath
+     * @param cardFaceImgPath
+     * @param isUpdate
+     */
+    async requestVerifyIdentity(
+        requestId: string,
+        user: User,
+        cardImgPath: string,
+        faceImgPath: string,
+        cardFaceImgPath: string,
+        isUpdate: boolean
+    ): Promise<boolean> {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const member = new MemberEntity()
+            member.id = user.id
+
+            const userVerify = new UserVerifyEntity()
+            userVerify.id = requestId
+            userVerify.member = member
+            userVerify.documentUrl1 = cardImgPath
+            userVerify.documentUrl2 = faceImgPath
+            userVerify.documentUrl3 = cardFaceImgPath
+            userVerify.type = UserVerify.IDENTITY
+
+            if (!isUpdate) {
+                userVerify.created = new Date()
+            }
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(userVerify)
+            await queryRunner.commitTransaction()
+
+            return true
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not request identity verify", UserError.CAN_NOT_REQUEST_VERIFY)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get user identity verification data
+     * @param user
+     */
+    async getIdentityVerification(user: User): Promise<UserVerifyEntity> {
+        try {
+            return this.connection.createQueryBuilder(UserVerifyEntity, "verify")
+                .leftJoinAndSelect("verify.member", "member")
+                .where("member.id like :userId", { "userId": user.id })
+                .andWhere("verify.type = :type", { "type": UserVerify.IDENTITY })
+                .orderBy("verify.updated", "DESC")
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get verification detail", VerificationError.CAN_NOT_GET_VERIFICATION_DETAIL)
         }
     }
 }

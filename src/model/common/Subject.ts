@@ -1,10 +1,10 @@
 class Subject {
-    key: string
-    value: string
+    id: string
+    title: string
 
     constructor(key: string, value: string) {
-        this.key = key
-        this.value = value
+        this.id = key
+        this.title = value
     }
 }
 

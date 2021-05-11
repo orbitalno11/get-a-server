@@ -6,7 +6,7 @@ import {
     HttpStatus,
     Post,
     Query,
-    UploadedFile,
+    UploadedFile, UploadedFiles,
     UseFilters,
     UseInterceptors
 } from "@nestjs/common"
@@ -26,8 +26,7 @@ import User from "../../../model/User"
 import { launch } from "../../../core/common/launch"
 import Profile from "../../../model/profile/Profile"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
-import { FileInterceptor } from "@nestjs/platform-express"
-import UploadImageUtils from "../../../utils/multer/UploadImageUtils"
+import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import UpdateProfileFormValidator from "../../../utils/validator/update-profile/UpdateProfileFormValidator"
 import { CoinHistory } from "../../../model/coin/data/CoinHistory.enum"
@@ -35,6 +34,9 @@ import CoinTransaction from "../../../model/coin/CoinTransaction"
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import CoinBalance from "../../../model/coin/CoinBalance"
 import { UserRole } from "../../../core/constant/UserRole"
+import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
+import FileError from "../../../core/exceptions/constants/file-error.enum"
+import IdentityVerification from "../../../model/verify/IdentityVerification"
 
 /**
  * Class for "v1/me" controller
@@ -66,7 +68,7 @@ export class MeController {
      * @param file
      */
     @Post()
-    @UseInterceptors(FileInterceptor("image", new UploadImageUtils().uploadImage2MbProperty("profile")))
+    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImage2MbProperty()))
     updateUserProfile(
         @CurrentUser() currentUser: User,
         @Body() body: UpdateProfileForm,
@@ -155,6 +157,70 @@ export class MeController {
                     break
                 }
             }
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Request identity verification
+     * @param files
+     * @param currentUser
+     */
+    @Post("identity")
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "idCard", maxCount: 1 },
+            { name: "face", maxCount: 1 },
+            { name: "idCardWithFace", maxCount: 1 }
+        ], new UploadFileUtils().uploadImage())
+    )
+    requestVerifyIdentity(@UploadedFiles() files, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
+        return launch(async () => {
+            const card = files.idCard[0]
+            const face = files.face[0]
+            const cardFace = files.idCardWithFace[0]
+
+            if (!card || !face || !cardFace) {
+                throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
+            }
+
+            const result = await this.service.requestIdentifyVerify(currentUser, card, face, cardFace)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get user identity verification data
+     * @param currentUser
+     */
+    @Get("identity")
+    getUserIdentityVerification(@CurrentUser() currentUser: User): Promise<IResponse<IdentityVerification>> {
+        return launch(async () => {
+            const result = await this.service.getUserIdentityVerification(currentUser)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Update user identity data
+     * @param files
+     * @param currentUser
+     */
+    @Post("identity/update")
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "idCard", maxCount: 1 },
+            { name: "face", maxCount: 1 },
+            { name: "idCardWithFace", maxCount: 1 }
+        ], new UploadFileUtils().uploadImage())
+    )
+    updateUserIdentityRequest(@UploadedFiles() files, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            const card = files.idCard ? files.idCard[0] : undefined
+            const face = files.face ? files.face[0] : undefined
+            const cardFace = files.idCardWithFace ? files.idCardWithFace[0] : undefined
+
+            const result = await this.service.updateUserIdentity(currentUser, card, face, cardFace)
             return SuccessResponse.create(result)
         })
     }

@@ -4,6 +4,8 @@ import {UtilityModule} from "../utils/utility.module"
 import MeRepository from "./MeRepository"
 import CoinRepository from "./CoinRepository"
 import PaymentRepository from "./PaymentRepository"
+import VerifyRepository from "./VerifyRepository"
+import TutorRepository from "./TutorRepository"
 
 /**
  * Class for Repository module
@@ -11,7 +13,7 @@ import PaymentRepository from "./PaymentRepository"
  */
 @Module({
     imports: [CoreModule, UtilityModule],
-    providers: [MeRepository, CoinRepository, PaymentRepository],
-    exports: [MeRepository, CoinRepository, PaymentRepository]
+    providers: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository, TutorRepository],
+    exports: [MeRepository, CoinRepository, PaymentRepository, VerifyRepository, TutorRepository]
 })
 export class RepositoryModule{}

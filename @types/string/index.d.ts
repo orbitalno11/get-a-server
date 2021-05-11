@@ -6,4 +6,6 @@ interface String {
     isBlank(): boolean
 
     isNotBlank(): boolean
+
+    toNumber(): number
 }

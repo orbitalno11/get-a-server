@@ -15,10 +15,13 @@ import { OfflineCourseModule } from "./api/offline-course/v1/OfflineCourse.modul
 import { MeModule } from "./api/me/v1/me.module"
 import { CoinModule } from "./api/coin/coin.module"
 import { PaymentApiModule } from "./api/payment/paymentApi.module"
+import { VerifyModule } from "./api/verify/v1/verify.module"
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({
+            envFilePath: `.env.${process.env.NODE_ENV}`
+        }),
         TypeOrmModule.forRoot(ormConfig),
         AuthenticationModule,
         TutorModule,
@@ -26,7 +29,8 @@ import { PaymentApiModule } from "./api/payment/paymentApi.module"
         OfflineCourseModule,
         MeModule,
         CoinModule,
-        PaymentApiModule
+        PaymentApiModule,
+        VerifyModule
     ],
     controllers: [AppController],
     providers: [AppService]
