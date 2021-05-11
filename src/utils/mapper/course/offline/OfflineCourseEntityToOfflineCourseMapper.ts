@@ -5,7 +5,7 @@ import Subject from "../../../../model/common/Subject";
 import Grade from "../../../../model/common/Grade";
 import {OfflineCourseReviewToReviewMapper} from "./OfflineCourseReviewToReviewMapper";
 import Mapper from "../../../../core/common/Mapper";
-import {TutorEntityToTutorProfilePublicMapper} from "../../tutor/TutorEntityToTutorProfilePublicMapper";
+import {TutorEntityToPublicProfileMapper} from "../../tutor/TutorEntityToPublicProfile.mapper";
 
 export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineCourseEntity, OfflineCourse> {
     map(from: OfflineCourseEntity): OfflineCourse {
@@ -25,7 +25,7 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
         course.review = new OfflineCourseReviewToReviewMapper().toReviewArray(from.courseReview)
-        course.owner = TutorEntityToTutorProfilePublicMapper.getTutorSimpleDetail(from.owner)
+        course.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner)
         return course
     }
 }

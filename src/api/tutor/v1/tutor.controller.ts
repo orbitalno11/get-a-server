@@ -2,7 +2,7 @@ import { Express } from "express"
 import {
     Body,
     Controller, Delete,
-    Get, HttpCode,
+    Get,
     HttpStatus,
     Param, Patch,
     Post, Put,
@@ -39,6 +39,7 @@ import Education from "../../../model/education/Education"
 import EducationVerification from "../../../model/education/EducationVerification"
 import ExamResult from "../../../model/education/ExamResult"
 import TestingVerification from "../../../model/education/TestingVerification"
+import PublicProfile from "../../../model/profile/PublicProfile"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -72,28 +73,21 @@ export class TutorController {
         })
     }
 
-    // todo refactor this route to get tutor public profile
+    /**
+     * Get public tutor profile
+     * @param id
+     */
     @Get(":id")
-    getProfileById(@Param("id") id: string, @CurrentUser("id") currentUserId: string): Promise<SuccessResponse<TutorProfile | string>> {
+    getProfileById(@Param("id") id: string): Promise<SuccessResponse<PublicProfile>> {
         return launch(async () => {
             if (!id?.isSafeNotNull()) {
                 logger.error("Can not found user id")
                 throw FailureResponse.create(UserError.CAN_NOT_FOUND_ID, HttpStatus.NOT_FOUND)
             }
 
-            if (id !== currentUserId) {
-                logger.error("You don't have permission")
-                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
-            }
+            const profile = await this.tutorService.getProfileById(id)
 
-            const tutorData = await this.tutorService.getProfileById(id)
-
-            if (isEmpty(tutorData)) {
-                logger.info("Can not find user")
-                return SuccessResponse.create("Can not find user")
-            }
-
-            return SuccessResponse.create(new TutorEntityToTutorProfile().map(tutorData))
+            return SuccessResponse.create(profile)
         })
     }
 

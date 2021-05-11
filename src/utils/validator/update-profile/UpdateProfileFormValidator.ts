@@ -6,6 +6,7 @@ import { Gender } from "../../../model/common/data/Gender"
 import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import { UserRole } from "../../../core/constant/UserRole"
 import { Grade } from "../../../model/common/data/Grade"
+import { Subject } from "../../../model/common/data/Subject"
 
 class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
     private readonly userRole: UserRole
@@ -49,6 +50,10 @@ class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
             this.checkLearner()
         }
 
+        if (this.userRole === UserRole.TUTOR) {
+            this.checkTutor()
+        }
+
         this.isValid = isEmpty(this.errors)
 
         return {
@@ -61,6 +66,29 @@ class UpdateProfileFormValidator extends AbstractValidator<UpdateProfileForm> {
         if (!(this.form.grade in Grade)) {
             this.errors["grade"] = "grade is invalid"
         }
+    }
+
+    private checkTutor() {
+        if (this.form?.subject1.isSafeNotNull()) {
+            if (!this.isSubjectCode(this.form.subject1))
+                this.errors["subject1"] = "subject1 is invalid"
+        } else {
+            this.errors["subject1"] = "subject1 is required"
+        }
+
+        if (this.form?.subject2?.isSafeNotNull()) {
+            if (!this.isSubjectCode(this.form.subject2))
+                this.errors["subject2"] = "subject2 is invalid"
+        }
+
+        if (this.form?.subject3?.isSafeNotNull()) {
+            if (!this.isSubjectCode(this.form.subject3))
+                this.errors["subject3"] = "subject3 is invalid"
+        }
+    }
+
+    private isSubjectCode(code: string): boolean {
+        return code in Subject
     }
 }
 

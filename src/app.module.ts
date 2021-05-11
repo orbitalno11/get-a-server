@@ -13,8 +13,8 @@ import { TutorModule } from "./api/tutor/v1/tutor.module"
 import { LearnerModule } from "./api/learner/v1/learner.module"
 import { OfflineCourseModule } from "./api/offline-course/v1/OfflineCourse.module"
 import { MeModule } from "./api/me/v1/me.module"
-import { CoinModule } from "./api/coin/coin.module"
-import { PaymentApiModule } from "./api/payment/paymentApi.module"
+import { CoinModule } from "./api/coin/v1/coin.module"
+import { PaymentApiModule } from "./api/payment/v1/paymentApi.module"
 import { VerifyModule } from "./api/verify/v1/verify.module"
 
 @Module({

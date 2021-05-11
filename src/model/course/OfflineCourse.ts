@@ -1,11 +1,11 @@
-import TutorProfile from "../profile/TutorProfile"
 import {CourseType} from "./data/CourseType"
 import Subject from "../common/Subject"
 import Grade from "../common/Grade"
+import PublicProfile from "../profile/PublicProfile"
 
 class OfflineCourse {
     id: string
-    owner: TutorProfile
+    owner: PublicProfile
     name: string
     description: string | null
     subject: Subject

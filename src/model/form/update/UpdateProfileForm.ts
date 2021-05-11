@@ -12,7 +12,10 @@ class UpdateProfileForm {
     lineId: string | null
     facebookUrl: string | null
     introduction: string | null
-    grade: Grade | null
+    grade: Grade
+    subject1: string
+    subject2: string
+    subject3: string
 
     public static createFromBody(body: UpdateProfileForm): UpdateProfileForm {
         const form = new UpdateProfileForm()
@@ -27,6 +30,9 @@ class UpdateProfileForm {
         form.facebookUrl = body.facebookUrl
         form.introduction = body.introduction
         form.grade = Number(body.grade)
+        form.subject1 = body.subject1
+        form.subject2 = body.subject2
+        form.subject3 = body.subject3
         return form
     }
 }
