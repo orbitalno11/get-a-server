@@ -1,11 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common"
-import { CoreModule } from "../../core/core.module"
-import { UtilityModule } from "../../utils/utility.module"
-import { RepositoryModule } from "../../repository/repository.module"
+import { CoreModule } from "../../../core/core.module"
+import { UtilityModule } from "../../../utils/utility.module"
+import { RepositoryModule } from "../../../repository/repository.module"
 import { PaymentApiService } from "./paymentApi.service"
 import { PaymentApiController } from "./paymentApi.controller"
-import { PaymentModule } from "../../payment/payment.module"
-import Authenticated from "../../middleware/auth/Authenticated.middleware"
+import { PaymentModule } from "../../../payment/payment.module"
+import Authenticated from "../../../middleware/auth/Authenticated.middleware"
 
 /**
  * Module for payment API

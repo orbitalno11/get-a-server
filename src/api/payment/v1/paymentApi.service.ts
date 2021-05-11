@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
-import PaymentManager from "../../payment/PaymentManager"
-import { launch } from "../../core/common/launch"
-import PaymentRepository from "../../repository/PaymentRepository"
-import { PaymentTransactionEntity } from "../../entity/payment/PaymentTransaction.entity"
-import CoinPayment from "../../model/payment/CoinPayment"
+import PaymentManager from "../../../payment/PaymentManager"
+import { launch } from "../../../core/common/launch"
+import PaymentRepository from "../../../repository/PaymentRepository"
+import { PaymentTransactionEntity } from "../../../entity/payment/PaymentTransaction.entity"
+import CoinPayment from "../../../model/payment/CoinPayment"
 
 /**
  * Service class for payment API

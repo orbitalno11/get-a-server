@@ -9,7 +9,7 @@ import { TutorEntityToTutorProfile } from "../../../utils/mapper/tutor/TutorEnti
 import { LearnerEntity } from "../../../entity/profile/learner.entity"
 import { LearnerEntityToLearnerProfile } from "../../../utils/mapper/learner/LearnerEntityToLearnerProfile"
 import { launch } from "../../../core/common/launch"
-import { MemberAddressToAddressMapper } from "../../../utils/mapper/location/MemberAddressToAddressMapper"
+import { MemberAddressToAddressMapper } from "../../../utils/mapper/location/MemberAddressToAddress.mapper"
 import UpdateProfileForm from "../../../model/form/update/UpdateProfileForm"
 import { logger } from "../../../core/logging/Logger"
 import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"

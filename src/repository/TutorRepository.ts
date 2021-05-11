@@ -18,6 +18,7 @@ import TestingVerifyForm from "../model/education/TestingVerifyForm"
 import { ExamTypeEntity } from "../entity/education/examType.entity"
 import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
+import { LocationType } from "../model/location/data/LocationType"
 
 /**
  * Repository for "v1/tutor"
@@ -26,6 +27,30 @@ import { SubjectEntity } from "../entity/common/subject.entity"
 @Injectable()
 class TutorRepository {
     constructor(private readonly connection: Connection) {
+    }
+
+    /**
+     * Get public profile data
+     * @param tutorId
+     */
+    async getPublicProfile(tutorId: string): Promise<TutorEntity> {
+        try {
+            return await this.connection.createQueryBuilder(TutorEntity, "tutor")
+                .leftJoinAndSelect("tutor.member", "member")
+                .leftJoinAndSelect("tutor.statistic", "statistic")
+                .leftJoinAndSelect("member.memberAddress", "address")
+                .leftJoinAndSelect("member.interestedSubject", "interestedSubject")
+                .leftJoinAndSelect("interestedSubject.subject", "subject")
+                .leftJoinAndSelect("address.subDistrict", "subDistrict")
+                .leftJoinAndSelect("address.district", "district")
+                .leftJoinAndSelect("address.province", "province")
+                .where("tutor.id like :tutorId", { tutorId: tutorId })
+                .andWhere("address.type = :addressType", { addressType: LocationType.CONVENIENCE })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get tutor profile", TutorError.CAN_NOT_GET_PROFILE)
+        }
     }
 
     /**
