@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv"
-dotenv.config({ path: `../.env.${process.env.NODE_ENV}` })
+const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
+dotenv.config({ path: env })
 
 import { HttpAdapterHost, NestFactory } from "@nestjs/core"
 import { SERVER_PORT } from "./configs/EnvironmentConfig"
