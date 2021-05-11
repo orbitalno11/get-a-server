@@ -18,7 +18,7 @@ import {isEmpty} from "../../../core/extension/CommonExtension";
 import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
 import {LearnerEntity} from "../../../entity/profile/learner.entity";
 import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
-import UserManager from "../../../utils/UserManager";
+import UserUtil from "../../../utils/UserUtil";
 import {EnrollAction} from "../../../model/course/data/EnrollAction";
 
 /**
@@ -29,7 +29,7 @@ import {EnrollAction} from "../../../model/course/data/EnrollAction";
 export class OfflineCourseService {
     constructor(
         private readonly connection: Connection,
-        private readonly userManager: UserManager
+        private readonly userManager: UserUtil
     ) {
     }
 

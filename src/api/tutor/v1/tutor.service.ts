@@ -9,7 +9,7 @@ import { SubjectEntity } from "../../../entity/common/subject.entity"
 import TutorForm from "../../../model/form/register/TutorForm"
 import TutorFormToMemberEntityMapper from "../../../utils/mapper/tutor/TutorFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
-import UserManager from "../../../utils/UserManager"
+import UserUtil from "../../../utils/UserUtil"
 import { TutorEntity } from "../../../entity/profile/tutor.entity"
 import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
@@ -43,7 +43,7 @@ import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
 export class TutorService {
     constructor(
         private connection: Connection,
-        private readonly userManager: UserManager,
+        private readonly userManager: UserUtil,
         private readonly tokenManager: TokenManager,
         private readonly fileStorageUtils: FileStorageUtils,
         private readonly repository: TutorRepository
@@ -55,7 +55,7 @@ export class TutorService {
         let filePath: string
         try {
             // create firebase user
-            const user = await this.userManager.createUser(data)
+            const user = await this.userManager.createFirebaseUser(data)
             // change register form to member detail
             userId = user.uid
 
@@ -124,7 +124,7 @@ export class TutorService {
         } catch (error) {
             logger.error(error)
             if (userId) {
-                await this.userManager.deleteUser(userId)
+                await this.userManager.deleteFirebaseUser(userId)
             }
             if (filePath) {
                 await this.fileStorageUtils.deleteFileFromUrl(filePath)

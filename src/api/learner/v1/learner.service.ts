@@ -10,14 +10,14 @@ import { LearnerEntity } from "../../../entity/profile/learner.entity"
 import LearnerForm from "../../../model/form/register/LearnerForm"
 import LearnerFormToMemberEntityMapper from "../../../utils/mapper/learner/LearnerFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
-import UserManager from "../../../utils/UserManager"
+import UserUtil from "../../../utils/UserUtil"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 
 @Injectable()
 export class LearnerService {
     constructor(
         private connection: Connection,
-        private readonly userManager: UserManager,
+        private readonly userManager: UserUtil,
         private readonly tokenManger: TokenManager,
         private readonly fileStorageUtils: FileStorageUtils
     ) {
@@ -31,7 +31,7 @@ export class LearnerService {
         let filePath: string
         try {
             // create firebase user
-            const user = await this.userManager.createUser(data)
+            const user = await this.userManager.createFirebaseUser(data)
             // change register form to member detail
             userId = user.uid
 
@@ -92,7 +92,7 @@ export class LearnerService {
         } catch (error) {
             logger.error(error)
             if (userId) {
-                await this.userManager.deleteUser(userId)
+                await this.userManager.deleteFirebaseUser(userId)
             }
             if (filePath) {
                 await this.fileStorageUtils.deleteFileFromUrl(filePath)

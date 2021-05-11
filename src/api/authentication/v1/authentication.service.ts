@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from "@nestjs/common"
 import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import TokenManager from "../../../utils/token/TokenManager"
-import UserManager from "../../../utils/UserManager"
+import UserUtil from "../../../utils/UserUtil"
 import TokenError from "../../../core/exceptions/constants/token-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { launch } from "../../../core/common/launch"
@@ -11,7 +11,7 @@ import { launch } from "../../../core/common/launch"
 export class AuthenticationService {
     constructor(
         private readonly tokenManager: TokenManager,
-        private readonly userManager: UserManager
+        private readonly userManager: UserUtil
     ) {
     }
 
@@ -25,7 +25,7 @@ export class AuthenticationService {
                 )
             }
             const firebaseUser = await this.tokenManager.decodeFirebaseToken(token)
-            const userData = await this.userManager.getUser(firebaseUser.uid)
+            const userData = await this.userManager.getBaseUser(firebaseUser.uid)
 
             if (!userData) {
                 logger.error("Can not find user from token")
