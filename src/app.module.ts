@@ -16,6 +16,7 @@ import { MeModule } from "./api/me/v1/me.module"
 import { CoinModule } from "./api/coin/coin.module"
 import { PaymentApiModule } from "./api/payment/paymentApi.module"
 import { VerifyModule } from "./api/verify/v1/verify.module"
+import { ReviewModule } from "./api/review/v1/review.module"
 
 @Module({
     imports: [
@@ -30,7 +31,8 @@ import { VerifyModule } from "./api/verify/v1/verify.module"
         MeModule,
         CoinModule,
         PaymentApiModule,
-        VerifyModule
+        VerifyModule,
+        ReviewModule
     ],
     controllers: [AppController],
     providers: [AppService]

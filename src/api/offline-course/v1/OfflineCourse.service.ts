@@ -20,6 +20,8 @@ import {LearnerEntity} from "../../../entity/profile/learner.entity";
 import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
 import UserUtil from "../../../utils/UserUtil";
 import {EnrollAction} from "../../../model/course/data/EnrollAction";
+import { launch } from "../../../core/common/launch"
+import OfflineCourseRepository from "../../../repository/OfflineCourseRepository"
 
 /**
  * Service for manage offline course data
@@ -29,6 +31,7 @@ import {EnrollAction} from "../../../model/course/data/EnrollAction";
 export class OfflineCourseService {
     constructor(
         private readonly connection: Connection,
+        private readonly repository: OfflineCourseRepository,
         private readonly userManager: UserUtil
     ) {
     }
@@ -50,32 +53,14 @@ export class OfflineCourseService {
      * @param data
      */
     async createOfflineCourse(tutorId: string, data: OfflineCourseForm): Promise<string> {
-        try {
+        return launch(async () => {
             const courseId = this.generateCourseId(data.type, data.subject, data.grade)
             const tutor = await this.userManager.getTutor(tutorId)
 
-            const offlineCourse = new OfflineCourseEntity()
-            offlineCourse.id = courseId
-            offlineCourse.name = data.name
-            offlineCourse.description = data.description
-            offlineCourse.cost = data.cost
-            offlineCourse.day = data.dayOfWeek
-            offlineCourse.startTime = data.startTime
-            offlineCourse.endTime = data.endTime
-            offlineCourse.status = CourseStatus.OPEN
-            offlineCourse.requestNumber = 0
-            offlineCourse.grade = GradeEntity.createFromGrade(data.grade)
-            offlineCourse.subject = SubjectEntity.createFromCode(data.subject)
-            offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
-            offlineCourse.owner = tutor
-
-            await this.connection.getRepository(OfflineCourseEntity).save(offlineCourse)
+            await this.repository.createCourse(courseId, data, tutor)
 
             return courseId
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+        })
     }
 
     /**

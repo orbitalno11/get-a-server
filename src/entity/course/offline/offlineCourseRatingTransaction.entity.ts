@@ -14,7 +14,7 @@ export class OfflineCourseRatingTransactionEntity {
   review: string
 
   @Column()
-  reviewDate: Date
+  reviewDate: Date = new Date()
 
   // entity relation
   @ManyToOne(() => LearnerEntity, (learner) => learner.offlineCourseReview)
