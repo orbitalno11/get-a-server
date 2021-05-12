@@ -1,25 +1,25 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
-import {v4 as uuidV4} from "uuid"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
+import { v4 as uuidV4 } from "uuid"
 import OfflineCourseForm from "../../../model/course/OfflineCourseForm"
-import {logger} from "../../../core/logging/Logger"
-import {CourseType} from "../../../model/course/data/CourseType"
-import {Subject} from "../../../model/common/data/Subject"
-import {Grade} from "../../../model/common/data/Grade"
-import {OfflineCourseEntity} from "../../../entity/course/offline/offlineCourse.entity"
-import {CourseStatus} from "../../../model/course/data/CourseStatus"
-import {GradeEntity} from "../../../entity/common/grade.entity"
-import {SubjectEntity} from "../../../entity/common/subject.entity"
-import {CourseTypeEntity} from "../../../entity/course/courseType.entity"
-import TutorProfile from "../../../model/profile/TutorProfile";
-import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
-import {CourseError} from "../../../core/exceptions/constants/course-error.enum";
-import {isEmpty} from "../../../core/extension/CommonExtension";
-import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
-import {LearnerEntity} from "../../../entity/profile/learner.entity";
-import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
-import UserUtil from "../../../utils/UserUtil";
-import {EnrollAction} from "../../../model/course/data/EnrollAction";
+import { logger } from "../../../core/logging/Logger"
+import { CourseType } from "../../../model/course/data/CourseType"
+import { Subject } from "../../../model/common/data/Subject"
+import { Grade } from "../../../model/common/data/Grade"
+import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
+import { CourseStatus } from "../../../model/course/data/CourseStatus"
+import { GradeEntity } from "../../../entity/common/grade.entity"
+import { SubjectEntity } from "../../../entity/common/subject.entity"
+import { CourseTypeEntity } from "../../../entity/course/courseType.entity"
+import TutorProfile from "../../../model/profile/TutorProfile"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
+import { isEmpty } from "../../../core/extension/CommonExtension"
+import { OfflineCourseLeanerRequestEntity } from "../../../entity/course/offline/offlineCourseLearnerRequest.entity"
+import { LearnerEntity } from "../../../entity/profile/learner.entity"
+import { EnrollStatus } from "../../../model/course/data/EnrollStatus"
+import UserUtil from "../../../utils/UserUtil"
+import { EnrollAction } from "../../../model/course/data/EnrollAction"
 import { launch } from "../../../core/common/launch"
 import OfflineCourseRepository from "../../../repository/OfflineCourseRepository"
 
@@ -69,18 +69,16 @@ export class OfflineCourseService {
      */
     async getOfflineCourseDetail(courseId: string): Promise<OfflineCourseEntity> {
         try {
-            const offlineCourse = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
+            return await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.courseType", "type")
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.rating", "rating")
-                .leftJoinAndSelect("course.courseReview", "review")
                 .leftJoinAndSelect("owner.member", "member")
                 .where("course.id like :id")
                 .setParameter("id", courseId)
                 .getOne()
-            return offlineCourse
         } catch (error) {
             logger.error(error)
             throw error
