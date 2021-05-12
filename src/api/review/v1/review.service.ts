@@ -32,7 +32,7 @@ export class ReviewService {
             if (!isEmpty(enrolledCourse)) {
                 if (data.isOfflineCourse) {
                     const courseRating = await this.repository.getOfflineCourseRating(data.id)
-                    const updatedRating = this.calculateRatingAvg(courseRating.rating, courseRating.reviewNumber, data.rating)
+                    const updatedRating = this.calculateAddRatingAvg(courseRating.rating, courseRating.reviewNumber, data.rating)
                     const updatedReviewNumber = courseRating.reviewNumber + 1
                     await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
                 } else {
@@ -46,13 +46,48 @@ export class ReviewService {
     }
 
     /**
+     * Update offline course review
+     * @param data
+     * @param user
+     */
+    updateReview(data: ReviewForm, user: User) {
+        return launch(async () => {
+            const learner = await this.userUtil.getLearner(user.id)
+            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.id, data.isOfflineCourse)
+            if (!isEmpty(enrolledCourse)) {
+                if (data.isOfflineCourse) {
+                    const userRating = await this.repository.getOfflineCourseRatingByUser(data.id, learner.id)
+                    const courseRating = await this.repository.getOfflineCourseRating(data.id)
+
+                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
+                    const decreaseReviewNumber = courseRating.reviewNumber - 1
+
+                    const updatedRating = this.calculateAddRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
+
+                    await this.repository.updateOfflineCourseReview(data, learner, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                } else {
+                    // todo online course
+                    return null
+                }
+            } else {
+                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+            }
+        })
+    }
+
+    /**
      * Calculate rating average rating
-     * @param oldRating
-     * @param oldReviewNumber
-     * @param newRating
+     * @param avgRating
+     * @param reviewNumber
+     * @param addRating
      * @private
      */
-    private calculateRatingAvg(oldRating: number, oldReviewNumber: number, newRating: number): number {
-        return ((oldRating * oldReviewNumber) + newRating) / (oldReviewNumber + 1)
+    private calculateAddRatingAvg(avgRating: number, addRating: number, reviewNumber: number): number {
+        return ((avgRating * reviewNumber) + addRating) / (reviewNumber + 1)
+    }
+
+    private calculateRemoveRatingAvg(avgRating: number, removeRating: number, reviewNumber: number): number {
+        const number = reviewNumber > 1 ? (reviewNumber - 1) : 1
+        return ((avgRating * reviewNumber) - removeRating) / (number)
     }
 }

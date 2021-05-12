@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Body, Controller, HttpStatus, Post, Put, UseFilters, UseInterceptors } from "@nestjs/common"
 import { ReviewService } from "./review.service"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
@@ -44,6 +44,30 @@ export class ReviewController {
             }
 
             await this.service.createReview(body, user)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Update course review
+     * @param body
+     * @param user
+     */
+    @Put()
+    editReview(@Body() body: ReviewForm, @CurrentUser() user: User) {
+        return launch(async () => {
+            const data = ReviewForm.createFromBody(body)
+            const validator = new ReviewFormValidator()
+            validator.setData(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("Invalid data")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            await this.service.updateReview(body, user)
 
             return SuccessResponse.create("Successful")
         })

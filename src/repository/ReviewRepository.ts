@@ -18,6 +18,14 @@ class ReviewRepository {
     constructor(private readonly connection: Connection) {
     }
 
+    /**
+     * Create offline course rating
+     * @param data
+     * @param learner
+     * @param course
+     * @param updatedRating
+     * @param updatedReviewNumber
+     */
     async createOfflineCourseReview(
         data: ReviewForm,
         learner: LearnerEntity,
@@ -52,6 +60,10 @@ class ReviewRepository {
         }
     }
 
+    /**
+     * Get offline course average rating
+     * @param courseId
+     */
     async getOfflineCourseRating(courseId: string): Promise<OfflineCourseRatingEntity> {
         try {
             return await this.connection.getRepository(OfflineCourseRatingEntity)
@@ -63,6 +75,72 @@ class ReviewRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not course rating", ReviewError.CAN_NOT_GET_COURSE_RATING)
+        }
+    }
+
+    /**
+     * Get offline course rating from user
+     * @param courseId
+     * @param learnerId
+     */
+    async getOfflineCourseRatingByUser(courseId: string, learnerId: string): Promise<OfflineCourseRatingTransactionEntity> {
+        try {
+            return await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
+                .findOne({
+                    where: {
+                        learner: learnerId,
+                        course: courseId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
+        }
+    }
+
+    /**
+     * Update offline course review
+     * @param data
+     * @param learner
+     * @param course
+     * @param updatedRating
+     * @param updatedReviewNumber
+     */
+    async updateOfflineCourseReview(
+        data: ReviewForm,
+        learner: LearnerEntity,
+        course: OfflineCourseEntity,
+        updatedRating: number,
+        updatedReviewNumber: number
+    ) {
+        const queryRunner = await this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            await queryRunner.manager.update(OfflineCourseRatingTransactionEntity,
+                {
+                    learner: learner,
+                    course: course
+                },
+                {
+                    rating: data.rating,
+                    review: data.comment,
+                    reviewDate: new Date()
+                })
+            await queryRunner.manager.update(OfflineCourseRatingEntity,
+                { course: course },
+                {
+                    reviewNumber: updatedReviewNumber,
+                    rating: updatedRating
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+        } finally {
+            await queryRunner.release()
         }
     }
 }
