@@ -90,7 +90,7 @@ export class ReviewController {
      * @param offlineCourse
      * @param currentUser
      */
-    @Delete(":id")
+    @Delete("/course/:id")
     deleteReview(@Param("id") courseId: string, @Query("offline") offlineCourse: string, @CurrentUser() currentUser: User) {
         return launch(async () => {
             if (!courseId?.isSafeNotBlank() && !offlineCourse?.isSafeNotBlank() && offlineCourse?.isBoolean()) {
