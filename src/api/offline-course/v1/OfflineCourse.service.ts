@@ -1,25 +1,27 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
-import {v4 as uuidV4} from "uuid"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
+import { v4 as uuidV4 } from "uuid"
 import OfflineCourseForm from "../../../model/course/OfflineCourseForm"
-import {logger} from "../../../core/logging/Logger"
-import {CourseType} from "../../../model/course/data/CourseType"
-import {Subject} from "../../../model/common/data/Subject"
-import {Grade} from "../../../model/common/data/Grade"
-import {OfflineCourseEntity} from "../../../entity/course/offline/offlineCourse.entity"
-import {CourseStatus} from "../../../model/course/data/CourseStatus"
-import {GradeEntity} from "../../../entity/common/grade.entity"
-import {SubjectEntity} from "../../../entity/common/subject.entity"
-import {CourseTypeEntity} from "../../../entity/course/courseType.entity"
-import TutorProfile from "../../../model/profile/TutorProfile";
-import ErrorExceptions from "../../../core/exceptions/ErrorExceptions";
-import {CourseError} from "../../../core/exceptions/constants/course-error.enum";
-import {isEmpty} from "../../../core/extension/CommonExtension";
-import {OfflineCourseLeanerRequestEntity} from "../../../entity/course/offline/offlineCourseLearnerRequest.entity";
-import {LearnerEntity} from "../../../entity/profile/learner.entity";
-import {EnrollStatus} from "../../../model/course/data/EnrollStatus";
-import UserUtil from "../../../utils/UserUtil";
-import {EnrollAction} from "../../../model/course/data/EnrollAction";
+import { logger } from "../../../core/logging/Logger"
+import { CourseType } from "../../../model/course/data/CourseType"
+import { Subject } from "../../../model/common/data/Subject"
+import { Grade } from "../../../model/common/data/Grade"
+import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
+import { CourseStatus } from "../../../model/course/data/CourseStatus"
+import { GradeEntity } from "../../../entity/common/grade.entity"
+import { SubjectEntity } from "../../../entity/common/subject.entity"
+import { CourseTypeEntity } from "../../../entity/course/courseType.entity"
+import TutorProfile from "../../../model/profile/TutorProfile"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
+import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
+import { isEmpty } from "../../../core/extension/CommonExtension"
+import { OfflineCourseLeanerRequestEntity } from "../../../entity/course/offline/offlineCourseLearnerRequest.entity"
+import { LearnerEntity } from "../../../entity/profile/learner.entity"
+import { EnrollStatus } from "../../../model/course/data/EnrollStatus"
+import UserUtil from "../../../utils/UserUtil"
+import { EnrollAction } from "../../../model/course/data/EnrollAction"
+import { launch } from "../../../core/common/launch"
+import OfflineCourseRepository from "../../../repository/OfflineCourseRepository"
 
 /**
  * Service for manage offline course data
@@ -29,6 +31,7 @@ import {EnrollAction} from "../../../model/course/data/EnrollAction";
 export class OfflineCourseService {
     constructor(
         private readonly connection: Connection,
+        private readonly repository: OfflineCourseRepository,
         private readonly userManager: UserUtil
     ) {
     }
@@ -50,32 +53,14 @@ export class OfflineCourseService {
      * @param data
      */
     async createOfflineCourse(tutorId: string, data: OfflineCourseForm): Promise<string> {
-        try {
+        return launch(async () => {
             const courseId = this.generateCourseId(data.type, data.subject, data.grade)
             const tutor = await this.userManager.getTutor(tutorId)
 
-            const offlineCourse = new OfflineCourseEntity()
-            offlineCourse.id = courseId
-            offlineCourse.name = data.name
-            offlineCourse.description = data.description
-            offlineCourse.cost = data.cost
-            offlineCourse.day = data.dayOfWeek
-            offlineCourse.startTime = data.startTime
-            offlineCourse.endTime = data.endTime
-            offlineCourse.status = CourseStatus.OPEN
-            offlineCourse.requestNumber = 0
-            offlineCourse.grade = GradeEntity.createFromGrade(data.grade)
-            offlineCourse.subject = SubjectEntity.createFromCode(data.subject)
-            offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
-            offlineCourse.owner = tutor
-
-            await this.connection.getRepository(OfflineCourseEntity).save(offlineCourse)
+            await this.repository.createCourse(courseId, data, tutor)
 
             return courseId
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+        })
     }
 
     /**
@@ -84,18 +69,16 @@ export class OfflineCourseService {
      */
     async getOfflineCourseDetail(courseId: string): Promise<OfflineCourseEntity> {
         try {
-            const offlineCourse = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
+            return await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.courseType", "type")
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.rating", "rating")
-                .leftJoinAndSelect("course.courseReview", "review")
                 .leftJoinAndSelect("owner.member", "member")
                 .where("course.id like :id")
                 .setParameter("id", courseId)
                 .getOne()
-            return offlineCourse
         } catch (error) {
             logger.error(error)
             throw error

@@ -12,9 +12,10 @@ import { LearnerEntity } from "../entity/profile/learner.entity"
 import { isEmpty } from "../core/extension/CommonExtension"
 import TutorProfile from "../model/profile/TutorProfile"
 import LearnerProfile from "../model/profile/LearnerProfile"
-import { UserRepository } from "../repository/UserRepository"
+import UserRepository from "../repository/UserRepository"
 import CommonError from "../core/exceptions/constants/common-error.enum"
 import { launch } from "../core/common/launch"
+import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 
 /**
  * User utility class
@@ -186,8 +187,24 @@ class UserUtil {
     async isEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.userRepository.getEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
-                return isEmpty(course)
+                const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
+                return !isEmpty(course)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get enrolled course detail
+     * @param userId
+     * @param courseId
+     * @param isOfflineCourse
+     */
+    async getEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
+                return await this.userRepository.getEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
