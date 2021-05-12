@@ -1,4 +1,15 @@
-import { Body, Controller, HttpStatus, Post, Put, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Delete,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { ReviewService } from "./review.service"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
@@ -28,10 +39,10 @@ export class ReviewController {
     /**
      * Create course review
      * @param body
-     * @param user
+     * @param currentUser
      */
     @Post()
-    createReview(@Body() body: ReviewForm, @CurrentUser() user: User): Promise<IResponse<string>> {
+    createReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
             const validator = new ReviewFormValidator()
@@ -43,7 +54,7 @@ export class ReviewController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            await this.service.createReview(body, user)
+            await this.service.createReview(body, currentUser)
 
             return SuccessResponse.create("Successful")
         })
@@ -52,10 +63,10 @@ export class ReviewController {
     /**
      * Update course review
      * @param body
-     * @param user
+     * @param currentUser
      */
     @Put()
-    editReview(@Body() body: ReviewForm, @CurrentUser() user: User) {
+    editReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User) {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
             const validator = new ReviewFormValidator()
@@ -67,7 +78,27 @@ export class ReviewController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            await this.service.updateReview(body, user)
+            await this.service.updateReview(body, currentUser)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Delete course review
+     * @param courseId
+     * @param offlineCourse
+     * @param currentUser
+     */
+    @Delete(":id")
+    deleteReview(@Param("id") courseId: string, @Query("offline") offlineCourse: string, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            if (!courseId?.isSafeNotBlank() && !offlineCourse?.isSafeNotBlank() && offlineCourse?.isBoolean()) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.deleteReview(courseId, offlineCourse === "true", currentUser)
 
             return SuccessResponse.create("Successful")
         })

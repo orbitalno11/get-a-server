@@ -139,6 +139,43 @@ class ReviewRepository {
         } catch (error) {
             logger.error(error)
             await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update review", ReviewError.CAN_NOT_UPDATE_REVIEW)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Delete offline course review
+     * @param course
+     * @param userReview
+     * @param updatedRating
+     * @param updatedReviewNumber
+     */
+    async deleteOfflineReview(
+        course: OfflineCourseEntity,
+        userReview: OfflineCourseRatingTransactionEntity,
+        updatedRating: number,
+        updatedReviewNumber: number
+    ) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            await queryRunner.manager.remove(userReview)
+            await queryRunner.manager.update(OfflineCourseRatingEntity,
+                { course: course },
+                {
+                    reviewNumber: updatedReviewNumber,
+                    rating: updatedRating
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not delete review", ReviewError.CAN_NOT_DELETE_REVIEW)
         } finally {
             await queryRunner.release()
         }

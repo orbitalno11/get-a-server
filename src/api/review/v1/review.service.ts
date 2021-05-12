@@ -32,7 +32,7 @@ export class ReviewService {
             if (!isEmpty(enrolledCourse)) {
                 if (data.isOfflineCourse) {
                     const courseRating = await this.repository.getOfflineCourseRating(data.id)
-                    const updatedRating = this.calculateAddRatingAvg(courseRating.rating, courseRating.reviewNumber, data.rating)
+                    const updatedRating = this.calculateAddRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
                     const updatedReviewNumber = courseRating.reviewNumber + 1
                     await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
                 } else {
@@ -46,7 +46,7 @@ export class ReviewService {
     }
 
     /**
-     * Update offline course review
+     * Update course review
      * @param data
      * @param user
      */
@@ -65,6 +65,35 @@ export class ReviewService {
                     const updatedRating = this.calculateAddRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
 
                     await this.repository.updateOfflineCourseReview(data, learner, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                } else {
+                    // todo online course
+                    return null
+                }
+            } else {
+                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+            }
+        })
+    }
+
+    /**
+     * Delete course review
+     * @param courseId
+     * @param isOfflineCourse
+     * @param user
+     */
+    deleteReview(courseId: string, isOfflineCourse: boolean, user: User) {
+        return launch(async () => {
+            const learner = await this.userUtil.getLearner(user.id)
+            const enrolledCourse = await this.userUtil.getEnrolled(user.id, courseId, isOfflineCourse)
+            if (!isEmpty(enrolledCourse)) {
+                if (isOfflineCourse) {
+                    const userRating = await this.repository.getOfflineCourseRatingByUser(courseId, learner.id)
+                    const courseRating = await this.repository.getOfflineCourseRating(courseId)
+
+                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
+                    const decreaseReviewNumber = courseRating.reviewNumber - 1
+
+                    await this.repository.deleteOfflineReview(enrolledCourse, userRating, decreaseRating, decreaseReviewNumber)
                 } else {
                     // todo online course
                     return null
