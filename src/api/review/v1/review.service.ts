@@ -7,6 +7,11 @@ import UserUtil from "../../../utils/UserUtil"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
+import { CourseType } from "../../../model/course/data/CourseType"
+import { UserRole } from "../../../core/constant/UserRole"
+import LearnerProfile from "../../../model/profile/LearnerProfile"
+import { OfflineCourseReviewToReviewMapper } from "../../../utils/mapper/course/offline/OfflineCourseReviewToReviewMapper"
+import Review from "../../../model/review/Review"
 
 /**
  * Class for review service
@@ -100,6 +105,59 @@ export class ReviewService {
                 }
             } else {
                 throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+            }
+        })
+    }
+
+    /**
+     * Get course review by course id
+     * @param courseId
+     * @param courseType
+     * @param user
+     */
+    getCourseReview(courseId: string, courseType: CourseType, user?: User): Promise<Review[]> {
+        return launch(async () => {
+            if (courseType === CourseType.OFFLINE_GROUP || courseType === CourseType.OFFLINE_SINGLE) {
+                if (user && user.role === UserRole.LEARNER) {
+                    const isEnrolled = await this.userUtil.isEnrolled(user.id, courseId)
+                    if (isEnrolled) {
+                        const learnerId = LearnerProfile.getLearnerId(user.id)
+                        const userReview = await this.repository.getOfflineCourseReviewByUser(courseId, learnerId)
+                        const allReview = await this.repository.getOfflineCourseReview(courseId, learnerId)
+                        const review = new OfflineCourseReviewToReviewMapper(true).map(userReview)
+                        const reviews = new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
+                        reviews.push(review)
+                        return reviews
+                    } else {
+                        const allReview = await this.repository.getOfflineCourseReview(courseId)
+                        return new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
+                    }
+                } else {
+                    const allReview = await this.repository.getOfflineCourseReview(courseId)
+                    return new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
+                }
+            } else {
+                // todo online course
+                return null
+            }
+        })
+    }
+
+    /**
+     * Get user course review
+     * @param courseId
+     * @param userId
+     * @param courseType
+     */
+    getCourseReviewByUser(courseId: string, userId: string, courseType: CourseType): Promise<Review> {
+        return launch(async () => {
+            if (courseType === CourseType.OFFLINE_GROUP || courseType === CourseType.OFFLINE_SINGLE) {
+                const learnerId = LearnerProfile.getLearnerId(userId)
+                const userReview = await this.repository.getOfflineCourseReviewByUser(courseId, learnerId)
+                return new OfflineCourseReviewToReviewMapper().map(userReview)
+            } else {
+                // todo online course
+                return null
             }
         })
     }

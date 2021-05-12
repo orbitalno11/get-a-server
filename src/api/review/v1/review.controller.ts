@@ -1,7 +1,7 @@
 import {
     Body,
     Controller,
-    Delete,
+    Delete, Get,
     HttpStatus,
     Param,
     Post,
@@ -24,6 +24,8 @@ import ReviewFormValidator from "../../../utils/validator/review/ReviewFormValid
 import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
+import Review from "../../../model/review/Review"
+import { CourseType } from "../../../model/course/data/CourseType"
 
 /**
  * Class for controller "v1/review"
@@ -85,15 +87,39 @@ export class ReviewController {
     }
 
     /**
+     * Get course review
+     * @param courseId
+     * @param courseType
+     * @param currentUser
+     */
+    @Get("course/:id")
+    getCourseReview(
+        @Param("id") courseId: string,
+        @Query("course") courseType: string,
+        @CurrentUser() currentUser: User
+    ): Promise<IResponse<Review[]>> {
+        return launch(async () => {
+            if (!courseId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !(courseType.toNumber() in CourseType)) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const reviews = await this.service.getCourseReview(courseId, courseType.toNumber(), currentUser)
+
+            return SuccessResponse.create(reviews)
+        })
+    }
+
+    /**
      * Delete course review
      * @param courseId
      * @param offlineCourse
      * @param currentUser
      */
-    @Delete("/course/:id")
+    @Delete("course/:id")
     deleteReview(@Param("id") courseId: string, @Query("offline") offlineCourse: string, @CurrentUser() currentUser: User) {
         return launch(async () => {
-            if (!courseId?.isSafeNotBlank() && !offlineCourse?.isSafeNotBlank() && offlineCourse?.isBoolean()) {
+            if (!courseId?.isSafeNotBlank() || !offlineCourse?.isSafeNotBlank() || offlineCourse?.isBoolean()) {
                 logger.error("Invalid request")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
@@ -101,6 +127,30 @@ export class ReviewController {
             await this.service.deleteReview(courseId, offlineCourse === "true", currentUser)
 
             return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Get user course review
+     * @param userId
+     * @param courseId
+     * @param courseType
+     */
+    @Get("user/:userId/course/:courseId")
+    getCourseReviewByUser(
+        @Param("userId") userId: string,
+        @Param("courseId") courseId: string,
+        @Query("type") courseType: string
+    ): Promise<IResponse<Review>> {
+        return launch(async () => {
+            if (!userId?.isSafeNotBlank() || !courseId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !(courseType.toNumber() in CourseType)) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const review = await this.service.getCourseReviewByUser(courseId, userId, courseType.toNumber())
+
+            return SuccessResponse.create(review)
         })
     }
 }

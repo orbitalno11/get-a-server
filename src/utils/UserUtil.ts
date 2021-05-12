@@ -188,7 +188,7 @@ class UserUtil {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
-                return isEmpty(course)
+                return !isEmpty(course)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
