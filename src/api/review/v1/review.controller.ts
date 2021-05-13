@@ -68,14 +68,14 @@ export class ReviewController {
      * @param currentUser
      */
     @Put()
-    editReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User) {
+    editReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
             const validator = new ReviewFormValidator()
             validator.setData(data)
             const validate = validator.validate()
 
-            if (!validate.valid) {
+            if (!validate.valid || !data.reviewId?.isPositiveValue()) {
                 logger.error("Invalid data")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
@@ -95,11 +95,11 @@ export class ReviewController {
     @Get("course/:id")
     getCourseReview(
         @Param("id") courseId: string,
-        @Query("course") courseType: string,
+        @Query("type") courseType: string,
         @CurrentUser() currentUser: User
     ): Promise<IResponse<Review[]>> {
         return launch(async () => {
-            if (!courseId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !(courseType.toNumber() in CourseType)) {
+            if (!courseId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !this.isCourseType(courseType)) {
                 logger.error("Invalid request")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
@@ -113,44 +113,63 @@ export class ReviewController {
     /**
      * Delete course review
      * @param courseId
-     * @param offlineCourse
+     * @param courseType
+     * @param reviewId
      * @param currentUser
      */
-    @Delete("course/:id")
-    deleteReview(@Param("id") courseId: string, @Query("offline") offlineCourse: string, @CurrentUser() currentUser: User) {
+    @Delete(":id")
+    deleteReview(
+        @Param("id") reviewId: string,
+        @Query("type") courseType: string,
+        @Query("course") courseId: string,
+        @CurrentUser() currentUser: User
+    ) {
         return launch(async () => {
-            if (!courseId?.isSafeNotBlank() || !offlineCourse?.isSafeNotBlank() || offlineCourse?.isBoolean()) {
+            if (!reviewId?.isSafeNotBlank() ||
+                !reviewId?.toNumber()?.isPositiveValue() ||
+                !courseId?.isSafeNotBlank() ||
+                !courseType?.isSafeNotBlank() ||
+                !this.isCourseType(courseType)
+            ) {
                 logger.error("Invalid request")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            await this.service.deleteReview(courseId, offlineCourse === "true", currentUser)
+            await this.service.deleteReview(reviewId.toNumber(), courseId, courseType.toNumber(), currentUser)
 
             return SuccessResponse.create("Successful")
         })
     }
 
     /**
-     * Get user course review
-     * @param userId
-     * @param courseId
+     * Get user course review by review id
+     * @param reviewId
      * @param courseType
      */
-    @Get("user/:userId/course/:courseId")
-    getCourseReviewByUser(
-        @Param("userId") userId: string,
-        @Param("courseId") courseId: string,
+    @Get(":id")
+    getCourseReviewById(
+        @Param("id") reviewId: string,
         @Query("type") courseType: string
     ): Promise<IResponse<Review>> {
         return launch(async () => {
-            if (!userId?.isSafeNotBlank() || !courseId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !(courseType.toNumber() in CourseType)) {
+            if (!reviewId?.isSafeNotBlank() || !reviewId?.isSafeNotBlank() || !courseType?.isSafeNotBlank() || !this.isCourseType(courseType)) {
                 logger.error("Invalid request")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const review = await this.service.getCourseReviewByUser(courseId, userId, courseType.toNumber())
+            const review = await this.service.getCourseReviewById(reviewId.toNumber(), courseType.toNumber())
 
             return SuccessResponse.create(review)
         })
+    }
+
+    /**
+     * Check course type
+     * @param courseType
+     * @private
+     */
+    private isCourseType(courseType: string): boolean {
+        const type = courseType.toNumber()
+        return type in CourseType
     }
 }

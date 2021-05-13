@@ -80,16 +80,14 @@ class ReviewRepository {
 
     /**
      * Get offline course rating from user
-     * @param courseId
-     * @param learnerId
+     * @param reviewId
      */
-    async getOfflineCourseRatingByUser(courseId: string, learnerId: string): Promise<OfflineCourseRatingTransactionEntity> {
+    async getOfflineCourseRatingByUser(reviewId: number): Promise<OfflineCourseRatingTransactionEntity> {
         try {
             return await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
                 .findOne({
                     where: {
-                        learner: learnerId,
-                        course: courseId
+                        id: reviewId
                     }
                 })
         } catch (error) {
@@ -108,7 +106,6 @@ class ReviewRepository {
      */
     async updateOfflineCourseReview(
         data: ReviewForm,
-        learner: LearnerEntity,
         course: OfflineCourseEntity,
         updatedRating: number,
         updatedReviewNumber: number
@@ -119,10 +116,7 @@ class ReviewRepository {
             await queryRunner.startTransaction()
 
             await queryRunner.manager.update(OfflineCourseRatingTransactionEntity,
-                {
-                    learner: learner,
-                    course: course
-                },
+                { id: data.reviewId },
                 {
                     rating: data.rating,
                     review: data.comment,
@@ -193,6 +187,23 @@ class ReviewRepository {
                 .leftJoinAndSelect("learner.member", "member")
                 .where("review.courseId like :courseId", { courseId: courseId })
                 .andWhere("review.learnerId like :learnerId", { learnerId: learnerId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get user review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
+        }
+    }
+
+    /**
+     * Get Offline course review by id
+     * @param reviewId
+     */
+    async getOfflineCourseReviewById(reviewId: number): Promise<OfflineCourseRatingTransactionEntity> {
+        try {
+            return await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
+                .leftJoinAndSelect("review.learner", "learner")
+                .leftJoinAndSelect("learner.member", "member")
+                .where("review.id like :reviewId", { reviewId: reviewId })
                 .getOne()
         } catch (error) {
             logger.error(error)

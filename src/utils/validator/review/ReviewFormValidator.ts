@@ -2,6 +2,7 @@ import AbstractValidator from "../AbstractValidator"
 import ReviewForm from "../../../model/review/ReviewForm"
 import ValidateResult from "../ValidateResult"
 import { isEmpty } from "../../../core/extension/CommonExtension"
+import { CourseType } from "../../../model/course/data/CourseType"
 
 /**
  * Validator class for review form
@@ -9,7 +10,7 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
  */
 class ReviewFormValidator extends AbstractValidator<ReviewForm>{
     validator(): ValidateResult<any> {
-        if (!this.form.id?.isSafeNotBlank()) {
+        if (!this.form.courseId?.isSafeNotBlank()) {
             this.errors["id"] = "id is invalid"
         }
 
@@ -29,7 +30,7 @@ class ReviewFormValidator extends AbstractValidator<ReviewForm>{
             this.errors["isClip"] = "value is invalid"
         }
 
-        if (!(typeof this.form.isOfflineCourse === "boolean")) {
+        if (!(this.form.courseType in CourseType)) {
             this.errors["isOfflineCourse"] = "value is invalid"
         }
 

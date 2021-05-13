@@ -33,10 +33,11 @@ export class ReviewService {
     createReview(data: ReviewForm, user: User) {
         return launch(async () => {
             const learner = await this.userUtil.getLearner(user.id)
-            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.id, data.isOfflineCourse)
+            const isOfflineCourse = this.isOfflineCourse(data.courseType)
+            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
             if (!isEmpty(enrolledCourse)) {
-                if (data.isOfflineCourse) {
-                    const courseRating = await this.repository.getOfflineCourseRating(data.id)
+                if (isOfflineCourse) {
+                    const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
                     const updatedRating = this.calculateAddRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
                     const updatedReviewNumber = courseRating.reviewNumber + 1
                     await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
@@ -57,19 +58,19 @@ export class ReviewService {
      */
     updateReview(data: ReviewForm, user: User) {
         return launch(async () => {
-            const learner = await this.userUtil.getLearner(user.id)
-            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.id, data.isOfflineCourse)
+            const isOfflineCourse = this.isOfflineCourse(data.courseType)
+            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
             if (!isEmpty(enrolledCourse)) {
-                if (data.isOfflineCourse) {
-                    const userRating = await this.repository.getOfflineCourseRatingByUser(data.id, learner.id)
-                    const courseRating = await this.repository.getOfflineCourseRating(data.id)
+                if (isOfflineCourse) {
+                    const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
+                    const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
 
                     const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
                     const decreaseReviewNumber = courseRating.reviewNumber - 1
 
                     const updatedRating = this.calculateAddRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
 
-                    await this.repository.updateOfflineCourseReview(data, learner, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                    await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
                 } else {
                     // todo online course
                     return null
@@ -82,17 +83,18 @@ export class ReviewService {
 
     /**
      * Delete course review
+     * @param reviewId
      * @param courseId
-     * @param isOfflineCourse
+     * @param courseType
      * @param user
      */
-    deleteReview(courseId: string, isOfflineCourse: boolean, user: User) {
+    deleteReview(reviewId: number, courseId: string, courseType: CourseType, user: User) {
         return launch(async () => {
-            const learner = await this.userUtil.getLearner(user.id)
+            const isOfflineCourse = this.isOfflineCourse(courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, courseId, isOfflineCourse)
             if (!isEmpty(enrolledCourse)) {
                 if (isOfflineCourse) {
-                    const userRating = await this.repository.getOfflineCourseRatingByUser(courseId, learner.id)
+                    const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
                     const courseRating = await this.repository.getOfflineCourseRating(courseId)
 
                     const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
@@ -117,16 +119,18 @@ export class ReviewService {
      */
     getCourseReview(courseId: string, courseType: CourseType, user?: User): Promise<Review[]> {
         return launch(async () => {
-            if (courseType === CourseType.OFFLINE_GROUP || courseType === CourseType.OFFLINE_SINGLE) {
+            if (this.isOfflineCourse(courseType)) {
                 if (user && user.role === UserRole.LEARNER) {
                     const isEnrolled = await this.userUtil.isEnrolled(user.id, courseId)
                     if (isEnrolled) {
                         const learnerId = LearnerProfile.getLearnerId(user.id)
                         const userReview = await this.repository.getOfflineCourseReviewByUser(courseId, learnerId)
                         const allReview = await this.repository.getOfflineCourseReview(courseId, learnerId)
-                        const review = new OfflineCourseReviewToReviewMapper(true).map(userReview)
                         const reviews = new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
-                        reviews.push(review)
+                        if (!isEmpty(userReview)) {
+                            const review = new OfflineCourseReviewToReviewMapper(true).map(userReview)
+                            reviews.push(review)
+                        }
                         return reviews
                     } else {
                         const allReview = await this.repository.getOfflineCourseReview(courseId)
@@ -144,17 +148,19 @@ export class ReviewService {
     }
 
     /**
-     * Get user course review
-     * @param courseId
-     * @param userId
+     * Get course review by review id
+     * @param reviewId
      * @param courseType
      */
-    getCourseReviewByUser(courseId: string, userId: string, courseType: CourseType): Promise<Review> {
+    getCourseReviewById(reviewId: number, courseType: CourseType): Promise<Review> {
         return launch(async () => {
-            if (courseType === CourseType.OFFLINE_GROUP || courseType === CourseType.OFFLINE_SINGLE) {
-                const learnerId = LearnerProfile.getLearnerId(userId)
-                const userReview = await this.repository.getOfflineCourseReviewByUser(courseId, learnerId)
-                return new OfflineCourseReviewToReviewMapper().map(userReview)
+            if (this.isOfflineCourse(courseType)) {
+                const review = await this.repository.getOfflineCourseReviewById(reviewId)
+                if (!isEmpty(review)) {
+                    return new OfflineCourseReviewToReviewMapper().map(review)
+                } else {
+                    return null
+                }
             } else {
                 // todo online course
                 return null
@@ -163,7 +169,7 @@ export class ReviewService {
     }
 
     /**
-     * Calculate rating average rating
+     * Calculate rating average rating by add new value
      * @param avgRating
      * @param reviewNumber
      * @param addRating
@@ -173,8 +179,24 @@ export class ReviewService {
         return ((avgRating * reviewNumber) + addRating) / (reviewNumber + 1)
     }
 
+    /**
+     * Calculate rating average rating by remove value
+     * @param avgRating
+     * @param removeRating
+     * @param reviewNumber
+     * @private
+     */
     private calculateRemoveRatingAvg(avgRating: number, removeRating: number, reviewNumber: number): number {
         const number = reviewNumber > 1 ? (reviewNumber - 1) : 1
         return ((avgRating * reviewNumber) - removeRating) / (number)
+    }
+
+    /**
+     * Check is offline course
+     * @param courseType
+     * @private
+     */
+    private isOfflineCourse(courseType: CourseType): boolean {
+        return courseType === CourseType.OFFLINE_SINGLE || courseType === CourseType.OFFLINE_GROUP
     }
 }
