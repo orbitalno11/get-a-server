@@ -5,7 +5,7 @@ import { EducationHistoryEntity } from "../education/educationHistory.entity"
 import { TestingHistoryEntity } from "../education/testingHistory.entity"
 import { FavoriteTutorEntity } from "../favoriteTutor.entity"
 import { MemberEntity } from "../member/member.entitiy"
-import { TutorStatisticEntity } from "./TutorStatistic.entity"
+import { TutorStatisticEntity } from "../analytic/TutorStatistic.entity"
 
 @Entity("tutor_profile")
 export class TutorEntity {
