@@ -6,11 +6,21 @@ import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMon
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { AnalyticError } from "../core/exceptions/constants/analytic-error.enum"
 
+/**
+ * Repository for analytic manager
+ * @see AnalyticManager
+ * @author orbitalno11 2021 A.D.
+ */
 @Injectable()
 class AnalyticRepository {
     constructor(private readonly connection: Connection) {
     }
 
+    /**
+     * Increase number of learner favorite in tutor statistic
+     * @param tutorId
+     * @param queryRunner
+     */
     async increaseStatisticNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
         try {
             const statistic = await queryRunner.manager.findOne(TutorStatisticEntity, {
@@ -29,6 +39,11 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Increase number of learner favorite in tutor monetary analytic
+     * @param tutorId
+     * @param queryRunner
+     */
     async increaseMonetaryNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
         try {
             const monetary = await queryRunner.manager.findOne(TutorAnalyticMonetaryEntity, {
@@ -47,6 +62,11 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Decrease number of learner favorite in tutor statistic
+     * @param tutorId
+     * @param queryRunner
+     */
     async decreaseStatisticNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
         try {
             const statistic = await queryRunner.manager.findOne(TutorStatisticEntity, {
@@ -65,6 +85,11 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Decrease number of learner favorite in tutor monetary analytic
+     * @param tutorId
+     * @param queryRunner
+     */
     async decreaseMonetaryNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
         try {
             const monetary = await queryRunner.manager.findOne(TutorAnalyticMonetaryEntity, {
