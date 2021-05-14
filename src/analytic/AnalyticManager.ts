@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common"
 import AnalyticRepository from "../repository/AnalyticRepository"
-import { QueryRunner } from "typeorm"
 import { launch } from "../core/common/launch"
 
 /**
@@ -15,24 +14,22 @@ class AnalyticManager {
     /**
      * Increase number of learner favorite
      * @param tutorId
-     * @param queryRunner
      */
-    increaseNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
+    increaseNumberOfFavorite(tutorId: string) {
         return launch(async () => {
-            await this.repository.increaseStatisticNumberOfFavorite(tutorId, queryRunner)
-            await this.repository.increaseMonetaryNumberOfFavorite(tutorId, queryRunner)
+            await this.repository.increaseStatisticNumberOfFavorite(tutorId)
+            await this.repository.increaseMonetaryNumberOfFavorite(tutorId)
         })
     }
 
     /**
      * Decrease number of learner favorite
      * @param tutorId
-     * @param queryRunner
      */
-    decreaseNumberOfFavorite(tutorId: string, queryRunner: QueryRunner) {
+    decreaseNumberOfFavorite(tutorId: string) {
         return launch(async () => {
-            await this.repository.decreaseStatisticNumberOfFavorite(tutorId, queryRunner)
-            await this.repository.decreaseMonetaryNumberOfFavorite(tutorId, queryRunner)
+            await this.repository.decreaseStatisticNumberOfFavorite(tutorId)
+            await this.repository.decreaseMonetaryNumberOfFavorite(tutorId)
         })
     }
 }
