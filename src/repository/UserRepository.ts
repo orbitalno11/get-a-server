@@ -15,7 +15,7 @@ import { EnrollStatus } from "../model/course/data/EnrollStatus"
  * @author orbitalno11 2021 A.D.
  */
 @Injectable()
-export class UserRepository {
+class UserRepository {
     constructor(private readonly connection: Connection) {
     }
 
@@ -97,7 +97,7 @@ export class UserRepository {
             if (isOfflineCourse) {
                 return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
                     .leftJoinAndSelect("offlineCourse.requestList", "requestList")
-                    .where("offlineCourse.id like :courseId", { courseID: courseId })
+                    .where("offlineCourse.id like :courseId", { courseId: courseId })
                     .andWhere("requestList.learner like :learnerId", { learnerId: learnerId })
                     .andWhere("requestList.status = :enrollStatus", { enrollStatus: EnrollStatus.APPROVE })
                     .getOne()
@@ -111,3 +111,5 @@ export class UserRepository {
         }
     }
 }
+
+export default UserRepository

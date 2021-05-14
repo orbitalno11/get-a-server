@@ -1,11 +1,10 @@
-import {OfflineCourseEntity} from "../../../../entity/course/offline/offlineCourse.entity";
-import OfflineCourse from "../../../../model/course/OfflineCourse";
-import {getDayOfWeekTh} from "../../../DateTime";
-import Subject from "../../../../model/common/Subject";
-import Grade from "../../../../model/common/Grade";
-import {OfflineCourseReviewToReviewMapper} from "./OfflineCourseReviewToReviewMapper";
-import Mapper from "../../../../core/common/Mapper";
-import {TutorEntityToPublicProfileMapper} from "../../tutor/TutorEntityToPublicProfile.mapper";
+import { OfflineCourseEntity } from "../../../../entity/course/offline/offlineCourse.entity"
+import OfflineCourse from "../../../../model/course/OfflineCourse"
+import { getDayOfWeekTh } from "../../../DateTime"
+import Subject from "../../../../model/common/Subject"
+import Grade from "../../../../model/common/Grade"
+import Mapper from "../../../../core/common/Mapper"
+import { TutorEntityToPublicProfileMapper } from "../../tutor/TutorEntityToPublicProfile.mapper"
 
 export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineCourseEntity, OfflineCourse> {
     map(from: OfflineCourseEntity): OfflineCourse {
@@ -24,7 +23,6 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.status = from.status
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
-        course.review = new OfflineCourseReviewToReviewMapper().toReviewArray(from.courseReview)
         course.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner)
         return course
     }

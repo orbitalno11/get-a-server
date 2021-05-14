@@ -8,4 +8,6 @@ interface String {
     isNotBlank(): boolean
 
     toNumber(): number
+
+    isBoolean(): boolean
 }

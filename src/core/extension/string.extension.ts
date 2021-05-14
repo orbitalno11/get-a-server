@@ -17,3 +17,7 @@ String.prototype.isNotBlank = function (): boolean {
 String.prototype.toNumber = function (): number {
     return Number(this)
 }
+
+String.prototype.isBoolean = function (): boolean {
+    return Boolean(this)
+}

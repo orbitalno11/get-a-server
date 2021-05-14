@@ -18,7 +18,6 @@ class OfflineCourse {
     cost: number
     costText: string
     rating: number
-    review: Review[]
     status: string
     requestNumber: number
     studentNumber: number
