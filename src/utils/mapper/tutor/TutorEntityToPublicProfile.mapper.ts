@@ -26,10 +26,11 @@ export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, Pub
 
     public static getTutorSimpleDetail(data: TutorEntity): PublicProfile {
         const tutorProfile = new PublicProfile()
-        tutorProfile.id = data.member.id
-        tutorProfile.firstname = data.member.firstname
-        tutorProfile.lastname = data.member.lastname
-        tutorProfile.fullNameText = `${data.member.firstname} ${data.member.lastname}`
+        tutorProfile.id = data.member?.id
+        tutorProfile.firstname = data.member?.firstname
+        tutorProfile.lastname = data.member?.lastname
+        tutorProfile.picture = data.member?.profileUrl
+        tutorProfile.fullNameText = `${data.member?.firstname} ${data.member?.lastname}`
         return tutorProfile
     }
 }
