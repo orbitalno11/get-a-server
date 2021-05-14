@@ -34,6 +34,10 @@ import { VerificationError } from "../../../core/exceptions/constants/verificati
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
+import PublicProfile from "../../../model/profile/PublicProfile"
+import { isEmpty } from "../../../core/extension/CommonExtension"
+import { TutorEntityToPublicProfileMapper } from "../../../utils/mapper/tutor/TutorEntityToPublicProfile.mapper"
+import { TutorError } from "../../../core/exceptions/constants/tutor-error.enum"
 
 /**
  * Service for tutor controller
@@ -146,19 +150,21 @@ export class TutorService {
         return interestedSubject
     }
 
-    async getProfileById(id: string): Promise<TutorEntity> {
-        try {
-            return await this.connection.createQueryBuilder(TutorEntity, "tutor")
-                .leftJoinAndSelect("tutor.member", "member")
-                .leftJoinAndSelect("tutor.contact", "contact")
-                .leftJoinAndSelect("member.memberAddress", "memberAddress") // TODO map address when system can insert address
-                .where("tutor.id like :id")
-                .setParameter("id", `tutor-${id}`)
-                .getOne()
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+    /**
+     * Get public tutor profile
+     * @param id
+     */
+    async getProfileById(id: string): Promise<PublicProfile> {
+        return launch(async () => {
+            const profile = await this.repository.getPublicProfile(TutorProfile.getTutorId(id))
+
+            if (isEmpty(profile)) {
+                logger.error("Can not found profile")
+                throw ErrorExceptions.create("Can not found profile", TutorError.CAN_NOT_GET_PROFILE)
+            }
+
+            return new TutorEntityToPublicProfileMapper().map(profile)
+        })
     }
 
     /**

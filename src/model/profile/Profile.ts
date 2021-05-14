@@ -6,12 +6,13 @@ interface Profile {
     id: string
     firstname: string
     lastname: string
+    fullNameText: string
     gender: Gender
     dateOfBirth: Date
     profileUrl: string | null
     email: string
     contact: Contact
-    address: Address[] | null
+    address: Address[]
     created: Date | null
     updated: Date | null
 }

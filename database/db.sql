@@ -398,3 +398,15 @@ create table clip_transaction(
     CONSTRAINT `FK_CLIP_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)
 );
+
+create table tutor_statistic(
+    tutor_id varchar(255) not null,
+    number_of_offline_course int not null default 0,
+    number_of_online_course int not null default 0,
+    number_of_learner int not null default 0,
+    offline_course_rank int not null default 0,
+    online_course_rank int not null default 0,
+    tutor_rating float(2,1) not null default 0,
+    PRIMARY KEY (tutor_id),
+    CONSTRAINT `FK_STAT_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
+);
