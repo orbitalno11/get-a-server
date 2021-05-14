@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common"
+import FavoriteRepository from "../../../repository/FavoriteRepository"
+import AnalyticManager from "../../../analytic/AnalyticManager"
 
 /**
  * Service Class for "v1/favorite"
@@ -7,6 +9,9 @@ import { Injectable } from "@nestjs/common"
  */
 @Injectable()
 export class FavoriteService {
-    constructor() {
+    constructor(
+        private readonly repository: FavoriteRepository,
+        private readonly analytic: AnalyticManager
+    ) {
     }
 }
