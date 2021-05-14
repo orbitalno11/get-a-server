@@ -9,6 +9,7 @@ import UserRepository from "./UserRepository"
 import ReviewRepository from "./ReviewRepository"
 import OfflineCourseRepository from "./OfflineCourseRepository"
 import AnalyticRepository from "./AnalyticRepository"
+import FavoriteRepository from "./FavoriteRepository"
 
 /**
  * Class for Repository module
@@ -25,7 +26,8 @@ import AnalyticRepository from "./AnalyticRepository"
         VerifyRepository,
         TutorRepository,
         ReviewRepository,
-        OfflineCourseRepository
+        OfflineCourseRepository,
+        FavoriteRepository
     ],
     exports: [
         AnalyticRepository,
@@ -36,7 +38,8 @@ import AnalyticRepository from "./AnalyticRepository"
         VerifyRepository,
         TutorRepository,
         ReviewRepository,
-        OfflineCourseRepository
+        OfflineCourseRepository,
+        FavoriteRepository
     ]
 })
 export class RepositoryModule {
