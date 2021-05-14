@@ -3,15 +3,10 @@ import { Connection } from "typeorm"
 import { v4 as uuid } from "uuid"
 import { logger } from "../../../core/logging/Logger"
 import { InterestedSubjectEntity } from "../../../entity/member/interestedSubject.entity"
-import { MemberRoleEntity } from "../../../entity/member/memberRole.entitiy"
-import { RoleEntity } from "../../../entity/common/role.entity"
 import { SubjectEntity } from "../../../entity/common/subject.entity"
 import TutorForm from "../../../model/form/register/TutorForm"
-import TutorFormToMemberEntityMapper from "../../../utils/mapper/tutor/TutorFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
 import UserUtil from "../../../utils/UserUtil"
-import { TutorEntity } from "../../../entity/profile/tutor.entity"
-import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
 import { UserRole } from "../../../core/constant/UserRole"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
@@ -54,6 +49,11 @@ export class TutorService {
     ) {
     }
 
+    /**
+     * Create tutor profile
+     * @param data
+     * @param file
+     */
     async createTutor(data: TutorForm, file: Express.Multer.File): Promise<string> {
         let userId: string
         let filePath: string
@@ -66,65 +66,18 @@ export class TutorService {
             // set profile image path
             filePath = await this.fileStorageUtils.uploadImageTo(file, userId, "profile")
 
-            // create entity
-            const member = TutorFormToMemberEntityMapper(data)
-            member.id = userId
-            member.profileUrl = filePath
-            member.verified = false
-            member.created = new Date()
-            member.updated = new Date()
+            const interestedSubject = this.getInterestedSubjectArray(data)
 
-            const memberRole = new MemberRoleEntity()
-            memberRole.member = member
-            memberRole.role = RoleEntity.createFromId(UserRole.TUTOR)
-
-            member.memberRole = memberRole
-
-            // create update-profile profile
-            const tutorProfile = new TutorEntity()
-
-            const contact = new ContactEntity()
-            contact.phoneNumber = data.phoneNumber
-
-            tutorProfile.id = `tutor-${userId}`
-            tutorProfile.contact = contact
-            tutorProfile.introduction = "ยินดีที่ได้รู้จักทุกคน"
-            member.tutorProfile = tutorProfile
-
-            const subject = this.getInterestedSubjectArray(data)
-            for (let index = 0; index < subject.length; index++) {
-                const interestedSubjectEntity = new InterestedSubjectEntity()
-                interestedSubjectEntity.subjectRank = index + 1
-                interestedSubjectEntity.subject = SubjectEntity.createFromCode(subject[index])
-                member.interestedSubject.push(interestedSubjectEntity)
-            }
-
-            // insert update-profile data to database
-            const queryRunner = this.connection.createQueryRunner()
-            try {
-                await queryRunner.connect()
-                await queryRunner.startTransaction()
-                await queryRunner.manager.save(contact)
-                await queryRunner.manager.save(member)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                logger.error(error)
-                await queryRunner.rollbackTransaction()
-                throw error
-            } finally {
-                await queryRunner.release()
-            }
+            const result = await this.repository.createTutor(userId, data, filePath, interestedSubject)
 
             // generate token
-            const token = this.tokenManager.generateToken({
-                id: member.id,
-                email: member.email,
-                username: member.username,
-                profileUrl: member.profileUrl,
+            return this.tokenManager.generateToken({
+                id: result.id,
+                email: result.email,
+                username: result.username,
+                profileUrl: result.profileUrl,
                 role: UserRole.TUTOR
             })
-
-            return token
         } catch (error) {
             logger.error(error)
             if (userId) {
@@ -137,17 +90,36 @@ export class TutorService {
         }
     }
 
-    private getInterestedSubjectArray(params: TutorForm): Array<Subject> {
-        const interestedSubject = [params["subject1"]]
-        const subject2 = params["subject2"]
-        if (subject2?.isSafeNotNull()) {
-            interestedSubject.push(subject2)
-            const subject3 = params["subject3"]
-            if (subject3?.isSafeNotNull()) {
-                interestedSubject.push(subject3)
+    /**
+     * Create interested subject entity object array
+     * @param params
+     * @private
+     */
+    private getInterestedSubjectArray(params: TutorForm): Array<InterestedSubjectEntity> {
+        const interestedSubjects = []
+        interestedSubjects.push(this.getInterestedSubjectEntity(params.subject1, 1))
+        if (params.subject2?.isSafeNotBlank()) {
+            interestedSubjects.push(this.getInterestedSubjectEntity(params.subject2, 2))
+            if (params.subject3?.isSafeNotBlank()) {
+                interestedSubjects.push(this.getInterestedSubjectEntity(params.subject3, 3))
             }
         }
-        return interestedSubject
+        return interestedSubjects
+    }
+
+    /**
+     * Create interested subject entity object
+     * @param param
+     * @param rank
+     * @private
+     */
+    private getInterestedSubjectEntity(param: Subject, rank: number): InterestedSubjectEntity {
+        const subject = new SubjectEntity()
+        subject.code = param
+        const interested = new InterestedSubjectEntity()
+        interested.subject = subject
+        interested.subjectRank = rank
+        return interested
     }
 
     /**

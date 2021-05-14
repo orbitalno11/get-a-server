@@ -32,8 +32,8 @@ export class TutorStatisticEntity {
     rating: number
 
     @Column({ name: "tutor_offline_rating" })
-    offline_rating: number
+    offlineRating: number
 
     @Column({ name: "tutor_online_rating" })
-    online_rating: number
+    onlineRating: number
 }

@@ -5,7 +5,7 @@ import { TutorEntity } from "../profile/tutor.entity"
 export class TutorAnalyticMonetaryEntity {
     @OneToOne(
         () => TutorEntity,
-        (tutor) => tutor.statistic,
+        (tutor) => tutor.monetaryAnalytic,
         { primary: true })
     @JoinColumn({ name: "tutor_id" })
     tutor: TutorEntity
@@ -14,10 +14,10 @@ export class TutorAnalyticMonetaryEntity {
     rating: number
 
     @Column({ name: "tutor_offline_rating" })
-    offline_rating: number
+    offlineRating: number
 
     @Column({ name: "tutor_online_rating" })
-    online_rating: number
+    onlineRating: number
 
     @Column({ name: "number_of_learner" })
     numberOfLearner: number

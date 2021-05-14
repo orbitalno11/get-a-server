@@ -5,7 +5,7 @@ import { TutorEntity } from "../profile/tutor.entity"
 export class TutorAnalyticRecencyEntity {
     @OneToOne(
         () => TutorEntity,
-        (tutor) => tutor.statistic,
+        (tutor) => tutor.recencyAnalytic,
         { primary: true })
     @JoinColumn({ name: "tutor_id" })
     tutor: TutorEntity
