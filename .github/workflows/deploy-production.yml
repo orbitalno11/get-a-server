@@ -47,7 +47,6 @@ jobs:
           host: ${{secrets.SSH_PROD_HOST}}
           username: ${{secrets.SSH_PROD_USERNAME}}
           key: ${{secrets.SSH_PROD_KEY}}
-          passphrase: ${{secrets.SSH_PROD_PASSPHRASE}}
           script: |
             cd ~/get-a-server
             git pull origin main
