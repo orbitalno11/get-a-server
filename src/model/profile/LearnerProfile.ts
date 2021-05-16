@@ -1,0 +1,27 @@
+import Contact from "../Contact"
+import {Gender} from "../common/data/Gender"
+import Profile from "./Profile"
+import Grade from "../common/Grade"
+import Address from "../location/Address"
+
+class LearnerProfile implements Profile{
+    id: string
+    firstname: string
+    lastname: string
+    fullNameText: string
+    gender: Gender
+    dateOfBirth: Date
+    profileUrl: string | null
+    email: string
+    contact: Contact
+    address: Address[]
+    created: Date | null
+    updated: Date | null
+    grade: Grade
+
+    public static getLearnerId(userId: string): string {
+        return `learner-${userId}`
+    }
+}
+
+export default LearnerProfile
