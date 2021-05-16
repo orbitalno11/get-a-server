@@ -18,10 +18,12 @@ import { PaymentApiModule } from "./api/payment/v1/paymentApi.module"
 import { VerifyModule } from "./api/verify/v1/verify.module"
 import { ReviewModule } from "./api/review/v1/review.module"
 
+const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
+
 @Module({
     imports: [
         ConfigModule.forRoot({
-            envFilePath: `.env.${process.env.NODE_ENV}`
+            envFilePath: env
         }),
         TypeOrmModule.forRoot(ormConfig),
         AuthenticationModule,
