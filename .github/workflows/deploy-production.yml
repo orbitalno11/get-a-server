@@ -50,3 +50,6 @@ jobs:
           script: |
             cd ~/get-a-server
             git pull origin main
+            npm ci
+            npm run build
+            pm2 restart get-a-server
