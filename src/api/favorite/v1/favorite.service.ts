@@ -4,6 +4,11 @@ import AnalyticManager from "../../../analytic/AnalyticManager"
 import { launch } from "../../../core/common/launch"
 import UserUtil from "../../../utils/UserUtil"
 import TutorProfile from "../../../model/profile/TutorProfile"
+import User from "../../../model/User"
+import TutorCard from "../../../model/profile/TutorCard"
+import LearnerProfile from "../../../model/profile/LearnerProfile"
+import { FavoriteTutorEntityToTutorCardListMapper } from "../../../utils/mapper/tutor/FavoriteTutorEntityToTutorCard.mapper"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
 
 /**
  * Service Class for "v1/favorite"
@@ -48,6 +53,13 @@ export class FavoriteService {
             await this.repository.unLikeTutor(tutor, learner)
 
             await this.analytic.decreaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
+        })
+    }
+
+    getFavoriteTutorList(user: User): Promise<TutorCard[]> {
+        return launch(async () => {
+            const tutorList = await this.repository.getFavoriteTutorList(LearnerProfile.getLearnerId(user.id))
+            return isNotEmpty(tutorList) ? new FavoriteTutorEntityToTutorCardListMapper().map(tutorList) : []
         })
     }
 }

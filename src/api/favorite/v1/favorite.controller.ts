@@ -51,4 +51,11 @@ export class FavoriteController {
         })
     }
 
+    @Get("list")
+    getFavoriteList(@CurrentUser() currentUser: User) {
+        return launch(async () => {
+
+        })
+    }
+
 }

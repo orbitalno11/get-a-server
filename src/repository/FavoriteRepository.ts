@@ -54,6 +54,24 @@ class FavoriteRepository {
             throw ErrorExceptions.create("Can not unlike tutor by id", FavoriteError.CAN_NOT_UNLIKE_TUTOR)
         }
     }
+
+    async getFavoriteTutorList(learnerId: string): Promise<FavoriteTutorEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(FavoriteTutorEntity, "favorite")
+                .leftJoinAndSelect("favorite.tutor", "tutor")
+                .leftJoinAndSelect("tutor.member", "member")
+                .leftJoinAndSelect("tutor.statistic", "statistic")
+                .leftJoinAndSelect("member.memberAddress", "address")
+                .leftJoinAndSelect("member.interestedSubject", "interestedSubject")
+                .leftJoinAndSelect("address.province", "province")
+                .leftJoinAndSelect("address.district", "district")
+                .leftJoinAndSelect("interestedSubject.subject", "subject")
+                .where("favorite.learner like :learnerId", { learnerId: learnerId })
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+        }
+    }
 }
 
 export default FavoriteRepository
