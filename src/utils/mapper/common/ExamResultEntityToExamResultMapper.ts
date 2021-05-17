@@ -14,6 +14,7 @@ export class ExamResultEntityToExamResultMapper implements Mapper<TestingHistory
         result.subject = new Subject(from.subject?.code, from.subject?.title)
         result.subjectText = result.subject.title
         result.score = from.testingScore
+        result.year = from.year
         result.verified = from.verified as RequestStatus
         return result
     }

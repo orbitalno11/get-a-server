@@ -3,6 +3,7 @@ import { TutorEntity } from "../profile/tutor.entity"
 import { BranchEntity } from "./branch.entity"
 import { InstituteEntity } from "./institute.entity"
 import { UserVerifyEntity } from "../UserVerify.entity"
+import { GradeEntity } from "../common/grade.entity"
 
 @Entity("education_history")
 export class EducationHistoryEntity {
@@ -19,17 +20,30 @@ export class EducationHistoryEntity {
     verified: number
 
     // entity relation
-    @ManyToOne(() => TutorEntity, (tutor) => tutor.educationHistory)
+    @ManyToOne(
+        () => TutorEntity,
+        (tutor) => tutor.educationHistory)
     @JoinColumn({ name: "tutorId" })
     tutor: TutorEntity
 
-    @ManyToOne(() => InstituteEntity, (institute) => institute.educationHistory)
+    @ManyToOne(
+        () => InstituteEntity,
+        (institute) => institute.educationHistory)
     @JoinColumn({ name: "instituteId" })
     institute: InstituteEntity
 
-    @ManyToOne(() => BranchEntity, (branch) => branch.educationHistory)
+    @ManyToOne(
+        () => BranchEntity,
+        (branch) => branch.educationHistory)
     @JoinColumn({ name: "branchId" })
     branch: BranchEntity
+
+    @ManyToOne(
+        () => GradeEntity,
+        (grade) => grade.education
+    )
+    @JoinColumn({ name: "gradeId" })
+    grade: GradeEntity
 
     @OneToOne(() => UserVerifyEntity, { cascade: true })
     @JoinColumn({ name: "verified_id" })

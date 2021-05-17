@@ -9,6 +9,7 @@ class ExamResult {
     subject: Subject
     subjectText: string
     score: number
+    year: string
     verified: RequestStatus
 }
 
