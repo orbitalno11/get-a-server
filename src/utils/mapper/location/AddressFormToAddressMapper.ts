@@ -1,8 +1,8 @@
-import AddressForm from "../../../model/location/AddressForm";
-import Address from "../../../model/location/Address";
+import AddressForm from "../../../model/location/AddressForm"
+import Address from "../../../model/location/Address"
 
 export const AddressFormToAddressMapper = (from: AddressForm): Address => {
-    return new Address(
+    return Address.create(
         from.address,
         from.hintAddress,
         from.road,
