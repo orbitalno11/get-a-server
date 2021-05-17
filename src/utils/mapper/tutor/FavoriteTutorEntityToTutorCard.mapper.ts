@@ -25,14 +25,14 @@ export class FavoriteTutorEntityToTutorCardMapper implements Mapper<FavoriteTuto
         const convenience = addressList.filter((item) => {
             return item.type === LocationType.CONVENIENCE
         })
-        return isNotEmpty(convenience[0]) ? MemberAddressToAddressMapper(convenience[0]) : null
+        return isNotEmpty(convenience) ? MemberAddressToAddressMapper(convenience[0]) : null
     }
 
     private getFirstSubject(subjectList: InterestedSubjectEntity[]): Subject | null {
         const rankOneSubject = subjectList.filter((item) => {
             return item.subjectRank === 1
         })
-        return isNotEmpty(rankOneSubject[0]) ? new Subject(rankOneSubject[0].subject?.code, rankOneSubject[0].subject?.title) : null
+        return isNotEmpty(rankOneSubject) ? new Subject(rankOneSubject[0].subject?.code, rankOneSubject[0].subject?.title) : null
     }
 }
 

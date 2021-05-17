@@ -56,6 +56,10 @@ export class FavoriteService {
         })
     }
 
+    /**
+     * Get favorite tutor list
+     * @param user
+     */
     getFavoriteTutorList(user: User): Promise<TutorCard[]> {
         return launch(async () => {
             const tutorList = await this.repository.getFavoriteTutorList(LearnerProfile.getLearnerId(user.id))

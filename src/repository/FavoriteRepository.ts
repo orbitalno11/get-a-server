@@ -55,6 +55,10 @@ class FavoriteRepository {
         }
     }
 
+    /**
+     * Get favorite tutor list
+     * @param learnerId
+     */
     async getFavoriteTutorList(learnerId: string): Promise<FavoriteTutorEntity[]> {
         try {
             return await this.connection.createQueryBuilder(FavoriteTutorEntity, "favorite")

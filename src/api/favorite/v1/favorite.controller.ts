@@ -11,6 +11,7 @@ import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
+import TutorCard from "../../../model/profile/TutorCard"
 
 /**
  * Controller for "v1/favorite"
@@ -51,10 +52,15 @@ export class FavoriteController {
         })
     }
 
+    /**
+     * Get favorite tutor list
+     * @param currentUser
+     */
     @Get("list")
-    getFavoriteList(@CurrentUser() currentUser: User) {
+    getFavoriteList(@CurrentUser() currentUser: User): Promise<IResponse<TutorCard[]>> {
         return launch(async () => {
-
+            const favorties = await this.service.getFavoriteTutorList(currentUser)
+            return SuccessResponse.create(favorties)
         })
     }
 
