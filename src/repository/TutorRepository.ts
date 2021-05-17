@@ -19,6 +19,7 @@ import { ExamTypeEntity } from "../entity/education/examType.entity"
 import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
 import { LocationType } from "../model/location/data/LocationType"
+import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 
 /**
  * Repository for "v1/tutor"
@@ -330,6 +331,46 @@ class TutorRepository {
             throw ErrorExceptions.create("Can not delete verification", TutorError.CAN_NOT_DELETE_TESTING_HISTORY)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get tutor offline course order by rating
+     * @param tutorId
+     */
+    async getOfflineCourse(tutorId: string): Promise<OfflineCourseEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
+                .leftJoinAndSelect("offlineCourse.courseType", "courseType")
+                .leftJoinAndSelect("offlineCourse.subject", "subject")
+                .leftJoinAndSelect("offlineCourse.grade", "grade")
+                .leftJoinAndSelect("offlineCourse.rating", "rating")
+                .where("offlineCourse.owner like :tutorId", { tutorId: tutorId })
+                .orderBy("rating.rating", "DESC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_OFFLINE_COURSE)
+        }
+    }
+
+    /**
+     * Get tutor offline course order by learner request number
+     * @param tutorId
+     */
+    async getOfflineCourseTutor(tutorId: string): Promise<OfflineCourseEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
+                .leftJoinAndSelect("offlineCourse.courseType", "courseType")
+                .leftJoinAndSelect("offlineCourse.subject", "subject")
+                .leftJoinAndSelect("offlineCourse.grade", "grade")
+                .leftJoinAndSelect("offlineCourse.rating", "rating")
+                .where("offlineCourse.owner like :tutorId", { tutorId: tutorId })
+                .orderBy("offlineCourse.requestNumber", "DESC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_OFFLINE_COURSE)
         }
     }
 

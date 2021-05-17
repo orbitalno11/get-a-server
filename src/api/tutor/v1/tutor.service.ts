@@ -38,6 +38,9 @@ import PublicProfile from "../../../model/profile/PublicProfile"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import { TutorEntityToPublicProfileMapper } from "../../../utils/mapper/tutor/TutorEntityToPublicProfile.mapper"
 import { TutorError } from "../../../core/exceptions/constants/tutor-error.enum"
+import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
+import { OfflineCourseEntityToSimpleCourseListMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToSimpleCourse.mapper"
 
 /**
  * Service for tutor controller
@@ -429,5 +432,19 @@ export class TutorService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Get tutor offline course
+     * @param userId
+     * @param user
+     */
+    getOfflineCourse(userId: string, user?: User): Promise<SimpleOfflineCourse[]> {
+        return launch(async () => {
+            const isOwner = userId === user?.id
+            const tutorId = TutorProfile.getTutorId(userId)
+            let result = isOwner ? await this.repository.getOfflineCourseTutor(tutorId) : await this.repository.getOfflineCourse(tutorId)
+            return isNotEmpty(result) ? OfflineCourseEntityToSimpleCourseListMapper(result, isOwner) : []
+        })
     }
 }
