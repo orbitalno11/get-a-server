@@ -12,6 +12,13 @@ import LearnerFormToMemberEntityMapper from "../../../utils/mapper/learner/Learn
 import TokenManager from "../../../utils/token/TokenManager"
 import UserUtil from "../../../utils/UserUtil"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
+import User from "../../../model/User"
+import MyCourse from "../../../model/course/MyCourse"
+import { launch } from "../../../core/common/launch"
+import LearnerRepository from "../../../repository/LearnerRepository"
+import LearnerProfile from "../../../model/profile/LearnerProfile"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
+import { LearnerRequestToMyCourseListMapper } from "../../../utils/mapper/course/offline/LearnerRequestToMyCourse.mapper"
 
 @Injectable()
 export class LearnerService {
@@ -19,7 +26,8 @@ export class LearnerService {
         private connection: Connection,
         private readonly userManager: UserUtil,
         private readonly tokenManger: TokenManager,
-        private readonly fileStorageUtils: FileStorageUtils
+        private readonly fileStorageUtils: FileStorageUtils,
+        private readonly repository: LearnerRepository
     ) {
     }
 
@@ -114,5 +122,16 @@ export class LearnerService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Get learner offline course
+     * @param user
+     */
+    getOfflineCourse(user: User): Promise<MyCourse[]> {
+        return launch(async () => {
+            const courses = await this.repository.getOfflineCourse(LearnerProfile.getLearnerId(user.id))
+            return isNotEmpty(courses) ? LearnerRequestToMyCourseListMapper(courses) : []
+        })
     }
 }

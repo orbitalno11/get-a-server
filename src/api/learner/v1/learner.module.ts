@@ -4,9 +4,10 @@ import { UtilityModule } from "../../../utils/utility.module"
 import { LearnerController } from "./learner.controller"
 import { LearnerService } from "./learner.service"
 import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
+import { RepositoryModule } from "../../../repository/repository.module"
 
 @Module({
-    imports: [CoreModule, UtilityModule],
+    imports: [CoreModule, UtilityModule, RepositoryModule],
     controllers: [LearnerController],
     providers: [LearnerService]
 })
@@ -14,8 +15,9 @@ export class LearnerModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(LearnerAuthenticated)
-            .forRoutes(
-                { path: "v1/learner/:id", method: RequestMethod.PUT }
+            .exclude(
+                { path: "v1/learner/create", method: RequestMethod.POST }
             )
+            .forRoutes(LearnerController)
     }
 }
