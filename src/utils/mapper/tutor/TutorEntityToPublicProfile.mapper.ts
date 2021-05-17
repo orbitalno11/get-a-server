@@ -19,7 +19,7 @@ export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, Pub
         profile.numberOfLearner = from.statistic.numberOfLearner
         profile.rating = from.statistic.rating
         profile.interestedSubject = from.member?.interestedSubject?.map(
-            (item) => new Subject(item?.subject?.code, item?.subject?.title)
+            (item) => Subject.create(item?.subject?.code, item?.subject?.title)
         )
         return profile
     }

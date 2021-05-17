@@ -21,3 +21,7 @@ String.prototype.toNumber = function (): number {
 String.prototype.isBoolean = function (): boolean {
     return Boolean(this)
 }
+
+String.prototype.isNumber = function (): boolean {
+    return this.isSafeNotBlank() && !isNaN(Number(this))
+}
