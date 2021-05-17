@@ -49,6 +49,11 @@ export class TutorController {
     constructor(private readonly tutorService: TutorService) {
     }
 
+    /**
+     * Create tutor profile
+     * @param file
+     * @param body
+     */
     @Post("create")
     @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImage2MbProperty()))
     createTutor(@UploadedFile() file: Express.Multer.File, @Body() body: TutorForm): Promise<SuccessResponse<string>> {

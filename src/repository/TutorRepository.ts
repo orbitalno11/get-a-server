@@ -20,6 +20,17 @@ import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
 import { LocationType } from "../model/location/data/LocationType"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
+import TutorForm from "../model/form/register/TutorForm"
+import TutorFormToMemberEntityMapper from "../utils/mapper/tutor/TutorFormToMemberEntityMapper"
+import { MemberRoleEntity } from "../entity/member/memberRole.entitiy"
+import { UserRole } from "../core/constant/UserRole"
+import { RoleEntity } from "../entity/common/role.entity"
+import { ContactEntity } from "../entity/contact/contact.entitiy"
+import { InterestedSubjectEntity } from "../entity/member/interestedSubject.entity"
+import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
+import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
+import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
+import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 
 /**
  * Repository for "v1/tutor"
@@ -28,6 +39,69 @@ import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.enti
 @Injectable()
 class TutorRepository {
     constructor(private readonly connection: Connection) {
+    }
+
+    /**
+     * Create tutor profile
+     * @param userId
+     * @param data
+     * @param pictureUrl
+     * @param interestedSubject
+     */
+    async createTutor(
+        userId: string,
+        data: TutorForm,
+        pictureUrl: string,
+        interestedSubject: InterestedSubjectEntity[]
+    ): Promise<MemberEntity> {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const member = TutorFormToMemberEntityMapper(data)
+            member.id = userId
+            member.profileUrl = pictureUrl
+            member.verified = false
+            member.created = new Date()
+            member.updated = new Date()
+
+            const memberRole = new MemberRoleEntity()
+            memberRole.role = RoleEntity.createFromId(UserRole.TUTOR)
+
+            const contact = new ContactEntity()
+            contact.phoneNumber = data.phoneNumber
+
+            const tutorProfile = new TutorEntity()
+            tutorProfile.id = TutorProfile.getTutorId(userId)
+            tutorProfile.contact = contact
+            tutorProfile.introduction = "ยินดีที่ได้รู้จักทุกคน"
+
+            member.memberRole = memberRole
+            member.tutorProfile = tutorProfile
+            member.interestedSubject = interestedSubject
+
+            const statistic = this.getTutorStatisticEntity(tutorProfile)
+            const recencyAnalytic = this.getTutorAnalyticRecencyEntity(tutorProfile)
+            const frequencyAnalytic = this.getTutorAnalyticFrequencyEntity(tutorProfile)
+            const monetaryAnalytic = this.getTutorAnalyticMonetaryEntity(tutorProfile)
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(contact)
+            await queryRunner.manager.save(member)
+            await queryRunner.manager.save(statistic)
+            await queryRunner.manager.save(recencyAnalytic)
+            await queryRunner.manager.save(frequencyAnalytic)
+            await queryRunner.manager.save(monetaryAnalytic)
+            await queryRunner.commitTransaction()
+
+            return member
+        } catch (error) {
+            console.log(error)
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not create tutor profile", TutorError.CAN_NOT_CREATE_TUTOR_PROFILE)
+        } finally {
+            await queryRunner.release()
+        }
     }
 
     /**
@@ -466,6 +540,68 @@ class TutorRepository {
         testingHistory.verified = RequestStatus.WAITING
 
         return testingHistory
+    }
+
+    /**
+     * Create tutor statistic entity object
+     * @param tutor
+     * @private
+     */
+    private getTutorStatisticEntity(tutor: TutorEntity): TutorStatisticEntity {
+        const statistic = new TutorStatisticEntity()
+        statistic.tutor = tutor
+        statistic.offlineCourseNumber = 0
+        statistic.onlineCourseNumber = 0
+        statistic.numberOfLearner = 0
+        statistic.numberOfFavorite = 0
+        statistic.offlineCourseRank = 0
+        statistic.onlineCourseRank = 0
+        statistic.rating = 0
+        statistic.offlineRating = 0
+        statistic.onlineRating = 0
+        return statistic
+    }
+
+    /**
+     * Create tutor recency analytic entity object
+     * @param tutor
+     * @private
+     */
+    private getTutorAnalyticRecencyEntity(tutor: TutorEntity): TutorAnalyticRecencyEntity {
+        const analytic = new TutorAnalyticRecencyEntity()
+        analytic.tutor = tutor
+        analytic.recentLogin = new Date()
+        return analytic
+    }
+
+    /**
+     * Create tutor frequency analytic entity object
+     * @param tutor
+     * @private
+     */
+    private getTutorAnalyticFrequencyEntity(tutor: TutorEntity): TutorAnalyticFrequencyEntity {
+        const analytic = new TutorAnalyticFrequencyEntity()
+        analytic.tutor = tutor
+        analytic.numberOfLogin = 0
+        analytic.numberOfCourseView = 0
+        analytic.numberOfProfileView = 0
+        return analytic
+    }
+
+    /**
+     * Create tutor monetary analytic entity object
+     * @param tutor
+     * @private
+     */
+    private getTutorAnalyticMonetaryEntity(tutor: TutorEntity): TutorAnalyticMonetaryEntity {
+        const analytic = new TutorAnalyticMonetaryEntity()
+        analytic.tutor = tutor
+        analytic.rating = 0
+        analytic.offlineRating = 0
+        analytic.onlineRating = 0
+        analytic.numberOfLearner = 0
+        analytic.numberOfFavorite = 0
+        return analytic
     }
 }
 

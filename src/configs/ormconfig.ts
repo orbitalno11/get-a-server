@@ -36,7 +36,10 @@ import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offli
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
 import { UserVerifyEntity } from "../entity/UserVerify.entity"
-import { TutorStatisticEntity } from "../entity/profile/TutorStatistic.entity"
+import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
+import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
+import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
+import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -78,7 +81,10 @@ const ormConfig: TypeOrmModuleOptions = {
         OfflineCourseRatingTransactionEntity,
         OfflineCourseLeanerRequestEntity,
         UserVerifyEntity,
-        TutorStatisticEntity
+        TutorStatisticEntity,
+        TutorAnalyticRecencyEntity,
+        TutorAnalyticFrequencyEntity,
+        TutorAnalyticMonetaryEntity
     ]
 }
 

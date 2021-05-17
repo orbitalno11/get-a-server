@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm"
-import { TutorEntity } from "./tutor.entity"
+import { TutorEntity } from "../profile/tutor.entity"
 
 @Entity("tutor_statistic")
 export class TutorStatisticEntity {
@@ -11,17 +11,29 @@ export class TutorStatisticEntity {
     tutor: TutorEntity
 
     @Column({ name: "number_of_offline_course" })
-    offlineCourseNumber: number = 0
+    offlineCourseNumber: number
 
     @Column({ name: "number_of_online_course" })
-    onlineCourseNumber: number = 0
+    onlineCourseNumber: number
 
     @Column({ name: "number_of_learner" })
-    numberOfLearner: number = 0
+    numberOfLearner: number
+
+    @Column({ name: "number_of_favorite" })
+    numberOfFavorite: number
 
     @Column({ name: "offline_course_rank" })
-    offlineCourseRank: number = 0
+    offlineCourseRank: number
+
+    @Column({ name: "online_course_rank" })
+    onlineCourseRank: number
 
     @Column({ name: "tutor_rating" })
-    rating: number = 0
+    rating: number
+
+    @Column({ name: "tutor_offline_rating" })
+    offlineRating: number
+
+    @Column({ name: "tutor_online_rating" })
+    onlineRating: number
 }

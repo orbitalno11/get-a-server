@@ -9,6 +9,8 @@ import UserRepository from "./UserRepository"
 import ReviewRepository from "./ReviewRepository"
 import OfflineCourseRepository from "./OfflineCourseRepository"
 import LearnerRepository from "./LearnerRepository"
+import AnalyticRepository from "./AnalyticRepository"
+import FavoriteRepository from "./FavoriteRepository"
 
 /**
  * Class for Repository module
@@ -17,6 +19,7 @@ import LearnerRepository from "./LearnerRepository"
 @Module({
     imports: [CoreModule],
     providers: [
+        AnalyticRepository,
         MeRepository,
         CoinRepository,
         PaymentRepository,
@@ -25,9 +28,11 @@ import LearnerRepository from "./LearnerRepository"
         TutorRepository,
         ReviewRepository,
         OfflineCourseRepository,
-        LearnerRepository
+        LearnerRepository,
+        FavoriteRepository
     ],
     exports: [
+        AnalyticRepository,
         MeRepository,
         CoinRepository,
         PaymentRepository,
@@ -36,7 +41,8 @@ import LearnerRepository from "./LearnerRepository"
         TutorRepository,
         ReviewRepository,
         OfflineCourseRepository,
-        LearnerRepository
+        LearnerRepository,
+        FavoriteRepository
     ]
 })
 export class RepositoryModule {
