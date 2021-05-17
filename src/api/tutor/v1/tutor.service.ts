@@ -38,6 +38,8 @@ import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { OfflineCourseEntityToSimpleCourseListMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToSimpleCourse.mapper"
 import { ImageSize } from "../../../core/constant/ImageSize.enum"
 import Document from "../../../model/common/Document"
+import OnlineCourse from "../../../model/course/OnlineCourse"
+import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
 
 /**
  * Service for tutor controller
@@ -477,6 +479,18 @@ export class TutorService {
             const tutorId = TutorProfile.getTutorId(userId)
             let result = isOwner ? await this.repository.getOfflineCourseTutor(tutorId) : await this.repository.getOfflineCourse(tutorId)
             return isNotEmpty(result) ? OfflineCourseEntityToSimpleCourseListMapper(result, isOwner) : []
+        })
+    }
+
+    /**
+     * Get tutor online course
+     * @param userId
+     * @param user
+     */
+    getOnlineCourse(userId: string, user?: User): Promise<OnlineCourse[]> {
+        return launch(async () => {
+            const courses = await this.repository.getOnlineCourse(TutorProfile.getTutorId(userId))
+            return isNotEmpty(courses) ? new OnlineCourseEntityToOnlineCourseMapper().mapList(courses) : []
         })
     }
 }

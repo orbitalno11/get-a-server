@@ -5,6 +5,8 @@ import {OfflineCourseLeanerRequestEntity} from "../course/offline/offlineCourseL
 import {OfflineCourseRatingTransactionEntity} from "../course/offline/offlineCourseRatingTransaction.entity"
 import {FavoriteTutorEntity} from "../favoriteTutor.entity"
 import {MemberEntity} from "../member/member.entitiy"
+import { ClipRatingTransactionEntity } from "../course/clip/ClipRatingTransaction.entity"
+import { ClipTransactionEntity } from "../course/clip/ClipTransaction.entity"
 
 @Entity("learner_profile")
 export class LearnerEntity {
@@ -30,6 +32,12 @@ export class LearnerEntity {
     @OneToMany(() => OfflineCourseRatingTransactionEntity, (rating) => rating.learner)
     offlineCourseReview: OfflineCourseRatingTransactionEntity[]
 
+    @OneToMany(() => ClipRatingTransactionEntity, (rating) => rating.learner)
+    onlineClipReview: ClipRatingTransactionEntity[]
+
     @OneToMany(() => OfflineCourseLeanerRequestEntity, (request) => request.learner)
     requestCourse: OfflineCourseLeanerRequestEntity[]
+
+    @OneToMany(() => ClipTransactionEntity, (clip) => clip.learner)
+    onlineClips: ClipTransactionEntity
 }
