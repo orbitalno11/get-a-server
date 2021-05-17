@@ -12,6 +12,8 @@ import { UserRole } from "../../../core/constant/UserRole"
 import LearnerProfile from "../../../model/profile/LearnerProfile"
 import { OfflineCourseReviewToReviewMapper } from "../../../utils/mapper/course/offline/OfflineCourseReviewToReviewMapper"
 import Review from "../../../model/review/Review"
+import RatingUtil from "../../../utils/rating/RatingUtil"
+import AnalyticManager from "../../../analytic/AnalyticManager"
 
 /**
  * Class for review service
@@ -21,7 +23,8 @@ import Review from "../../../model/review/Review"
 export class ReviewService {
     constructor(
         private readonly repository: ReviewRepository,
-        private readonly userUtil: UserUtil
+        private readonly userUtil: UserUtil,
+        private readonly analytic: AnalyticManager
     ) {
     }
 
@@ -38,9 +41,10 @@ export class ReviewService {
             if (!isEmpty(enrolledCourse)) {
                 if (isOfflineCourse) {
                     const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
-                    const updatedRating = this.calculateAddRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
+                    const updatedRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
                     const updatedReviewNumber = courseRating.reviewNumber + 1
                     await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
+                    await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating)
                 } else {
                     // todo online course
                     return null
@@ -65,12 +69,15 @@ export class ReviewService {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
                     const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
 
-                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
-                    const decreaseReviewNumber = courseRating.reviewNumber - 1
-
-                    const updatedRating = this.calculateAddRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
+                    const updatedRating = RatingUtil.calculateUpdateRatingAvg(
+                        courseRating.rating,
+                        data.rating,
+                        userRating.rating,
+                        courseRating.reviewNumber
+                    )
 
                     await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                    await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
                 } else {
                     // todo online course
                     return null
@@ -97,10 +104,11 @@ export class ReviewService {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
                     const courseRating = await this.repository.getOfflineCourseRating(courseId)
 
-                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
+                    const decreaseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
                     const decreaseReviewNumber = courseRating.reviewNumber - 1
 
                     await this.repository.deleteOfflineReview(enrolledCourse, userRating, decreaseRating, decreaseReviewNumber)
+                    await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, 0.0, false, userRating.rating)
                 } else {
                     // todo online course
                     return null
@@ -166,29 +174,6 @@ export class ReviewService {
                 return null
             }
         })
-    }
-
-    /**
-     * Calculate rating average rating by add new value
-     * @param avgRating
-     * @param reviewNumber
-     * @param addRating
-     * @private
-     */
-    private calculateAddRatingAvg(avgRating: number, addRating: number, reviewNumber: number): number {
-        return ((avgRating * reviewNumber) + addRating) / (reviewNumber + 1)
-    }
-
-    /**
-     * Calculate rating average rating by remove value
-     * @param avgRating
-     * @param removeRating
-     * @param reviewNumber
-     * @private
-     */
-    private calculateRemoveRatingAvg(avgRating: number, removeRating: number, reviewNumber: number): number {
-        const number = reviewNumber > 1 ? (reviewNumber - 1) : 1
-        return ((avgRating * reviewNumber) - removeRating) / (number)
     }
 
     /**

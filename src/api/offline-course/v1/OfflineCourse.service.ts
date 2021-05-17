@@ -22,6 +22,7 @@ import UserUtil from "../../../utils/UserUtil"
 import { EnrollAction } from "../../../model/course/data/EnrollAction"
 import { launch } from "../../../core/common/launch"
 import OfflineCourseRepository from "../../../repository/OfflineCourseRepository"
+import AnalyticManager from "../../../analytic/AnalyticManager"
 
 /**
  * Service for manage offline course data
@@ -32,7 +33,8 @@ export class OfflineCourseService {
     constructor(
         private readonly connection: Connection,
         private readonly repository: OfflineCourseRepository,
-        private readonly userManager: UserUtil
+        private readonly userManager: UserUtil,
+        private readonly analytic: AnalyticManager
     ) {
     }
 
@@ -58,6 +60,8 @@ export class OfflineCourseService {
             const tutor = await this.userManager.getTutor(tutorId)
 
             await this.repository.createCourse(courseId, data, tutor)
+
+            await this.analytic.trackTutorCreateOfflineCourse(TutorProfile.getTutorId(tutorId))
 
             return courseId
         })
@@ -283,6 +287,10 @@ export class OfflineCourseService {
                 throw ErrorExceptions.create("Can not make action with this request", CourseError.CAN_NOT_ENROLL)
             } finally {
                 await queryRunner.release()
+            }
+
+            if (action === EnrollAction.APPROVE) {
+                await this.analytic.trackTutorApproved(TutorProfile.getTutorId(tutorId))
             }
 
             return "Successfully, Learner with ID: " + learnerId + " was " + action + "."

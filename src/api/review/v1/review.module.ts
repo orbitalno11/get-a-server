@@ -6,13 +6,14 @@ import { ReviewController } from "./review.controller"
 import { ReviewService } from "./review.service"
 import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
 import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
+import { AnalyticModule } from "../../../analytic/Analytic.module"
 
 /**
  * Class for review module
  * @author orbitalno11 2021 A.D.
  */
 @Module({
-    imports: [CoreModule, RepositoryModule, UtilityModule],
+    imports: [CoreModule, RepositoryModule, UtilityModule, AnalyticModule],
     controllers: [ReviewController],
     providers: [ReviewService]
 })

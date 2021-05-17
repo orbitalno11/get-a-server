@@ -22,6 +22,12 @@ export class TutorStatisticEntity {
     @Column({ name: "number_of_favorite" })
     numberOfFavorite: number
 
+    @Column({ name: "number_of_offline_review"})
+    numberOfOfflineReview: number
+
+    @Column({ name: "number_of_online_review"})
+    numberOfOnlineReview: number
+
     @Column({ name: "offline_course_rank" })
     offlineCourseRank: number
 
