@@ -1,8 +1,7 @@
-import Contact from '../Contact'
-import {Gender} from "../common/data/Gender"
+import Contact from "../Contact"
+import { Gender } from "../common/data/Gender"
 import Profile from "./Profile"
 import Subject from "../common/Subject"
-import Address from "../location/Address"
 
 class TutorProfile implements Profile {
     id: string
@@ -14,7 +13,7 @@ class TutorProfile implements Profile {
     profileUrl: string | null
     email: string
     contact: Contact
-    address: Address[]
+    address: string
     created: Date | null
     updated: Date | null
     introduction: string

@@ -1,6 +1,5 @@
 import {Gender} from "../common/data/Gender"
 import Contact from "../Contact"
-import Address from "../location/Address"
 
 interface Profile {
     id: string
@@ -12,7 +11,7 @@ interface Profile {
     profileUrl: string | null
     email: string
     contact: Contact
-    address: Address[]
+    address: string
     created: Date | null
     updated: Date | null
 }
