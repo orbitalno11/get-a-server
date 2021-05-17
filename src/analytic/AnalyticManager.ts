@@ -89,7 +89,6 @@ class AnalyticManager {
 
     /**
      * Track learner review offline course
-     * TODO Refactor review tracking
      * @param tutorId
      * @param rating
      * @param firstTime
@@ -184,96 +183,6 @@ class AnalyticManager {
     trackCreateOnlineCourse(tutorId: string) {
         return launch(async () => {
             await this.repository.trackCreateOnlineCourse(tutorId)
-        })
-    }
-
-    /**
-     * Track learner review online course
-     * TODO Refactor review tracking
-     * @param tutorId
-     * @param rating
-     * @param firstTime
-     * @param oldRating
-     */
-    trackLearnerReviewOnlineCourse(tutorId: string, rating: number, firstTime: boolean = true, oldRating: number = 0) {
-        return launch(async () => {
-            const statistic = await this.repository.getTutorStatistic(tutorId)
-            const monetary = await this.repository.getTutorMonetary(tutorId)
-
-            if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
-                const deleteReview = rating === 0.0
-                let updateStatisticTutorRating: number
-                let updateStatisticRating: number
-                let updateStatisticReviewNumber: number
-                let updateMonetaryTutorRating: number
-                let updateMonetaryRating: number
-                let updateMonetaryReviewNumber: number
-
-                if (firstTime) {
-                    updateStatisticRating = RatingUtil.calculateIncreaseRatingAvg(
-                        statistic.onlineRating,
-                        rating,
-                        statistic.numberOfOnlineReview
-                    )
-                    updateStatisticReviewNumber = statistic.numberOfOnlineReview + 1
-
-                    updateMonetaryRating = RatingUtil.calculateIncreaseRatingAvg(
-                        monetary.onlineRating,
-                        rating,
-                        monetary.numberOfOnlineReview
-                    )
-                    updateMonetaryReviewNumber = monetary.numberOfOnlineReview + 1
-                } else {
-                    updateStatisticRating = RatingUtil.calculateUpdateRatingAvg(
-                        statistic.onlineRating,
-                        rating,
-                        oldRating,
-                        statistic.numberOfOnlineReview
-                    )
-                    updateStatisticReviewNumber = !deleteReview ? statistic.numberOfOnlineReview : statistic.numberOfOnlineReview - 1
-
-                    updateMonetaryRating = RatingUtil.calculateUpdateRatingAvg(
-                        monetary.onlineRating,
-                        rating,
-                        oldRating,
-                        monetary.numberOfOnlineReview
-                    )
-                    updateMonetaryReviewNumber = !deleteReview ? monetary.numberOfOnlineReview : monetary.numberOfOnlineReview - 1
-                }
-
-                updateStatisticTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateStatisticRating,
-                    statistic.offlineRating,
-                    updateStatisticReviewNumber,
-                    statistic.numberOfOfflineReview
-                )
-
-                updateMonetaryTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateMonetaryRating,
-                    monetary.offlineRating,
-                    updateMonetaryReviewNumber,
-                    monetary.numberOfOfflineReview
-                )
-
-                if (updateStatisticTutorRating?.isSafeNumber() &&
-                    updateStatisticRating?.isSafeNumber() &&
-                    updateStatisticReviewNumber?.isSafeNumber() &&
-                    updateMonetaryTutorRating?.isSafeNumber() &&
-                    updateMonetaryRating?.isSafeNumber() &&
-                    updateMonetaryReviewNumber?.isSafeNumber()
-                ) {
-                    await this.repository.trackLearnerReviewOnlineCourse(
-                        tutorId,
-                        updateStatisticTutorRating,
-                        updateStatisticRating,
-                        updateStatisticReviewNumber,
-                        updateMonetaryTutorRating,
-                        updateMonetaryRating,
-                        updateMonetaryReviewNumber,
-                        deleteReview
-                    )
-                }
-            }
         })
     }
 }

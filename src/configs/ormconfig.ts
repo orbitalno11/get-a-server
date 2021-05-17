@@ -27,7 +27,7 @@ import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { EducationHistoryEntity } from "../entity/education/educationHistory.entity"
 import { ExchangeRateEntity } from "../entity/coins/exchangeRate.entity"
 import { CoinEntity } from "../entity/coins/coin.entity"
-import { RedeemTransactionEntity } from "../entity/coins/RedeemTransaction.entity"
+import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
 import { CourseTypeEntity } from "../entity/course/courseType.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
@@ -46,7 +46,6 @@ import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
-import { BankEntity } from "../entity/common/Bank.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -81,7 +80,7 @@ const ormConfig: TypeOrmModuleOptions = {
         CoinEntity,
         PaymentTransactionEntity,
         CoinTransactionEntity,
-        RedeemTransactionEntity,
+        ExchangeTransactionEntity,
         CourseTypeEntity,
         OfflineCourseEntity,
         OfflineCourseRatingEntity,
@@ -97,8 +96,7 @@ const ormConfig: TypeOrmModuleOptions = {
         ClipEntity,
         ClipRatingEntity,
         ClipRatingTransactionEntity,
-        ClipTransactionEntity,
-        BankEntity
+        ClipTransactionEntity
     ]
 }
 

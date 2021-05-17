@@ -18,7 +18,7 @@ export class ClipTransactionEntity {
 
     @ManyToOne(
         () => ClipEntity,
-        (clip) => clip.transaction
+        (clip) => clip.clipTransaction
     )
     @JoinColumn({ name: "clipId" })
     clip: ClipEntity

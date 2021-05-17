@@ -18,14 +18,12 @@ export class OnlineCourseModule implements NestModule {
         consumer
             .apply(TutorAuthenticated)
             .exclude(
-                { path: "v1/online-course/:id", method: RequestMethod.GET },
-                { path: "v1/online-course/:id/clip", method: RequestMethod.GET }
+                { path: "v1/online-course/:id", method: RequestMethod.GET }
             )
             .forRoutes(OnlineCourseController)
             .apply(AuthenticatedRequest)
             .forRoutes(
-                { path: "v1/online-course/list", method: RequestMethod.GET },
-                { path: "v1/online-course/:id/clip", method: RequestMethod.GET }
+                { path: "v1/online-course/list", method: RequestMethod.GET }
             )
     }
 }

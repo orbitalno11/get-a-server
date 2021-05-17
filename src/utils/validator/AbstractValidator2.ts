@@ -3,7 +3,7 @@ import CommonError from '../../core/exceptions/constants/common-error.enum';
 import { logger } from '../../core/logging/Logger';
 import ValidateResult from './ValidateResult';
 
-abstract class AbstractValidator2<T> {
+abstract class AbstractValidator<T> {
   protected form: T | null = null;
   errors = {} as any;
   isValid = false;
@@ -27,4 +27,4 @@ abstract class AbstractValidator2<T> {
   }
 }
 
-export default AbstractValidator2;
+export default AbstractValidator;

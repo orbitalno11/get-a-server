@@ -33,9 +33,7 @@ import IResponse from "../../../core/response/IResponse"
 import MyCourse from "../../../model/course/MyCourse"
 import { UserRole } from "../../../core/constant/UserRole"
 import OnlineCourse from "../../../model/course/OnlineCourse"
-import { ApiTags } from "@nestjs/swagger"
 
-@ApiTags("learner")
 @Controller("v1/learner")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

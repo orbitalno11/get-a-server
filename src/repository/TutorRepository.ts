@@ -466,7 +466,6 @@ class TutorRepository {
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "tutor")
                 .leftJoinAndSelect("course.rating", "rating")
-                .leftJoinAndSelect("tutor.contact", "contact")
                 .where("course.owner like :tutorId", { tutorId: tutorId })
                 .getMany()
         } catch (error) {
