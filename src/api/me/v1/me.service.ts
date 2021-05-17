@@ -50,7 +50,7 @@ export class MeService {
             if (result instanceof TutorEntity) {
                 return new TutorEntityToTutorProfile().map(result)
             } else if (result instanceof LearnerEntity) {
-                return LearnerEntityToLearnerProfile(result)
+                return new LearnerEntityToLearnerProfile().map(result)
             } else {
                 return null
             }
