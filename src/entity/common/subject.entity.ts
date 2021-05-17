@@ -3,6 +3,7 @@ import { OfflineCourseEntity } from '../course/offline/offlineCourse.entity'
 import { InterestedSubjectEntity } from '../member/interestedSubject.entity'
 import { Subject } from "../../model/common/data/Subject"
 import { TestingHistoryEntity } from "../education/testingHistory.entity"
+import { OnlineCourseEntity } from "../course/online/OnlineCourse.entity"
 
 @Entity('subject')
 export class SubjectEntity {
@@ -21,9 +22,15 @@ export class SubjectEntity {
 
   @OneToMany(
     () => OfflineCourseEntity,
-    (offlineCourse) => offlineCourse.subject
+    (course) => course.subject
   )
   offlineCourse: OfflineCourseEntity[]
+
+  @OneToMany(
+      () => OnlineCourseEntity,
+      (course) => course.subject
+  )
+  onlineCourse: OnlineCourseEntity[]
 
   @OneToMany(
       () => TestingHistoryEntity,

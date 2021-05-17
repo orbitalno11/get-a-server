@@ -20,6 +20,7 @@ import { ReviewModule } from "./api/review/v1/review.module"
 import { FavoriteModule } from "./api/favorite/v1/favorite.module"
 import { HomeModule } from "./api/home/v1/home.module"
 import { AnalyticApiModule } from "./api/analytic/v1/AnalyticApi.module"
+import { OnlineCourseModule } from "./api/online-course/v1/OnlineCourse.module"
 
 const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
@@ -40,7 +41,8 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
         ReviewModule,
         FavoriteModule,
         HomeModule,
-        AnalyticApiModule
+        AnalyticApiModule,
+        OnlineCourseModule
     ],
     controllers: [AppController],
     providers: [AppService]
