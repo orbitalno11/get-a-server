@@ -31,6 +31,7 @@ import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
 import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
+import { GradeEntity } from "../entity/common/grade.entity"
 
 /**
  * Repository for "v1/tutor"
@@ -140,6 +141,7 @@ class TutorRepository {
                 .leftJoinAndSelect("verify.educationHistory", "education")
                 .leftJoinAndSelect("education.institute", "institute")
                 .leftJoinAndSelect("education.branch", "branch")
+                .leftJoinAndSelect("education.grade", "grade")
                 .where("education.id = :id", { "id": id })
                 .andWhere("education.tutor like :tutorId", { "tutorId": tutorId })
                 .getOne()
@@ -160,6 +162,7 @@ class TutorRepository {
                 return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
                     .leftJoinAndSelect("education.institute", "institute")
                     .leftJoinAndSelect("education.branch", "branch")
+                    .leftJoinAndSelect("education.grade", "grade")
                     .leftJoinAndSelect("education.verifiedData", "verify")
                     .where("education.tutor like :id", { "id": id })
                     .orderBy("verify.updated", "DESC")
@@ -168,6 +171,7 @@ class TutorRepository {
                 return await this.connection.createQueryBuilder(EducationHistoryEntity, "education")
                     .leftJoinAndSelect("education.institute", "institute")
                     .leftJoinAndSelect("education.branch", "branch")
+                    .leftJoinAndSelect("education.grade", "grade")
                     .leftJoinAndSelect("education.verifiedData", "verify")
                     .where("education.tutor like :id", { "id": id })
                     .andWhere("education.verified = :status", { "status": RequestStatus.APPROVE })
@@ -497,6 +501,9 @@ class TutorRepository {
         const institute = new InstituteEntity()
         institute.id = data.institute
 
+        const grade = new GradeEntity()
+        grade.grade = data.grade
+
         const educationHistory = new EducationHistoryEntity()
         if (educationId?.isSafeNotBlank()) {
             educationHistory.id = educationId.toNumber()
@@ -505,6 +512,7 @@ class TutorRepository {
         educationHistory.branch = branch
         educationHistory.institute = institute
         educationHistory.gpax = data.gpax
+        educationHistory.grade = grade
         educationHistory.status = data.status
         educationHistory.verified = RequestStatus.WAITING
 

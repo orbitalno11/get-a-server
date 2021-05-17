@@ -179,6 +179,7 @@ create table education_history(
     tutorId varchar(255) not null,
     instituteId int not null,
     branchId int not null,
+    gradeId smallint UNSIGNED null,
     gpax float(3,2) not null,
     status varchar(10) not null,
     verified smallint not null,
@@ -187,6 +188,7 @@ create table education_history(
     CONSTRAINT `FK_EDUCATION_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_EDUCATION_INSTITUTE` FOREIGN KEY(instituteId) REFERENCES institute (id),
     CONSTRAINT `FK_EDUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id),
+    CONSTRAINT `FK_EDUCATION_GRADE` FOREIGN KEY(gradeId) REFERENCES grade (grade),
     CONSTRAINT `FK_EDUCATION_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
 );
 
