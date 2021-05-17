@@ -36,6 +36,8 @@ import { TutorError } from "../../../core/exceptions/constants/tutor-error.enum"
 import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
 import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { OfflineCourseEntityToSimpleCourseListMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToSimpleCourse.mapper"
+import { ImageSize } from "../../../core/constant/ImageSize.enum"
+import Document from "../../../model/common/Document"
 
 /**
  * Service for tutor controller
@@ -181,12 +183,15 @@ export class TutorService {
      * Tutor request education verification
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async requestEducationVerification(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
+    async requestEducationVerification(user: User, data: EducationVerifyForm, files: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
         try {
-            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
+            for (const file of files) {
+                file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                fileUrl.push(file)
+            }
             const requestId = uuid()
 
             await this.repository.createEducationVerification(requestId, user, data, fileUrl)
@@ -194,8 +199,10 @@ export class TutorService {
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -206,32 +213,45 @@ export class TutorService {
      * @param educationId
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async updateEducationVerification(educationId: string, user: User, data: EducationVerifyForm, file?: Express.Multer.File) {
-        let fileUrl = ""
-        let oldFileUrl = ""
+    async updateEducationVerification(educationId: string, user: User, data: EducationVerifyForm, files?: Document[]) {
+        let fileUrl: Document[] = []
+        let oldFileUrl: Document[] = []
         try {
             const verificationData = await this.checkEducationOwner(educationId, user)
 
-            if (file) {
-                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
-                oldFileUrl = verificationData.documentUrl1
-            } else {
-                fileUrl = verificationData.documentUrl1
+            if (isNotEmpty(files)) {
+                for (const file of files) {
+                    file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                    fileUrl.push(file)
+                    if (file.name === "doc1") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl1))
+                    }
+                    if (file.name === "doc2") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl2))
+                    }
+                    if (file.name === "doc3") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl3))
+                    }
+                }
             }
 
             await this.repository.updateEducationVerificationData(verificationData.id, educationId, user, data, fileUrl)
 
-            if (oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            if (isNotEmpty(oldFileUrl)) {
+                for (const url of oldFileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
 
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl) && isNotEmpty(oldFileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -242,10 +262,21 @@ export class TutorService {
      * @param educationId
      * @param user
      */
-    deleteEducation(educationId: string, user: User) {
+    async deleteEducation(educationId: string, user: User) {
         return launch(async () => {
             const verificationData = await this.checkEducationOwner(educationId, user)
             await this.repository.deleteEducationVerification(verificationData.id, educationId)
+
+            const { documentUrl1, documentUrl2, documentUrl3 } = verificationData
+            if (documentUrl1?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl1)
+            }
+            if (documentUrl2?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl2)
+            }
+            if (documentUrl3?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl3)
+            }
         })
     }
 
@@ -313,12 +344,15 @@ export class TutorService {
      * Tutor request testing verification
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async createTestingVerificationData(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
+    async createTestingVerificationData(user: User, data: TestingVerifyForm, files: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
         try {
-            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
+            for (const file of files) {
+                file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                fileUrl.push(file)
+            }
             const requestId = uuid()
 
             await this.repository.createTestingVerificationData(requestId, user, data, fileUrl)
@@ -326,8 +360,10 @@ export class TutorService {
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -338,32 +374,45 @@ export class TutorService {
      * @param testingId
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
-        let oldFileUrl = ""
+    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, files?: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
+        let oldFileUrl: Document[] = []
         try {
             const verificationData = await this.checkTestingOwner(testingId, user)
 
-            if (file) {
-                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
-                oldFileUrl = verificationData.documentUrl1
-            } else {
-                fileUrl = verificationData.documentUrl1
+            if (isNotEmpty(files)) {
+                for (const file of files) {
+                    file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                    fileUrl.push(file)
+                    if (file.name === "doc1") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl1))
+                    }
+                    if (file.name === "doc2") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl2))
+                    }
+                    if (file.name === "doc3") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl3))
+                    }
+                }
             }
 
             await this.repository.updateTestingVerificationData(verificationData.id, testingId, user, data, fileUrl)
 
-            if (oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            if (isNotEmpty(oldFileUrl)) {
+                for (const url of oldFileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
 
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl) && isNotEmpty(oldFileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -378,6 +427,17 @@ export class TutorService {
         return launch(async () => {
             const verificationData = await this.checkTestingOwner(testingId, user)
             await this.repository.deleteTestingVerificationData(testingId, verificationData.id)
+
+            const { documentUrl1, documentUrl2, documentUrl3 } = verificationData
+            if (documentUrl1?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl1)
+            }
+            if (documentUrl2?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl2)
+            }
+            if (documentUrl3?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl3)
+            }
         })
     }
 

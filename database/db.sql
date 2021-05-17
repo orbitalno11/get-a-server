@@ -165,6 +165,8 @@ create table user_verify(
     documentUrl2 varchar(255),
     documentUrl3 varchar(255),
     verify_type smallint UNSIGNED not null,
+    created timestamp not null,
+    updated timestamp not null,
     PRIMARY KEY (id),
     CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
 );
