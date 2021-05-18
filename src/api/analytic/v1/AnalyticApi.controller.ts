@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, HttpCode, Query, UseFilters, UseInterceptors } from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { AnalyticApiService } from "./AnalyticApi.service"
@@ -25,6 +25,14 @@ export class AnalyticApiController {
     trackLogin(@CurrentUser() currentUser: User) {
         if (isNotEmpty(currentUser)) {
             this.service.trackLogin(currentUser)
+        }
+    }
+
+    @Get("profile")
+    @HttpCode(204)
+    trackProfileView(@Query("userId") userId: string) {
+        if (userId?.isSafeNotBlank()) {
+            this.service.trackProfileView(userId)
         }
     }
 }

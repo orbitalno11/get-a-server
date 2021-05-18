@@ -42,6 +42,12 @@ class AnalyticManager {
             await this.repository.trackLogin(tutorId)
         })
     }
+
+    trackProfileView(tutorId: string) {
+        return launch(async () => {
+            await this.repository.trackProfileView(tutorId)
+        })
+    }
 }
 
 export default AnalyticManager

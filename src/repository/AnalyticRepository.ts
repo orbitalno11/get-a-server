@@ -151,6 +151,35 @@ class AnalyticRepository {
         }
     }
 
+    async trackProfileView(tutorId: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            const frequency = await this.getTutorFrequency(tutorId)
+
+            await queryRunner.manager.update(TutorAnalyticRecencyEntity,
+                { tutor: tutorId },
+                {
+                    recentProfileView: new Date()
+                })
+            await queryRunner.manager.update(TutorAnalyticFrequencyEntity,
+                { tutor: tutorId },
+                {
+                    numberOfProfileView: frequency.numberOfProfileView + 1
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
     /**
      * Get tutor statistic entity
      * @param tutorId

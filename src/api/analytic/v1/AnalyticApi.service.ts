@@ -29,4 +29,10 @@ export class AnalyticApiService {
             }
         })
     }
+
+    trackProfileView(userId: string) {
+        launchAnalytic(async () => {
+            await this.analytic.trackProfileView(TutorProfile.getTutorId(userId))
+        })
+    }
 }
