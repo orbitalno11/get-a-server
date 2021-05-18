@@ -97,6 +97,7 @@ class UserRepository {
             if (isOfflineCourse) {
                 return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
                     .leftJoinAndSelect("offlineCourse.requestList", "requestList")
+                    .leftJoinAndSelect("offlineCourse.owner", "owner")
                     .where("offlineCourse.id like :courseId", { courseId: courseId })
                     .andWhere("requestList.learner like :learnerId", { learnerId: learnerId })
                     .andWhere("requestList.status = :enrollStatus", { enrollStatus: EnrollStatus.APPROVE })

@@ -277,12 +277,47 @@ class AnalyticRepository {
         }
     }
 
+    async trackLearnerReviewOfflineCourse(
+        tutorId: string,
+        updatedStatisticRating: number,
+        updatedStatisticReviewNumber: number,
+        updatedMonetaryRating: number,
+        updatedMonetaryReviewNumber: number
+    ) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            await queryRunner.manager.update(TutorStatisticEntity,
+                { tutor: tutorId },
+                {
+                    offlineRating: updatedStatisticRating,
+                    numberOfOfflineReview: updatedStatisticReviewNumber
+                })
+            await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
+                { tutor: tutorId },
+                {
+                    offlineRating: updatedMonetaryRating,
+                    numberOfOfflineReview: updatedMonetaryReviewNumber
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
+        } finally {
+            await queryRunner
+        }
+    }
+
     /**
      * Get tutor statistic entity
      * @param tutorId
      * @private
      */
-    private async getTutorStatistic(tutorId: string): Promise<TutorStatisticEntity> {
+    async getTutorStatistic(tutorId: string): Promise<TutorStatisticEntity> {
         try {
             return await this.connection.getRepository(TutorStatisticEntity).findOne(tutorId)
         } catch (error) {
@@ -296,7 +331,7 @@ class AnalyticRepository {
      * @param tutorId
      * @private
      */
-    private async getTutorRecency(tutorId: string): Promise<TutorAnalyticRecencyEntity> {
+    async getTutorRecency(tutorId: string): Promise<TutorAnalyticRecencyEntity> {
         try {
             return await this.connection.getRepository(TutorAnalyticRecencyEntity).findOne(tutorId)
         } catch (error) {
@@ -310,7 +345,7 @@ class AnalyticRepository {
      * @param tutorId
      * @private
      */
-    private async getTutorFrequency(tutorId: string): Promise<TutorAnalyticFrequencyEntity> {
+    async getTutorFrequency(tutorId: string): Promise<TutorAnalyticFrequencyEntity> {
         try {
             return await this.connection.getRepository(TutorAnalyticFrequencyEntity).findOne(tutorId)
         } catch (error) {
@@ -324,7 +359,7 @@ class AnalyticRepository {
      * @param tutorId
      * @private
      */
-    private async getTutorMonetary(tutorId: string): Promise<TutorAnalyticMonetaryEntity> {
+    async getTutorMonetary(tutorId: string): Promise<TutorAnalyticMonetaryEntity> {
         try {
             return await this.connection.getRepository(TutorAnalyticMonetaryEntity).findOne(tutorId)
         } catch (error) {
