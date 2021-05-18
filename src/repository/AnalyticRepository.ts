@@ -282,7 +282,8 @@ class AnalyticRepository {
         updatedStatisticRating: number,
         updatedStatisticReviewNumber: number,
         updatedMonetaryRating: number,
-        updatedMonetaryReviewNumber: number
+        updatedMonetaryReviewNumber: number,
+        deleteReview: boolean
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
@@ -301,7 +302,13 @@ class AnalyticRepository {
                     offlineRating: updatedMonetaryRating,
                     numberOfOfflineReview: updatedMonetaryReviewNumber
                 })
-
+            if (!deleteReview) {
+                await queryRunner.manager.update(TutorAnalyticRecencyEntity,
+                    { tutor: tutorId },
+                    {
+                        recentComment: new Date()
+                    })
+            }
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

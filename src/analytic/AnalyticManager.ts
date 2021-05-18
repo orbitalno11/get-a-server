@@ -91,6 +91,7 @@ class AnalyticManager {
             const monetary = await this.repository.getTutorMonetary(tutorId)
 
             if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
+                const deleteReview = rating === 0.0
                 let updateStatisticRating: number
                 let updatedStatisticReviewNumber: number
                 let updateMonetaryRating: number
@@ -110,31 +111,20 @@ class AnalyticManager {
                     )
                     updatedMonetaryReviewNumber = monetary.numberOfOfflineReview + 1
                 } else {
-                    const decreaseStatisticRating = RatingUtil.calculateDecreaseRatingAvg(
+                    updateStatisticRating = RatingUtil.calculateUpdateRatingAvg(
                         statistic.offlineRating,
+                        rating,
                         oldRating,
                         statistic.numberOfOfflineReview
                     )
-                    const decreaseStatisticReviewNumber = statistic.numberOfOfflineReview - 1
-                    const decreaseMonetaryRating = RatingUtil.calculateDecreaseRatingAvg(
+                    updatedStatisticReviewNumber = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
+                    updateMonetaryRating = RatingUtil.calculateUpdateRatingAvg(
                         monetary.offlineRating,
+                        rating,
                         oldRating,
                         monetary.numberOfOfflineReview
                     )
-                    const decreaseMonetaryReviewNumber = monetary.numberOfOfflineReview - 1
-
-                    updateStatisticRating = RatingUtil.calculateIncreaseRatingAvg(
-                        decreaseStatisticRating,
-                        rating,
-                        decreaseStatisticReviewNumber
-                    )
-                    updatedStatisticReviewNumber = statistic.numberOfOfflineReview
-                    updateMonetaryRating = RatingUtil.calculateIncreaseRatingAvg(
-                        decreaseMonetaryRating,
-                        rating,
-                        decreaseMonetaryReviewNumber
-                    )
-                    updatedMonetaryReviewNumber = monetary.numberOfOfflineReview
+                    updatedMonetaryReviewNumber = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
                 }
 
                 if (updateStatisticRating?.isSafeNumber() &&
@@ -147,7 +137,8 @@ class AnalyticManager {
                         updateStatisticRating,
                         updatedStatisticReviewNumber,
                         updateMonetaryRating,
-                        updatedMonetaryReviewNumber
+                        updatedMonetaryReviewNumber,
+                        deleteReview
                     )
                 }
             }

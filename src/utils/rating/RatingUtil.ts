@@ -32,6 +32,24 @@ class RatingUtil {
         const number = reviewNumber > 1 ? (reviewNumber - 1) : 1
         return ((avgRating * reviewNumber) - removeRating) / (number)
     }
+
+    /**
+     * Calculate updating rating average
+     * @param avgRating
+     * @param newRating
+     * @param oldRating
+     * @param reviewNumber
+     */
+    public static calculateUpdateRatingAvg(
+        avgRating: number,
+        newRating: number,
+        oldRating: number,
+        reviewNumber: number
+    ): number {
+        const decreaseRating = this.calculateDecreaseRatingAvg(avgRating, oldRating, reviewNumber)
+        const decreaseReviewNumber = reviewNumber - 1
+        return this.calculateIncreaseRatingAvg(decreaseRating, newRating, decreaseReviewNumber)
+    }
 }
 
 export default RatingUtil

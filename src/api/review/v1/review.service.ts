@@ -69,10 +69,12 @@ export class ReviewService {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
                     const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
 
-                    const decreaseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
-                    const decreaseReviewNumber = courseRating.reviewNumber - 1
-
-                    const updatedRating = RatingUtil.calculateIncreaseRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
+                    const updatedRating = RatingUtil.calculateUpdateRatingAvg(
+                        courseRating.rating,
+                        data.rating,
+                        userRating.rating,
+                        courseRating.reviewNumber
+                    )
 
                     await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
                     await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
