@@ -277,6 +277,15 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Track learner review offline course
+     * @param tutorId
+     * @param updatedStatisticRating
+     * @param updatedStatisticReviewNumber
+     * @param updatedMonetaryRating
+     * @param updatedMonetaryReviewNumber
+     * @param deleteReview
+     */
     async trackLearnerReviewOfflineCourse(
         tutorId: string,
         updatedStatisticRating: number,

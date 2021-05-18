@@ -85,6 +85,13 @@ class AnalyticManager {
         })
     }
 
+    /**
+     * Track learner review offline course
+     * @param tutorId
+     * @param rating
+     * @param firstTime
+     * @param oldRating
+     */
     trackLearnerReviewOfflineCourse(tutorId: string, rating: number, firstTime: boolean = true, oldRating: number = 0) {
         return launch(async () => {
             const statistic = await this.repository.getTutorStatistic(tutorId)
