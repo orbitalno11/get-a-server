@@ -251,6 +251,33 @@ class AnalyticRepository {
     }
 
     /**
+     * Track tutor create offline course
+     * @param tutorId
+     */
+    async trackTutorCreateOfflineCourse(tutorId: string) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            const statistic = await this.getTutorStatistic(tutorId)
+
+            await queryRunner.manager.update(TutorStatisticEntity,
+                { tutor: tutorId },
+                {
+                    offlineCourseNumber: statistic.offlineCourseNumber + 1
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
+        } finally {
+            await queryRunner
+        }
+    }
+
+    /**
      * Get tutor statistic entity
      * @param tutorId
      * @private

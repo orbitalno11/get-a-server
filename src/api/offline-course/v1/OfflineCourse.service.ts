@@ -61,6 +61,8 @@ export class OfflineCourseService {
 
             await this.repository.createCourse(courseId, data, tutor)
 
+            await this.analytic.trackTutorCreateOfflineCourse(TutorProfile.getTutorId(tutorId))
+
             return courseId
         })
     }

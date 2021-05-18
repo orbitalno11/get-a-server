@@ -72,6 +72,16 @@ class AnalyticManager {
             await this.repository.trackTutorApproved(tutorId)
         })
     }
+
+    /**
+     * Track tutor create offline course
+     * @param tutorId
+     */
+    trackTutorCreateOfflineCourse(tutorId: string) {
+        return launch(async () => {
+            await this.repository.trackTutorCreateOfflineCourse(tutorId)
+        })
+    }
 }
 
 export default AnalyticManager
