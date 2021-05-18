@@ -35,4 +35,10 @@ export class AnalyticApiService {
             await this.analytic.trackProfileView(TutorProfile.getTutorId(userId))
         })
     }
+
+    trackTutorCourseView(userId: string) {
+        launchAnalytic(async () => {
+            await this.analytic.trackTutorCourseView(TutorProfile.getTutorId(userId))
+        })
+    }
 }

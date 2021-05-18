@@ -28,11 +28,19 @@ export class AnalyticApiController {
         }
     }
 
-    @Get("profile")
+    @Get("tutor")
     @HttpCode(204)
     trackProfileView(@Query("userId") userId: string) {
         if (userId?.isSafeNotBlank()) {
             this.service.trackProfileView(userId)
+        }
+    }
+
+    @Get("tutor/course")
+    @HttpCode(204)
+    trackTutorCourseView(@Query("userId") userId: string) {
+        if (userId?.isSafeNotBlank()) {
+            this.service.trackTutorCourseView(userId)
         }
     }
 }
