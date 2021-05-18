@@ -50,6 +50,43 @@ class RatingUtil {
         const decreaseReviewNumber = reviewNumber - 1
         return this.calculateIncreaseRatingAvg(decreaseRating, newRating, decreaseReviewNumber)
     }
+
+    /**
+     * Calculate tutor rating average from all type of course
+     * @param offlineCourseRating
+     * @param onlineCourseRating
+     * @param numberOfOfflineReview
+     * @param numberOfOnlineReview
+     */
+    public static calculateTutorRatingAvg(
+        offlineCourseRating: number,
+        onlineCourseRating: number,
+        numberOfOfflineReview: number,
+        numberOfOnlineReview: number
+    ) {
+        const offline = offlineCourseRating * numberOfOfflineReview
+        const online = onlineCourseRating * numberOfOnlineReview
+        const q = numberOfOfflineReview + numberOfOnlineReview
+        let p = (offline + online) / q
+        if (numberOfOfflineReview === 0 && numberOfOnlineReview === 0 && isNaN(p)) {
+            p = 0
+        }
+        return this.avgRateScoring(p * 2, q) / 2
+    }
+
+    /**
+     * Calculate average scoring
+     * This function calculate at rating in range 0 to 10
+     * https://math.stackexchange.com/a/942965
+     * @param p
+     * @param q
+     * @param P
+     * @param M
+     */
+    public static avgRateScoring(p: number, q: number, P: number = 0.5, M: number = 15): number {
+        const Q = 1.44 * M
+        return (P * p) + (10 * (1 - P) * (1 - Math.pow(Math.E, -q / Q)))
+    }
 }
 
 export default RatingUtil

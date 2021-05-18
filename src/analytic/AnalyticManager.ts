@@ -99,10 +99,12 @@ class AnalyticManager {
 
             if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
                 const deleteReview = rating === 0.0
+                let updateStatisticTutorRating: number
                 let updateStatisticRating: number
-                let updatedStatisticReviewNumber: number
+                let updateStatisticReviewNumber: number
+                let updateMonetaryTutorRating: number
                 let updateMonetaryRating: number
-                let updatedMonetaryReviewNumber: number
+                let updateMonetaryReviewNumber: number
 
                 if (firstTime) {
                     updateStatisticRating = RatingUtil.calculateIncreaseRatingAvg(
@@ -110,13 +112,14 @@ class AnalyticManager {
                         rating,
                         statistic.numberOfOfflineReview
                     )
-                    updatedStatisticReviewNumber = statistic.numberOfOfflineReview + 1
+                    updateStatisticReviewNumber = statistic.numberOfOfflineReview + 1
+
                     updateMonetaryRating = RatingUtil.calculateIncreaseRatingAvg(
                         monetary.offlineRating,
                         rating,
                         monetary.numberOfOfflineReview
                     )
-                    updatedMonetaryReviewNumber = monetary.numberOfOfflineReview + 1
+                    updateMonetaryReviewNumber = monetary.numberOfOfflineReview + 1
                 } else {
                     updateStatisticRating = RatingUtil.calculateUpdateRatingAvg(
                         statistic.offlineRating,
@@ -124,27 +127,46 @@ class AnalyticManager {
                         oldRating,
                         statistic.numberOfOfflineReview
                     )
-                    updatedStatisticReviewNumber = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
+                    updateStatisticReviewNumber = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
+
                     updateMonetaryRating = RatingUtil.calculateUpdateRatingAvg(
                         monetary.offlineRating,
                         rating,
                         oldRating,
                         monetary.numberOfOfflineReview
                     )
-                    updatedMonetaryReviewNumber = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
+                    updateMonetaryReviewNumber = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
                 }
 
-                if (updateStatisticRating?.isSafeNumber() &&
-                    updatedStatisticReviewNumber?.isSafeNumber() &&
+                updateStatisticTutorRating = RatingUtil.calculateTutorRatingAvg(
+                    updateStatisticRating,
+                    statistic.onlineRating,
+                    updateStatisticReviewNumber,
+                    statistic.numberOfOnlineReview
+                )
+
+                updateMonetaryTutorRating = RatingUtil.calculateTutorRatingAvg(
+                    updateMonetaryRating,
+                    monetary.onlineRating,
+                    updateMonetaryReviewNumber,
+                    monetary.numberOfOnlineReview
+                )
+
+                if (updateStatisticTutorRating?.isSafeNumber() &&
+                    updateStatisticRating?.isSafeNumber() &&
+                    updateStatisticReviewNumber?.isSafeNumber() &&
+                    updateMonetaryTutorRating?.isSafeNumber() &&
                     updateMonetaryRating?.isSafeNumber() &&
-                    updatedMonetaryReviewNumber?.isSafeNumber()
+                    updateMonetaryReviewNumber?.isSafeNumber()
                 ) {
                     await this.repository.trackLearnerReviewOfflineCourse(
                         tutorId,
+                        updateStatisticTutorRating,
                         updateStatisticRating,
-                        updatedStatisticReviewNumber,
+                        updateStatisticReviewNumber,
+                        updateMonetaryTutorRating,
                         updateMonetaryRating,
-                        updatedMonetaryReviewNumber,
+                        updateMonetaryReviewNumber,
                         deleteReview
                     )
                 }

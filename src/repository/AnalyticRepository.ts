@@ -280,16 +280,20 @@ class AnalyticRepository {
     /**
      * Track learner review offline course
      * @param tutorId
+     * @param updatedStatisticTutorRating
      * @param updatedStatisticRating
      * @param updatedStatisticReviewNumber
+     * @param updatedMonetaryTutorRating
      * @param updatedMonetaryRating
      * @param updatedMonetaryReviewNumber
      * @param deleteReview
      */
     async trackLearnerReviewOfflineCourse(
         tutorId: string,
+        updatedStatisticTutorRating: number,
         updatedStatisticRating: number,
         updatedStatisticReviewNumber: number,
+        updatedMonetaryTutorRating: number,
         updatedMonetaryRating: number,
         updatedMonetaryReviewNumber: number,
         deleteReview: boolean
@@ -302,12 +306,14 @@ class AnalyticRepository {
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
+                    rating: updatedStatisticTutorRating,
                     offlineRating: updatedStatisticRating,
                     numberOfOfflineReview: updatedStatisticReviewNumber
                 })
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
+                    rating: updatedMonetaryTutorRating,
                     offlineRating: updatedMonetaryRating,
                     numberOfOfflineReview: updatedMonetaryReviewNumber
                 })
