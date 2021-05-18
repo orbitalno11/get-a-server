@@ -18,6 +18,7 @@ import { PaymentApiModule } from "./api/payment/v1/paymentApi.module"
 import { VerifyModule } from "./api/verify/v1/verify.module"
 import { ReviewModule } from "./api/review/v1/review.module"
 import { FavoriteModule } from "./api/favorite/v1/favorite.module"
+import { AnalyticApiModule } from "./api/analytic/v1/AnalyticApi.module"
 
 const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
@@ -36,7 +37,8 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
         PaymentApiModule,
         VerifyModule,
         ReviewModule,
-        FavoriteModule
+        FavoriteModule,
+        AnalyticApiModule
     ],
     controllers: [AppController],
     providers: [AppService]

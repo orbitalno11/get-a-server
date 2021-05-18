@@ -1,8 +1,10 @@
-import { Controller, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, HttpCode, UseFilters, UseInterceptors } from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
-import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
 import { AnalyticApiService } from "./AnalyticApi.service"
+import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
+import User from "../../../model/User"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
 
 /**
  * Controller class for "v1/analytic"
@@ -10,8 +12,19 @@ import { AnalyticApiService } from "./AnalyticApi.service"
  */
 @Controller("v1/analytic")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
-@UseInterceptors(TransformSuccessResponse)
 export class AnalyticApiController {
     constructor(private readonly service: AnalyticApiService) {
+    }
+
+    /**
+     * Track tutor login
+     * @param currentUser
+     */
+    @Get("login")
+    @HttpCode(204)
+    trackLogin(@CurrentUser() currentUser: User) {
+        if (isNotEmpty(currentUser)) {
+            this.service.trackLogin(currentUser)
+        }
     }
 }

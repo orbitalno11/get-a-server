@@ -32,6 +32,16 @@ class AnalyticManager {
             await this.repository.decreaseMonetaryNumberOfFavorite(tutorId)
         })
     }
+
+    /**
+     * Track tutor login
+     * @param tutorId
+     */
+    trackLogin(tutorId: string) {
+        return launch(async () => {
+            await this.repository.trackLogin(tutorId)
+        })
+    }
 }
 
 export default AnalyticManager
