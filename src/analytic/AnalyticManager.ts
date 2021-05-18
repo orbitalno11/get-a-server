@@ -43,12 +43,20 @@ class AnalyticManager {
         })
     }
 
+    /**
+     * Track tutor profile view
+     * @param tutorId
+     */
     trackProfileView(tutorId: string) {
         return launch(async () => {
             await this.repository.trackProfileView(tutorId)
         })
     }
 
+    /**
+     * Track tutor course view
+     * @param tutorId
+     */
     trackTutorCourseView(tutorId: string) {
         return launch(async () => {
             await this.repository.trackTutorCourseView(tutorId)

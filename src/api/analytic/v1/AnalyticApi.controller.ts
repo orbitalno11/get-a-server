@@ -28,6 +28,10 @@ export class AnalyticApiController {
         }
     }
 
+    /**
+     * Track tutor profile view
+     * @param userId
+     */
     @Get("tutor")
     @HttpCode(204)
     trackProfileView(@Query("userId") userId: string) {
@@ -36,6 +40,10 @@ export class AnalyticApiController {
         }
     }
 
+    /**
+     * Track tutor course view
+     * @param userId
+     */
     @Get("tutor/course")
     @HttpCode(204)
     trackTutorCourseView(@Query("userId") userId: string) {

@@ -151,6 +151,10 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Track tutor profile view
+     * @param tutorId
+     */
     async trackProfileView(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
@@ -180,6 +184,10 @@ class AnalyticRepository {
         }
     }
 
+    /**
+     * Track tutor course view
+     * @param tutorId
+     */
     async trackTutorCourseView(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
