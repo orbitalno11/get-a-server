@@ -62,6 +62,16 @@ class AnalyticManager {
             await this.repository.trackTutorCourseView(tutorId)
         })
     }
+
+    /**
+     * Track tutor approve learner to course
+     * @param tutorId
+     */
+    trackTutorApproved(tutorId: string) {
+        return launch(async () => {
+            await this.repository.trackTutorApproved(tutorId)
+        })
+    }
 }
 
 export default AnalyticManager
