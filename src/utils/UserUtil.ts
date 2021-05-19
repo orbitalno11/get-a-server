@@ -16,6 +16,7 @@ import UserRepository from "../repository/UserRepository"
 import CommonError from "../core/exceptions/constants/common-error.enum"
 import { launch } from "../core/common/launch"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
+import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 
 /**
  * User utility class
@@ -188,7 +189,7 @@ class UserUtil {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
-                return !isEmpty(course)
+                return isNotEmpty(course)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -205,6 +206,27 @@ class UserUtil {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 return await this.userRepository.getEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    async isReviewed(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
+                const review = await this.getReview(userId, courseId, isOfflineCourse)
+                return isNotEmpty(review)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    async getReview(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseRatingTransactionEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
+                return await this.userRepository.getReviewCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }

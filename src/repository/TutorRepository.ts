@@ -115,6 +115,7 @@ class TutorRepository {
             return await this.connection.createQueryBuilder(TutorEntity, "tutor")
                 .leftJoinAndSelect("tutor.member", "member")
                 .leftJoinAndSelect("tutor.statistic", "statistic")
+                .leftJoinAndSelect("tutor.contact", "contact")
                 .leftJoinAndSelect("member.memberAddress", "address")
                 .leftJoinAndSelect("member.interestedSubject", "interestedSubject")
                 .leftJoinAndSelect("interestedSubject.subject", "subject")
@@ -122,7 +123,6 @@ class TutorRepository {
                 .leftJoinAndSelect("address.district", "district")
                 .leftJoinAndSelect("address.province", "province")
                 .where("tutor.id like :tutorId", { tutorId: tutorId })
-                .andWhere("address.type = :addressType", { addressType: LocationType.CONVENIENCE })
                 .getOne()
         } catch (error) {
             logger.error(error)
