@@ -410,6 +410,8 @@ create table tutor_statistic(
     number_of_online_course int not null default 0,
     number_of_learner int not null default 0,
     number_of_favorite int not null default 0,
+    number_of_offline_review int not null default 0,
+    number_of_online_review int not null default 0,
     offline_course_rank int not null default 0,
     online_course_rank int not null default 0,
     tutor_rating float(2,1) not null default 0,
@@ -445,6 +447,8 @@ create table tutor_analytic_monetary_data(
     tutor_online_rating float(2,1) not null default 0,
     number_of_favorite int not null default 0,
     number_of_learner int not null default 0,
+    number_of_offline_review int not null default 0,
+    number_of_online_review int not null default 0,
     PRIMARY KEY (tutor_id),
     CONSTRAINT `FK_ANA_MONETARY_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
 );

@@ -575,6 +575,8 @@ class TutorRepository {
         statistic.onlineCourseNumber = 0
         statistic.numberOfLearner = 0
         statistic.numberOfFavorite = 0
+        statistic.numberOfOfflineReview = 0
+        statistic.numberOfOnlineReview = 0
         statistic.offlineCourseRank = 0
         statistic.onlineCourseRank = 0
         statistic.rating = 0
@@ -622,6 +624,8 @@ class TutorRepository {
         analytic.onlineRating = 0
         analytic.numberOfLearner = 0
         analytic.numberOfFavorite = 0
+        analytic.numberOfOfflineReview = 0
+        analytic.numberOfOnlineReview = 0
         return analytic
     }
 }
