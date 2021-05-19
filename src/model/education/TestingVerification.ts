@@ -3,6 +3,8 @@ import ExamResult from "./ExamResult"
 
 class TestingVerification {
     id: string
+    firstname: string
+    lastname: string
     fullRequestName: string
     fullExamTitle: string
     verifiedData: VerifyData
