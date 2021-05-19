@@ -158,6 +158,17 @@ create table exam_type(
     PRIMARY KEY(id)
 );
 
+create table user_verify(
+    id varchar(255) not null,
+    member_id varchar(255) not null,
+    documentUrl1 varchar(255),
+    documentUrl2 varchar(255),
+    documentUrl3 varchar(255),
+    verify_type smallint UNSIGNED not null,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
+);
+
 create table testing_history(
     id int not null AUTO_INCREMENT,
     tutorId varchar(255) not null,
@@ -190,17 +201,6 @@ create table education_history(
     CONSTRAINT `FK_EDUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id),
     CONSTRAINT `FK_EDUCATION_GRADE` FOREIGN KEY(gradeId) REFERENCES grade (grade),
     CONSTRAINT `FK_EDUCATION_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
-);
-
-create table user_verify(
-    id varchar(255) not null,
-    member_id varchar(255) not null,
-    documentUrl1 varchar(255),
-    documentUrl2 varchar(255),
-    documentUrl3 varchar(255),
-    verify_type smallint UNSIGNED not null,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
 -- coin

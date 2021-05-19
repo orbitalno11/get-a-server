@@ -10,4 +10,6 @@ interface String {
     toNumber(): number
 
     isBoolean(): boolean
+
+    isNumber(): boolean
 }
