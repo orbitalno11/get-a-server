@@ -5,6 +5,7 @@ import User from "../../../model/User"
 import { launchAnalytic } from "../../../core/common/launch"
 import { UserRole } from "../../../core/constant/UserRole"
 import TutorProfile from "../../../model/profile/TutorProfile"
+import { CourseType } from "../../../model/course/data/CourseType"
 
 /**
  * Service class for analytic api
@@ -42,11 +43,12 @@ export class AnalyticApiService {
 
     /**
      * Track tutor course view
-     * @param userId
+     * @param courseId
+     * @param courseType
      */
-    trackTutorCourseView(userId: string) {
+    trackImpressCourse(courseId: string, courseType: CourseType) {
         launchAnalytic(async () => {
-            await this.analytic.trackTutorCourseView(TutorProfile.getTutorId(userId))
+            await this.analytic.trackImpressCourse(courseId, courseType)
         })
     }
 }

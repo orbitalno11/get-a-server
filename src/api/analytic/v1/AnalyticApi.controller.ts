@@ -5,6 +5,7 @@ import { AnalyticApiService } from "./AnalyticApi.service"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import { isNotEmpty } from "../../../core/extension/CommonExtension"
+import { CourseType } from "../../../model/course/data/CourseType"
 
 /**
  * Controller class for "v1/analytic"
@@ -42,13 +43,23 @@ export class AnalyticApiController {
 
     /**
      * Track tutor course view
-     * @param userId
+     * @param courseId
+     * @param courseType
      */
-    @Get("tutor/course")
+    @Get("course")
     @HttpCode(204)
-    trackTutorCourseView(@Query("userId") userId: string) {
-        if (userId?.isSafeNotBlank()) {
-            this.service.trackTutorCourseView(userId)
+    trackTutorCourseView(@Query("courseId") courseId: string, @Query("type") courseType: string) {
+        if (
+            courseId?.isSafeNotBlank() &&
+            courseType?.isNotBlank() &&
+            !isNaN(Number(courseType)) &&
+            this.checkCourseType(courseType)
+        ) {
+            this.service.trackImpressCourse(courseId, courseType.toNumber())
         }
+    }
+
+    private checkCourseType(type: string): boolean {
+        return type.toNumber() in CourseType
     }
 }

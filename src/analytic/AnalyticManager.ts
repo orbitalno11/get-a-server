@@ -3,6 +3,7 @@ import AnalyticRepository from "../repository/AnalyticRepository"
 import { launch } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
 import { isNotEmpty } from "../core/extension/CommonExtension"
+import { CourseType } from "../model/course/data/CourseType"
 
 /**
  * Analytic manager
@@ -57,11 +58,12 @@ class AnalyticManager {
 
     /**
      * Track tutor course view
-     * @param tutorId
+     * @param courseId
+     * @param courseType
      */
-    trackTutorCourseView(tutorId: string) {
+    trackImpressCourse(courseId: string, courseType: CourseType) {
         return launch(async () => {
-            await this.repository.trackTutorCourseView(tutorId)
+            await this.repository.trackImpressCourse(courseId, courseType)
         })
     }
 

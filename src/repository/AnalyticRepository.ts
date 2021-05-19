@@ -7,6 +7,9 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { AnalyticError } from "../core/exceptions/constants/analytic-error.enum"
 import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
+import { CourseType } from "../model/course/data/CourseType"
+import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
+import { isNotEmpty } from "../core/extension/CommonExtension"
 
 /**
  * Repository for analytic manager
@@ -186,21 +189,46 @@ class AnalyticRepository {
 
     /**
      * Track tutor course view
-     * @param tutorId
+     * @param courseId
+     * @param courseType
      */
-    async trackTutorCourseView(tutorId: string) {
+    async trackImpressCourse(courseId: string, courseType: CourseType) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            const frequency = await this.getTutorFrequency(tutorId)
+            let tutorId = ""
 
-            await queryRunner.manager.update(TutorAnalyticFrequencyEntity,
-                { tutor: tutorId },
-                {
-                    numberOfCourseView: frequency.numberOfCourseView + 1
-                })
+            if (courseType === CourseType.OFFLINE_SINGLE || courseType === CourseType.OFFLINE_GROUP) {
+                const offlineCourse = await queryRunner.manager.getRepository(OfflineCourseEntity)
+                    .findOne({
+                        where: {
+                            id: courseId
+                        },
+                        join: {
+                            alias: "offlineCourse",
+                            leftJoinAndSelect: {
+                                owner: "offlineCourse.owner"
+                            }
+                        }
+                    })
+
+                if (isNotEmpty(offlineCourse)) {
+                    tutorId = offlineCourse.owner.id
+                }
+            } else {
+                // todo online course
+            }
+
+            if (tutorId.isSafeNotBlank()) {
+                const frequency = await this.getTutorFrequency(tutorId)
+                await queryRunner.manager.update(TutorAnalyticFrequencyEntity,
+                    { tutor: tutorId },
+                    {
+                        numberOfCourseView: frequency.numberOfCourseView + 1
+                    })
+            }
 
             await queryRunner.commitTransaction()
         } catch (error) {
