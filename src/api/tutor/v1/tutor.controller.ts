@@ -6,7 +6,7 @@ import {
     HttpStatus,
     Param, Patch,
     Post, Put,
-    UploadedFile,
+    UploadedFile, UploadedFiles,
     UseFilters,
     UseInterceptors
 } from "@nestjs/common"
@@ -17,12 +17,10 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
 import TutorForm from "../../../model/form/register/TutorForm"
 import { TutorService } from "./tutor.service"
-import { FileInterceptor } from "@nestjs/platform-express"
+import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express"
 import FailureResponse from "../../../core/response/FailureResponse"
 import TutorRegisterFormValidator from "../../../utils/validator/register/TutorRegisterFormValidator"
-import { isEmpty } from "../../../core/extension/CommonExtension"
-import TutorProfile from "../../../model/profile/TutorProfile"
-import { TutorEntityToTutorProfile } from "../../../utils/mapper/tutor/TutorEntityToTutorProfileMapper"
+import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { launch } from "../../../core/common/launch"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
@@ -41,6 +39,7 @@ import ExamResult from "../../../model/education/ExamResult"
 import TestingVerification from "../../../model/education/TestingVerification"
 import PublicProfile from "../../../model/profile/PublicProfile"
 import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
+import Document from "../../../model/common/Document"
 
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -153,14 +152,20 @@ export class TutorController {
     /**
      * Tutor request education verification
      * @param body
-     * @param file
+     * @param files
      * @param currentUser
      */
     @Post("education/verify")
-    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "document1", maxCount: 1 },
+            { name: "document2", maxCount: 1 },
+            { name: "document3", maxCount: 1 }
+        ], new UploadFileUtils().uploadImageA4Vertical())
+    )
     requestEducationVerify(
         @Body() body: EducationVerifyForm,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFiles() files,
         @CurrentUser() currentUser: User
     ): Promise<IResponse<string>> {
         return launch(async () => {
@@ -174,12 +179,24 @@ export class TutorController {
                 throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            if (!file) {
-                logger.error("upload file is invalid:" + file)
+            const doc1 = files.document1
+            const doc2 = files.document2
+            const doc3 = files.document3
+
+            console.log(files)
+
+            if (isEmpty(doc1)) {
+                logger.error("upload file is invalid:" + doc1)
                 throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
             }
 
-            const result = await this.tutorService.requestEducationVerification(currentUser, data, file)
+            const documentList = [
+                Document.create("doc1", null, doc1[0])
+            ]
+            if (isNotEmpty(doc2)) documentList.push(Document.create("doc2", null, doc2[0]))
+            if (isNotEmpty(doc3)) documentList.push(Document.create("doc3", null, doc3[0]))
+
+            const result = await this.tutorService.requestEducationVerification(currentUser, data, documentList)
             return SuccessResponse.create(result)
         })
     }
@@ -202,15 +219,21 @@ export class TutorController {
      * @param id
      * @param currentUser
      * @param body
-     * @param file
+     * @param files
      */
     @Put("education/:id")
-    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "document1", maxCount: 1 },
+            { name: "document2", maxCount: 1 },
+            { name: "document3", maxCount: 1 }
+        ], new UploadFileUtils().uploadImageA4Vertical())
+    )
     updateEducation(
         @Param("id") id: string,
         @CurrentUser() currentUser: User,
         @Body() body: EducationVerifyForm,
-        @UploadedFile() file: Express.Multer.File
+        @UploadedFiles() files
     ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = EducationVerifyForm.createFormBody(body)
@@ -224,7 +247,16 @@ export class TutorController {
                 throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            const result = await this.tutorService.updateEducationVerification(id, currentUser, data, file)
+            const doc1 = files.document1
+            const doc2 = files.document2
+            const doc3 = files.document3
+            const documentList: Document[] = []
+
+            if (isNotEmpty(doc1)) documentList.push(Document.create("doc1", null, doc1[0]))
+            if (isNotEmpty(doc2)) documentList.push(Document.create("doc2", null, doc2[0]))
+            if (isNotEmpty(doc3)) documentList.push(Document.create("doc3", null, doc3[0]))
+
+            const result = await this.tutorService.updateEducationVerification(id, currentUser, data, documentList)
             return SuccessResponse.create(result)
         })
     }
@@ -245,14 +277,20 @@ export class TutorController {
     /**
      * Tutor request testing verification
      * @param body
-     * @param file
+     * @param files
      * @param currentUser
      */
     @Post("testing/verify")
-    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "document1", maxCount: 1 },
+            { name: "document2", maxCount: 1 },
+            { name: "document3", maxCount: 1 }
+        ], new UploadFileUtils().uploadImageA4Vertical())
+    )
     requestTestingVerify(
         @Body() body: TestingVerifyForm,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFiles() files,
         @CurrentUser() currentUser: User
     ): Promise<IResponse<string>> {
         return launch(async () => {
@@ -266,12 +304,22 @@ export class TutorController {
                 throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            if (!file) {
-                logger.error("upload file is invalid:" + file)
+            const doc1 = files.document1
+            const doc2 = files.document2
+            const doc3 = files.document3
+
+            if (isEmpty(doc1)) {
+                logger.error("upload file is invalid:" + doc1)
                 throw FailureResponse.create(FileError.NOT_FOUND, HttpStatus.BAD_REQUEST)
             }
 
-            const result = await this.tutorService.createTestingVerificationData(currentUser, data, file)
+            const documentList = [
+                Document.create("doc1", null, doc1[0])
+            ]
+            if (isNotEmpty(doc2)) documentList.push(Document.create("doc2", null, doc2[0]))
+            if (isNotEmpty(doc3)) documentList.push(Document.create("doc3", null, doc3[0]))
+
+            const result = await this.tutorService.createTestingVerificationData(currentUser, data, documentList)
             return SuccessResponse.create(result)
         })
     }
@@ -293,15 +341,21 @@ export class TutorController {
      * Update testing verification data
      * @param id
      * @param body
-     * @param file
+     * @param files
      * @param currentUser
      */
     @Put("testing/:id")
-    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadImage()))
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: "document1", maxCount: 1 },
+            { name: "document2", maxCount: 1 },
+            { name: "document3", maxCount: 1 }
+        ], new UploadFileUtils().uploadImageA4Vertical())
+    )
     updateTestingVerificationData(
         @Param("id") id,
         @Body() body: TestingVerifyForm,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFiles() files,
         @CurrentUser() currentUser: User
     ): Promise<IResponse<string>> {
         return launch(async () => {
@@ -315,7 +369,16 @@ export class TutorController {
                 throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            const result = await this.tutorService.updateTestingVerificationData(id, currentUser, data, file)
+            const doc1 = files.document1
+            const doc2 = files.document2
+            const doc3 = files.document3
+            const documentList: Document[] = []
+
+            if (isNotEmpty(doc1)) documentList.push(Document.create("doc1", null, doc1[0]))
+            if (isNotEmpty(doc2)) documentList.push(Document.create("doc2", null, doc2[0]))
+            if (isNotEmpty(doc3)) documentList.push(Document.create("doc3", null, doc3[0]))
+
+            const result = await this.tutorService.updateTestingVerificationData(id, currentUser, data, documentList)
             return SuccessResponse.create(result)
         })
     }

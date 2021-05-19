@@ -32,6 +32,7 @@ import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRece
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 import { GradeEntity } from "../entity/common/grade.entity"
+import Document from "../model/common/Document"
 
 /**
  * Repository for "v1/tutor"
@@ -191,7 +192,7 @@ class TutorRepository {
      * @param data
      * @param fileUrl
      */
-    async createEducationVerification(requestId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
+    async createEducationVerification(requestId: string, user: User, data: EducationVerifyForm, fileUrl: Document[]) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl)
@@ -220,7 +221,7 @@ class TutorRepository {
      * @param data
      * @param fileUrl
      */
-    async updateEducationVerificationData(requestId: string, educationId: string, user: User, data: EducationVerifyForm, fileUrl: string) {
+    async updateEducationVerificationData(requestId: string, educationId: string, user: User, data: EducationVerifyForm, fileUrl: Document[]) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.EDUCATION, fileUrl, true)
@@ -328,7 +329,7 @@ class TutorRepository {
      * @param data
      * @param fileUrl
      */
-    async createTestingVerificationData(requestId: string, user: User, data: TestingVerifyForm, fileUrl: string) {
+    async createTestingVerificationData(requestId: string, user: User, data: TestingVerifyForm, fileUrl: Document[]) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const userVerify = this.getUserVerifyEntity(requestId, user, UserVerify.TESTING_RESULT, fileUrl)
@@ -362,7 +363,7 @@ class TutorRepository {
         testingId: string,
         user: User,
         data: TestingVerifyForm,
-        fileUrl: string
+        fileUrl: Document[]
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
@@ -457,7 +458,7 @@ class TutorRepository {
      * @param requestId
      * @param user
      * @param type
-     * @param doc1Url
+     * @param docs
      * @param isUpdate
      * @private
      */
@@ -465,7 +466,7 @@ class TutorRepository {
         requestId: string,
         user: User,
         type: UserVerify,
-        doc1Url: string,
+        docs: Document[],
         isUpdate: boolean = false
     ): UserVerifyEntity {
         const member = new MemberEntity()
@@ -475,7 +476,18 @@ class TutorRepository {
         entity.id = requestId
         entity.member = member
         entity.type = type
-        entity.documentUrl1 = doc1Url
+
+        for (const doc of docs) {
+            if (doc.name === "doc1") {
+                entity.documentUrl1 = doc.url
+            }
+            if (doc.name === "doc2") {
+                entity.documentUrl2 = doc.url
+            }
+            if (doc.name === "doc3") {
+                entity.documentUrl3 = doc.url
+            }
+        }
 
         if (!isUpdate) {
             entity.created = new Date()
