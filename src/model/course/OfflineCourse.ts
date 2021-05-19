@@ -19,6 +19,7 @@ class OfflineCourse {
     costText: string
     rating: number
     status: string
+    enrolled: boolean
     requestNumber: number
     studentNumber: number
 }

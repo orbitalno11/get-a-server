@@ -28,7 +28,9 @@ import { launch } from "../../../core/common/launch"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
+import User from "../../../model/User"
 
+// TODO Refactor this class to use repository
 /**
  * Controller for offline course
  * @author oribitalno11 2021 A.D.
@@ -93,14 +95,18 @@ export class OfflineCourseController {
     /**
      * Get an offline course data, if the user request is a course owner or not
      * @param courseId
-     * @param currentUserId
+     * @param currentUser
      */
     @Get(":id")
-    getOfflineCourseDetail(@Param("id") courseId: string): Promise<IResponse<OfflineCourse>> {
+    getOfflineCourseDetail(@Param("id") courseId: string, @CurrentUser() currentUser?: User): Promise<IResponse<OfflineCourse>> {
         return launch(async () => {
-            const courseData = await this.service.getOfflineCourseDetail(courseId)
-            const data = new OfflineCourseEntityToOfflineCourseMapper().map(courseData)
-            return SuccessResponse.create(data)
+            if (!courseId?.isSafeNotBlank()) {
+                logger.error("Invalid request data")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const course = await this.service.getOfflineCourseDetail(courseId, currentUser)
+            return SuccessResponse.create(course)
         })
     }
 

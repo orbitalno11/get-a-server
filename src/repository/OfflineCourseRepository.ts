@@ -63,6 +63,29 @@ class OfflineCourseRepository {
             await queryRunner.release()
         }
     }
+
+    /**
+     * Get offline course detail
+     * @param courseId
+     */
+    async getOfflineCourse(courseId: string): Promise<OfflineCourseEntity> {
+        try {
+            return await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
+                .leftJoinAndSelect("course.courseType", "type")
+                .leftJoinAndSelect("course.subject", "subject")
+                .leftJoinAndSelect("course.grade", "grade")
+                .leftJoinAndSelect("course.owner", "owner")
+                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("owner.member", "member")
+                .leftJoinAndSelect("owner.contact", "contact")
+                .where("course.id like :id")
+                .setParameter("id", courseId)
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get offline course", CourseError.CAN_NOT_GET_OFFLINE_COURSE)
+        }
+    }
 }
 
 export default OfflineCourseRepository

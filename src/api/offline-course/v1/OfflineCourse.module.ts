@@ -7,6 +7,7 @@ import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.midd
 import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
 import { RepositoryModule } from "../../../repository/repository.module"
 import { AnalyticModule } from "../../../analytic/Analytic.module"
+import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
 
 /**
  * Class for offline course module
@@ -30,6 +31,10 @@ export class OfflineCourseModule implements NestModule {
             .apply(LearnerAuthenticated)
             .forRoutes(
                 { path: "v1/offline-course/:id/enroll", method: RequestMethod.POST }
+            )
+            .apply(AuthenticatedRequest)
+            .forRoutes(
+                { path: "v1/offline-course/:id", method: RequestMethod.GET }
             )
     }
 }
