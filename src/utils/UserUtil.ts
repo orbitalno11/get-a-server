@@ -9,7 +9,7 @@ import User from "../model/User"
 import { MemberEntityToUserMapper } from "./mapper/member/MemberEnityToUserMapper"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import { LearnerEntity } from "../entity/profile/learner.entity"
-import { isEmpty } from "../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../core/extension/CommonExtension"
 import TutorProfile from "../model/profile/TutorProfile"
 import LearnerProfile from "../model/profile/LearnerProfile"
 import UserRepository from "../repository/UserRepository"
@@ -171,7 +171,7 @@ class UserUtil {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 const course = await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
-                return isEmpty(course)
+                return isNotEmpty(course)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }

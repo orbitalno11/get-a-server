@@ -27,6 +27,9 @@ import User from "../../../model/User"
 import OfflineCourse from "../../../model/course/OfflineCourse"
 import { OfflineCourseEntityToOfflineCourseMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper"
 import { UserRole } from "../../../core/constant/UserRole"
+import OfflineCourseEnroll from "../../../model/course/OfflineCourseEnroll"
+import { EnrollListMapper } from "../../../utils/mapper/course/offline/EnrollListMapper"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 // TODO Refactor this class to use repository
 /**
@@ -222,19 +225,18 @@ export class OfflineCourseService {
     /**
      * Get learner enroll list
      * @param courseId
+     * @param user
      */
-    async getEnrollOfflineCourseList(courseId: string): Promise<OfflineCourseLeanerRequestEntity[]> {
-        try {
-            return await this.connection.createQueryBuilder(OfflineCourseLeanerRequestEntity, "courseRequest")
-                .leftJoinAndSelect("courseRequest.learner", "learner")
-                .leftJoinAndSelect("learner.member", "member")
-                .where("courseRequest.course.id like :id", {id: courseId})
-                .andWhere("courseRequest.status in (:status)", {status: [EnrollStatus.WAITING_FOR_APPROVE, EnrollStatus.APPROVE]})
-                .getMany()
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+    async getEnrollOfflineCourseList(courseId: string, user: User): Promise<OfflineCourseEnroll[]> {
+        return launch(async () => {
+            const isOwner = await this.userUtil.isCourseOwner(user.id, courseId)
+            if (isOwner) {
+                const enrollList = await this.repository.getEnrollList(courseId)
+                return new EnrollListMapper().map(enrollList)
+            } else {
+                throw ErrorExceptions.create("You are not a course owner.", UserError.DO_NOT_HAVE_PERMISSION)
+            }
+        })
     }
 
     /**
