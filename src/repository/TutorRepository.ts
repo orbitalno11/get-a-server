@@ -444,6 +444,7 @@ class TutorRepository {
                 .leftJoinAndSelect("offlineCourse.subject", "subject")
                 .leftJoinAndSelect("offlineCourse.grade", "grade")
                 .leftJoinAndSelect("offlineCourse.rating", "rating")
+                .leftJoinAndSelect("offlineCourse.courseType", "type")
                 .where("offlineCourse.owner like :tutorId", { tutorId: tutorId })
                 .orderBy("offlineCourse.requestNumber", "DESC")
                 .getMany()
