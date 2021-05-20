@@ -8,6 +8,7 @@ import { TutorEntity } from "../entity/profile/tutor.entity"
 import { LearnerEntity } from "../entity/profile/learner.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
+import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 
 /**
  * Repository for user utility
@@ -101,6 +102,23 @@ class UserRepository {
                     .where("offlineCourse.id like :courseId", { courseId: courseId })
                     .andWhere("requestList.learner like :learnerId", { learnerId: learnerId })
                     .andWhere("requestList.status = :enrollStatus", { enrollStatus: EnrollStatus.APPROVE })
+                    .getOne()
+            } else {
+                // todo query online course -> waiting for online course task
+                return null
+            }
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    async getReviewCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseRatingTransactionEntity | null> {
+        try {
+            if (isOfflineCourse) {
+                return await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
+                    .where("review.learner like :learnerId", { learnerId: learnerId })
+                    .andWhere("review.course like :courseId", { courseId: courseId })
                     .getOne()
             } else {
                 // todo query online course -> waiting for online course task

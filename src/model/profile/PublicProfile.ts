@@ -11,7 +11,7 @@ class PublicProfile {
     gender: Gender
     picture: string
     introduction: string
-    address: Address[]
+    address: Address
     contact: Contact
     numberOfLearner: number
     rating: number
