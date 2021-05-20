@@ -29,6 +29,7 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import User from "../../../model/User"
+import OfflineCourseEnroll from "../../../model/course/OfflineCourseEnroll"
 
 // TODO Refactor this class to use repository
 /**
@@ -169,23 +170,13 @@ export class OfflineCourseController {
     /**
      * Get learner enroll list
      * @param courseId
-     * @param currentUserId
+     * @param currentUser
      */
     @Get(":id/enroll")
-    getEnrollList(@Param("id") courseId: string, @CurrentUser("id") currentUserId: string) {
+    getEnrollList(@Param("id") courseId: string, @CurrentUser() currentUser: User): Promise<IResponse<OfflineCourseEnroll[]>> {
         return launch(async () => {
             this.checkCourseId(courseId)
-            this.checkCurrentUser(currentUserId)
-
-            const isOwner = await this.service.checkCourseOwner(courseId, currentUserId)
-            if (!isOwner) {
-                logger.error("You are not a course owner.")
-                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.BAD_REQUEST)
-            }
-
-            const result = await this.service.getEnrollOfflineCourseList(courseId)
-            const enrollList = new EnrollListMapper().map(result)
-
+            const enrollList = await this.service.getEnrollOfflineCourseList(courseId, currentUser)
             return SuccessResponse.create(enrollList)
         })
     }

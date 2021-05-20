@@ -11,6 +11,8 @@ import { CourseTypeEntity } from "../entity/course/courseType.entity"
 import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
+import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
+import { EnrollStatus } from "../model/course/data/EnrollStatus"
 
 /**
  * Repository for offline course
@@ -84,6 +86,27 @@ class OfflineCourseRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get offline course", CourseError.CAN_NOT_GET_OFFLINE_COURSE)
+        }
+    }
+
+    /**
+     * Get enroll learner list
+     * @param courseId
+     */
+    async getEnrollList(courseId: string): Promise<OfflineCourseLeanerRequestEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(OfflineCourseLeanerRequestEntity, "courseRequest")
+                .leftJoinAndSelect("courseRequest.learner", "learner")
+                .leftJoinAndSelect("learner.member", "member")
+                .leftJoinAndSelect("member.memberAddress", "address")
+                .leftJoinAndSelect("address.province", "province")
+                .leftJoinAndSelect("address.district", "district")
+                .where("courseRequest.course.id like :id", { id: courseId })
+                .andWhere("courseRequest.status in (:status)", { status: [EnrollStatus.WAITING_FOR_APPROVE, EnrollStatus.APPROVE] })
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get enroll list", CourseError.CAN_NOT_GET_ENROLL_LIST)
         }
     }
 }
