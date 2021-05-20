@@ -9,6 +9,7 @@ export class TutorStatisticEntityToTutorCardMapper implements Mapper<TutorStatis
         const tutorCard = new TutorCard()
         tutorCard.id = from.tutor?.member?.id
         tutorCard.fullNameText = `${from.tutor?.member?.firstname} ${from.tutor?.member?.lastname}`
+        tutorCard.pictureUrl = from.tutor?.member?.profileUrl
         tutorCard.address = new Address().getConvenienceAddress(from.tutor?.member?.memberAddress)
         tutorCard.subject = new Subject().getFirstSubject(from.tutor?.member?.interestedSubject)
         tutorCard.rating = from.offlineRating
