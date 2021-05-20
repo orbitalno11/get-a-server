@@ -3,6 +3,7 @@ import Mapper from "../../../core/common/Mapper"
 import PublicProfile from "../../../model/profile/PublicProfile"
 import { MemberAddressToAddressMapper } from "../location/MemberAddressToAddress.mapper"
 import Subject from "../../../model/common/Subject"
+import Contact from "../../../model/Contact"
 
 export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, PublicProfile> {
     map(from: TutorEntity): PublicProfile {
@@ -16,6 +17,7 @@ export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, Pub
         profile.picture = from.member.profileUrl
         profile.introduction = from.introduction
         profile.address = from.member?.memberAddress?.map((item) => MemberAddressToAddressMapper(item))
+        profile.contact = Contact.createFromContactEntity(from?.contact)
         profile.numberOfLearner = from.statistic.numberOfLearner
         profile.rating = from.statistic.rating
         profile.interestedSubject = from.member?.interestedSubject?.map(
@@ -31,6 +33,7 @@ export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, Pub
         tutorProfile.lastname = data.member?.lastname
         tutorProfile.picture = data.member?.profileUrl
         tutorProfile.fullNameText = `${data.member?.firstname} ${data.member?.lastname}`
+        tutorProfile.contact = Contact.createFromContactEntity(data?.contact)
         return tutorProfile
     }
 }

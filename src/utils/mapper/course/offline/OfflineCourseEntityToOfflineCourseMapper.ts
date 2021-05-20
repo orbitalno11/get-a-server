@@ -26,4 +26,10 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner)
         return course
     }
+
+    mapWithEnrolledStatus(from: OfflineCourseEntity, enrolled: boolean = false): OfflineCourse {
+        const course = this.map(from)
+        course.enrolled = enrolled
+        return course
+    }
 }

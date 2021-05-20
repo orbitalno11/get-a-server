@@ -14,7 +14,7 @@ import { CourseTypeEntity } from "../../../entity/course/courseType.entity"
 import TutorProfile from "../../../model/profile/TutorProfile"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
-import { isEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
 import { OfflineCourseLeanerRequestEntity } from "../../../entity/course/offline/offlineCourseLearnerRequest.entity"
 import { LearnerEntity } from "../../../entity/profile/learner.entity"
 import { EnrollStatus } from "../../../model/course/data/EnrollStatus"
@@ -23,7 +23,12 @@ import { EnrollAction } from "../../../model/course/data/EnrollAction"
 import { launch } from "../../../core/common/launch"
 import OfflineCourseRepository from "../../../repository/OfflineCourseRepository"
 import AnalyticManager from "../../../analytic/AnalyticManager"
+import User from "../../../model/User"
+import OfflineCourse from "../../../model/course/OfflineCourse"
+import { OfflineCourseEntityToOfflineCourseMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper"
+import { UserRole } from "../../../core/constant/UserRole"
 
+// TODO Refactor this class to use repository
 /**
  * Service for manage offline course data
  * @author oribitalno11 2021 A.D.
@@ -33,7 +38,7 @@ export class OfflineCourseService {
     constructor(
         private readonly connection: Connection,
         private readonly repository: OfflineCourseRepository,
-        private readonly userManager: UserUtil,
+        private readonly userUtil: UserUtil,
         private readonly analytic: AnalyticManager
     ) {
     }
@@ -57,7 +62,7 @@ export class OfflineCourseService {
     async createOfflineCourse(tutorId: string, data: OfflineCourseForm): Promise<string> {
         return launch(async () => {
             const courseId = this.generateCourseId(data.type, data.subject, data.grade)
-            const tutor = await this.userManager.getTutor(tutorId)
+            const tutor = await this.userUtil.getTutor(tutorId)
 
             await this.repository.createCourse(courseId, data, tutor)
 
@@ -70,23 +75,18 @@ export class OfflineCourseService {
     /**
      * Get an offline course data from database by using course id
      * @param courseId
+     * @param user
      */
-    async getOfflineCourseDetail(courseId: string): Promise<OfflineCourseEntity> {
-        try {
-            return await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
-                .leftJoinAndSelect("course.courseType", "type")
-                .leftJoinAndSelect("course.subject", "subject")
-                .leftJoinAndSelect("course.grade", "grade")
-                .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
-                .leftJoinAndSelect("owner.member", "member")
-                .where("course.id like :id")
-                .setParameter("id", courseId)
-                .getOne()
-        } catch (error) {
-            logger.error(error)
-            throw error
-        }
+    async getOfflineCourseDetail(courseId: string, user?: User): Promise<OfflineCourse> {
+        return launch(async () => {
+            let isEnrolled = false
+            if (isNotEmpty(user) && user.role === UserRole.LEARNER) {
+                isEnrolled = await this.userUtil.isEnrolled(user.id, courseId)
+            }
+
+            const course = await this.repository.getOfflineCourse(courseId)
+            return new OfflineCourseEntityToOfflineCourseMapper().mapWithEnrolledStatus(course, isEnrolled)
+        })
     }
 
     /**
@@ -116,7 +116,7 @@ export class OfflineCourseService {
      */
     async updateOfflineCourse(courseId: string, userId: string, data: OfflineCourseForm): Promise<OfflineCourseEntity> {
         try {
-            await this.userManager.getTutor(userId)
+            await this.userUtil.getTutor(userId)
 
             const offlineCourseEntity = new OfflineCourseEntity()
             offlineCourseEntity.id = courseId
@@ -133,7 +133,7 @@ export class OfflineCourseService {
 
             await this.connection.getRepository(OfflineCourseEntity).save(offlineCourseEntity)
 
-            return await this.getOfflineCourseDetail(courseId)
+            return await this.repository.getOfflineCourse(courseId)
         } catch (error) {
             logger.error(error)
             throw error
@@ -181,7 +181,7 @@ export class OfflineCourseService {
      */
     async enrollOfflineCourse(course: OfflineCourseEntity, userId: string): Promise<string> {
         try {
-            const learnerEntity = await this.userManager.getLearner(userId)
+            const learnerEntity = await this.userUtil.getLearner(userId)
             let enrolled = await this.checkEnrolledOfflineCourse(course.id, learnerEntity)
 
             if (enrolled === undefined) {
@@ -246,8 +246,8 @@ export class OfflineCourseService {
      */
     async manageEnrollRequest(course: OfflineCourseEntity, tutorId: string, learnerId: string, action: string): Promise<string> {
         try {
-            await this.userManager.getTutor(tutorId)
-            const learner = await this.userManager.getLearner(learnerId)
+            await this.userUtil.getTutor(tutorId)
+            const learner = await this.userUtil.getLearner(learnerId)
             const enrolled = await this.checkEnrolledOfflineCourse(course.id, learner)
 
             if (!enrolled) {

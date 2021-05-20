@@ -7,5 +7,6 @@ export enum CourseError {
     ENROLL_SUCCESS = "enroll-course-successful",
     NOT_FOUND = "can-not-found-course",
     CAN_NOT_CREATE_COURSE = "can-not-create-course",
-    NOT_ENROLLED = "not-enrolled"
+    NOT_ENROLLED = "not-enrolled",
+    CAN_NOT_GET_OFFLINE_COURSE = "can-not-get-offline-course"
 }
