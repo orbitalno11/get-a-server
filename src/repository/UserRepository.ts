@@ -9,6 +9,7 @@ import { LearnerEntity } from "../entity/profile/learner.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
+import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
 
 /**
  * Repository for user utility
@@ -87,7 +88,7 @@ class UserRepository {
     }
 
     /**
-     * Get enrolled course data from learner id and course id\
+     * Get enrolled course data from learner id and course id
      * (offline course will get only course that request status is APPROVE)
      * @param learnerId
      * @param courseId
@@ -113,6 +114,12 @@ class UserRepository {
         }
     }
 
+    /**
+     * Get course review by learner id and course id
+     * @param learnerId
+     * @param courseId
+     * @param isOfflineCourse
+     */
     async getReviewCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseRatingTransactionEntity | null> {
         try {
             if (isOfflineCourse) {
@@ -124,6 +131,23 @@ class UserRepository {
                 // todo query online course -> waiting for online course task
                 return null
             }
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
+
+    /**
+     * Get favorite tutor
+     * @param learnerId
+     * @param tutorId
+     */
+    async getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity | null> {
+        try {
+            return await this.connection.createQueryBuilder(FavoriteTutorEntity, "favorite")
+                .where("favorite.learner like :learnerId", { learnerId: learnerId })
+                .andWhere("favorite.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw error

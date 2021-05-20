@@ -12,6 +12,8 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import TutorCard from "../../../model/profile/TutorCard"
+import UserUtil from "../../../utils/UserUtil"
+import { FavoriteError } from "../../../core/exceptions/constants/favorite-error.enum"
 
 /**
  * Controller for "v1/favorite"
@@ -21,7 +23,10 @@ import TutorCard from "../../../model/profile/TutorCard"
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
 export class FavoriteController {
-    constructor(private readonly service: FavoriteService) {
+    constructor(
+        private readonly service: FavoriteService,
+        private readonly userUtil: UserUtil
+    ) {
     }
 
     /**
@@ -42,10 +47,19 @@ export class FavoriteController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
+            const isLiked = await this.userUtil.isLiked(currentUser.id, userId)
             if (like === "true") {
-                await this.service.likeTutor(userId, currentUser.id)
+                if (!isLiked) {
+                    await this.service.likeTutor(userId, currentUser.id)
+                } else {
+                    throw FailureResponse.create(FavoriteError.ALREADY_LIKE_TUTOR, HttpStatus.BAD_REQUEST)
+                }
             } else {
-                await this.service.unLikeTutor(userId, currentUser.id)
+                if (isLiked) {
+                    await this.service.unLikeTutor(userId, currentUser.id)
+                } else {
+                    throw FailureResponse.create(FavoriteError.NEVER_LIKE_TUTOR, HttpStatus.BAD_REQUEST)
+                }
             }
 
             return SuccessResponse.create("Successful")
@@ -59,8 +73,8 @@ export class FavoriteController {
     @Get("list")
     getFavoriteList(@CurrentUser() currentUser: User): Promise<IResponse<TutorCard[]>> {
         return launch(async () => {
-            const favorties = await this.service.getFavoriteTutorList(currentUser)
-            return SuccessResponse.create(favorties)
+            const favorites = await this.service.getFavoriteTutorList(currentUser)
+            return SuccessResponse.create(favorites)
         })
     }
 
