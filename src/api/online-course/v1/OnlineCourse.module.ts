@@ -5,9 +5,10 @@ import { RepositoryModule } from "../../../repository/repository.module"
 import { OnlineCourseService } from "./OnlineCourse.service"
 import { OnlineCourseController } from "./OnlineCourse.controller"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
+import { AnalyticModule } from "../../../analytic/Analytic.module"
 
 @Module({
-    imports: [CoreModule, UtilityModule, RepositoryModule],
+    imports: [CoreModule, UtilityModule, RepositoryModule, AnalyticModule],
     providers: [OnlineCourseService],
     controllers: [OnlineCourseController]
 })

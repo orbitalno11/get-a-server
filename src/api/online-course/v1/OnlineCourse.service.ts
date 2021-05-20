@@ -11,6 +11,8 @@ import { CourseType } from "../../../model/course/data/CourseType"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
+import AnalyticManager from "../../../analytic/AnalyticManager"
+import TutorProfile from "../../../model/profile/TutorProfile"
 
 /**
  * Service class for "v1/online-course"
@@ -22,7 +24,8 @@ export class OnlineCourseService {
     constructor(
         private readonly repository: OnlineCourseRepository,
         private readonly userUtil: UserUtil,
-        private readonly fileStorageUtil: FileStorageUtils
+        private readonly fileStorageUtil: FileStorageUtils,
+        private readonly analytic: AnalyticManager
     ) {
     }
 
@@ -47,6 +50,8 @@ export class OnlineCourseService {
             } else {
                 throw ErrorExceptions.create("You are not a tutor", UserError.DO_NOT_HAVE_PERMISSION)
             }
+
+            await this.analytic.trackCreateOnlineCourse(TutorProfile.getTutorId(user.id))
 
             return courseId
         } catch (error) {
