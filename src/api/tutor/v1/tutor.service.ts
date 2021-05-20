@@ -3,15 +3,10 @@ import { Connection } from "typeorm"
 import { v4 as uuid } from "uuid"
 import { logger } from "../../../core/logging/Logger"
 import { InterestedSubjectEntity } from "../../../entity/member/interestedSubject.entity"
-import { MemberRoleEntity } from "../../../entity/member/memberRole.entitiy"
-import { RoleEntity } from "../../../entity/common/role.entity"
 import { SubjectEntity } from "../../../entity/common/subject.entity"
 import TutorForm from "../../../model/form/register/TutorForm"
-import TutorFormToMemberEntityMapper from "../../../utils/mapper/tutor/TutorFormToMemberEntityMapper"
 import TokenManager from "../../../utils/token/TokenManager"
 import UserUtil from "../../../utils/UserUtil"
-import { TutorEntity } from "../../../entity/profile/tutor.entity"
-import { ContactEntity } from "../../../entity/contact/contact.entitiy"
 import { Subject } from "../../../model/common/data/Subject"
 import { UserRole } from "../../../core/constant/UserRole"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
@@ -38,6 +33,11 @@ import PublicProfile from "../../../model/profile/PublicProfile"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import { TutorEntityToPublicProfileMapper } from "../../../utils/mapper/tutor/TutorEntityToPublicProfile.mapper"
 import { TutorError } from "../../../core/exceptions/constants/tutor-error.enum"
+import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
+import { OfflineCourseEntityToSimpleCourseListMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToSimpleCourse.mapper"
+import { ImageSize } from "../../../core/constant/ImageSize.enum"
+import Document from "../../../model/common/Document"
 
 /**
  * Service for tutor controller
@@ -54,6 +54,11 @@ export class TutorService {
     ) {
     }
 
+    /**
+     * Create tutor profile
+     * @param data
+     * @param file
+     */
     async createTutor(data: TutorForm, file: Express.Multer.File): Promise<string> {
         let userId: string
         let filePath: string
@@ -66,65 +71,18 @@ export class TutorService {
             // set profile image path
             filePath = await this.fileStorageUtils.uploadImageTo(file, userId, "profile")
 
-            // create entity
-            const member = TutorFormToMemberEntityMapper(data)
-            member.id = userId
-            member.profileUrl = filePath
-            member.verified = false
-            member.created = new Date()
-            member.updated = new Date()
+            const interestedSubject = this.getInterestedSubjectArray(data)
 
-            const memberRole = new MemberRoleEntity()
-            memberRole.member = member
-            memberRole.role = RoleEntity.createFromId(UserRole.TUTOR)
-
-            member.memberRole = memberRole
-
-            // create update-profile profile
-            const tutorProfile = new TutorEntity()
-
-            const contact = new ContactEntity()
-            contact.phoneNumber = data.phoneNumber
-
-            tutorProfile.id = `tutor-${userId}`
-            tutorProfile.contact = contact
-            tutorProfile.introduction = "ยินดีที่ได้รู้จักทุกคน"
-            member.tutorProfile = tutorProfile
-
-            const subject = this.getInterestedSubjectArray(data)
-            for (let index = 0; index < subject.length; index++) {
-                const interestedSubjectEntity = new InterestedSubjectEntity()
-                interestedSubjectEntity.subjectRank = index + 1
-                interestedSubjectEntity.subject = SubjectEntity.createFromCode(subject[index])
-                member.interestedSubject.push(interestedSubjectEntity)
-            }
-
-            // insert update-profile data to database
-            const queryRunner = this.connection.createQueryRunner()
-            try {
-                await queryRunner.connect()
-                await queryRunner.startTransaction()
-                await queryRunner.manager.save(contact)
-                await queryRunner.manager.save(member)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                logger.error(error)
-                await queryRunner.rollbackTransaction()
-                throw error
-            } finally {
-                await queryRunner.release()
-            }
+            const result = await this.repository.createTutor(userId, data, filePath, interestedSubject)
 
             // generate token
-            const token = this.tokenManager.generateToken({
-                id: member.id,
-                email: member.email,
-                username: member.username,
-                profileUrl: member.profileUrl,
+            return this.tokenManager.generateToken({
+                id: result.id,
+                email: result.email,
+                username: result.username,
+                profileUrl: result.profileUrl,
                 role: UserRole.TUTOR
             })
-
-            return token
         } catch (error) {
             logger.error(error)
             if (userId) {
@@ -137,17 +95,36 @@ export class TutorService {
         }
     }
 
-    private getInterestedSubjectArray(params: TutorForm): Array<Subject> {
-        const interestedSubject = [params["subject1"]]
-        const subject2 = params["subject2"]
-        if (subject2?.isSafeNotNull()) {
-            interestedSubject.push(subject2)
-            const subject3 = params["subject3"]
-            if (subject3?.isSafeNotNull()) {
-                interestedSubject.push(subject3)
+    /**
+     * Create interested subject entity object array
+     * @param params
+     * @private
+     */
+    private getInterestedSubjectArray(params: TutorForm): Array<InterestedSubjectEntity> {
+        const interestedSubjects = []
+        interestedSubjects.push(this.getInterestedSubjectEntity(params.subject1, 1))
+        if (params.subject2?.isSafeNotBlank()) {
+            interestedSubjects.push(this.getInterestedSubjectEntity(params.subject2, 2))
+            if (params.subject3?.isSafeNotBlank()) {
+                interestedSubjects.push(this.getInterestedSubjectEntity(params.subject3, 3))
             }
         }
-        return interestedSubject
+        return interestedSubjects
+    }
+
+    /**
+     * Create interested subject entity object
+     * @param param
+     * @param rank
+     * @private
+     */
+    private getInterestedSubjectEntity(param: Subject, rank: number): InterestedSubjectEntity {
+        const subject = new SubjectEntity()
+        subject.code = param
+        const interested = new InterestedSubjectEntity()
+        interested.subject = subject
+        interested.subjectRank = rank
+        return interested
     }
 
     /**
@@ -206,12 +183,15 @@ export class TutorService {
      * Tutor request education verification
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async requestEducationVerification(user: User, data: EducationVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
+    async requestEducationVerification(user: User, data: EducationVerifyForm, files: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
         try {
-            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
+            for (const file of files) {
+                file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                fileUrl.push(file)
+            }
             const requestId = uuid()
 
             await this.repository.createEducationVerification(requestId, user, data, fileUrl)
@@ -219,8 +199,10 @@ export class TutorService {
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -231,32 +213,45 @@ export class TutorService {
      * @param educationId
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async updateEducationVerification(educationId: string, user: User, data: EducationVerifyForm, file?: Express.Multer.File) {
-        let fileUrl = ""
-        let oldFileUrl = ""
+    async updateEducationVerification(educationId: string, user: User, data: EducationVerifyForm, files?: Document[]) {
+        let fileUrl: Document[] = []
+        let oldFileUrl: Document[] = []
         try {
             const verificationData = await this.checkEducationOwner(educationId, user)
 
-            if (file) {
-                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-edu", 720, 1280)
-                oldFileUrl = verificationData.documentUrl1
-            } else {
-                fileUrl = verificationData.documentUrl1
+            if (isNotEmpty(files)) {
+                for (const file of files) {
+                    file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                    fileUrl.push(file)
+                    if (file.name === "doc1") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl1))
+                    }
+                    if (file.name === "doc2") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl2))
+                    }
+                    if (file.name === "doc3") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl3))
+                    }
+                }
             }
 
             await this.repository.updateEducationVerificationData(verificationData.id, educationId, user, data, fileUrl)
 
-            if (oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            if (isNotEmpty(oldFileUrl)) {
+                for (const url of oldFileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
 
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl) && isNotEmpty(oldFileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -267,10 +262,21 @@ export class TutorService {
      * @param educationId
      * @param user
      */
-    deleteEducation(educationId: string, user: User) {
+    async deleteEducation(educationId: string, user: User) {
         return launch(async () => {
             const verificationData = await this.checkEducationOwner(educationId, user)
             await this.repository.deleteEducationVerification(verificationData.id, educationId)
+
+            const { documentUrl1, documentUrl2, documentUrl3 } = verificationData
+            if (documentUrl1?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl1)
+            }
+            if (documentUrl2?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl2)
+            }
+            if (documentUrl3?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl3)
+            }
         })
     }
 
@@ -338,12 +344,15 @@ export class TutorService {
      * Tutor request testing verification
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async createTestingVerificationData(user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
+    async createTestingVerificationData(user: User, data: TestingVerifyForm, files: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
         try {
-            fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
+            for (const file of files) {
+                file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                fileUrl.push(file)
+            }
             const requestId = uuid()
 
             await this.repository.createTestingVerificationData(requestId, user, data, fileUrl)
@@ -351,8 +360,10 @@ export class TutorService {
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -363,32 +374,45 @@ export class TutorService {
      * @param testingId
      * @param user
      * @param data
-     * @param file
+     * @param files
      */
-    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, file: Express.Multer.File): Promise<string> {
-        let fileUrl = ""
-        let oldFileUrl = ""
+    async updateTestingVerificationData(testingId: string, user: User, data: TestingVerifyForm, files?: Document[]): Promise<string> {
+        let fileUrl: Document[] = []
+        let oldFileUrl: Document[] = []
         try {
             const verificationData = await this.checkTestingOwner(testingId, user)
 
-            if (file) {
-                fileUrl = await this.fileStorageUtils.uploadImageTo(file, user.id, "verify-test", 720, 1280)
-                oldFileUrl = verificationData.documentUrl1
-            } else {
-                fileUrl = verificationData.documentUrl1
+            if (isNotEmpty(files)) {
+                for (const file of files) {
+                    file.url = await this.fileStorageUtils.uploadImageTo(file.file, user.id, "verify-edu", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+                    fileUrl.push(file)
+                    if (file.name === "doc1") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl1))
+                    }
+                    if (file.name === "doc2") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl2))
+                    }
+                    if (file.name === "doc3") {
+                        oldFileUrl.push(Document.create(null, verificationData.documentUrl3))
+                    }
+                }
             }
 
             await this.repository.updateTestingVerificationData(verificationData.id, testingId, user, data, fileUrl)
 
-            if (oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(oldFileUrl)
+            if (isNotEmpty(oldFileUrl)) {
+                for (const url of oldFileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
 
             return "Successful"
         } catch (error) {
             logger.error(error)
-            if (fileUrl.isSafeNotBlank() && oldFileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtils.deleteFileFromUrl(fileUrl)
+            if (isNotEmpty(fileUrl) && isNotEmpty(oldFileUrl)) {
+                for (const url of fileUrl) {
+                    await this.fileStorageUtils.deleteFileFromUrl(url.url)
+                }
             }
             throw error
         }
@@ -403,6 +427,17 @@ export class TutorService {
         return launch(async () => {
             const verificationData = await this.checkTestingOwner(testingId, user)
             await this.repository.deleteTestingVerificationData(testingId, verificationData.id)
+
+            const { documentUrl1, documentUrl2, documentUrl3 } = verificationData
+            if (documentUrl1?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl1)
+            }
+            if (documentUrl2?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl2)
+            }
+            if (documentUrl3?.isSafeNotBlank()) {
+                await this.fileStorageUtils.deleteFileFromUrl(documentUrl3)
+            }
         })
     }
 
@@ -429,5 +464,19 @@ export class TutorService {
             logger.error(error)
             throw error
         }
+    }
+
+    /**
+     * Get tutor offline course
+     * @param userId
+     * @param user
+     */
+    getOfflineCourse(userId: string, user?: User): Promise<SimpleOfflineCourse[]> {
+        return launch(async () => {
+            const isOwner = userId === user?.id
+            const tutorId = TutorProfile.getTutorId(userId)
+            let result = isOwner ? await this.repository.getOfflineCourseTutor(tutorId) : await this.repository.getOfflineCourse(tutorId)
+            return isNotEmpty(result) ? OfflineCourseEntityToSimpleCourseListMapper(result, isOwner) : []
+        })
     }
 }

@@ -17,6 +17,9 @@ import { CoinModule } from "./api/coin/v1/coin.module"
 import { PaymentApiModule } from "./api/payment/v1/paymentApi.module"
 import { VerifyModule } from "./api/verify/v1/verify.module"
 import { ReviewModule } from "./api/review/v1/review.module"
+import { FavoriteModule } from "./api/favorite/v1/favorite.module"
+import { HomeModule } from "./api/home/v1/home.module"
+import { AnalyticApiModule } from "./api/analytic/v1/AnalyticApi.module"
 
 const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
@@ -34,7 +37,10 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
         CoinModule,
         PaymentApiModule,
         VerifyModule,
-        ReviewModule
+        ReviewModule,
+        FavoriteModule,
+        HomeModule,
+        AnalyticApiModule
     ],
     controllers: [AppController],
     providers: [AppService]

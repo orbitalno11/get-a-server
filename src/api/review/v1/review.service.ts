@@ -4,7 +4,7 @@ import ReviewForm from "../../../model/review/ReviewForm"
 import User from "../../../model/User"
 import { launch } from "../../../core/common/launch"
 import UserUtil from "../../../utils/UserUtil"
-import { isEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
 import { CourseType } from "../../../model/course/data/CourseType"
@@ -12,6 +12,9 @@ import { UserRole } from "../../../core/constant/UserRole"
 import LearnerProfile from "../../../model/profile/LearnerProfile"
 import { OfflineCourseReviewToReviewMapper } from "../../../utils/mapper/course/offline/OfflineCourseReviewToReviewMapper"
 import Review from "../../../model/review/Review"
+import RatingUtil from "../../../utils/rating/RatingUtil"
+import AnalyticManager from "../../../analytic/AnalyticManager"
+import { ReviewError } from "../../../core/exceptions/constants/review-error.enum"
 
 /**
  * Class for review service
@@ -21,7 +24,8 @@ import Review from "../../../model/review/Review"
 export class ReviewService {
     constructor(
         private readonly repository: ReviewRepository,
-        private readonly userUtil: UserUtil
+        private readonly userUtil: UserUtil,
+        private readonly analytic: AnalyticManager
     ) {
     }
 
@@ -34,19 +38,25 @@ export class ReviewService {
         return launch(async () => {
             const learner = await this.userUtil.getLearner(user.id)
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
-            const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
-            if (!isEmpty(enrolledCourse)) {
-                if (isOfflineCourse) {
-                    const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
-                    const updatedRating = this.calculateAddRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
-                    const updatedReviewNumber = courseRating.reviewNumber + 1
-                    await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
+            const isReviewed = await this.userUtil.isReviewed(user.id, data.courseId, isOfflineCourse)
+            if (!isReviewed) {
+                const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
+                if (!isEmpty(enrolledCourse)) {
+                    if (isOfflineCourse) {
+                        const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
+                        const updatedRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
+                        const updatedReviewNumber = courseRating.reviewNumber + 1
+                        await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
+                        await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating)
+                    } else {
+                        // todo online course
+                        return null
+                    }
                 } else {
-                    // todo online course
-                    return null
+                    throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
                 }
             } else {
-                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+                throw ErrorExceptions.create("Your already review this course", ReviewError.ALREADY_REVIEW)
             }
         })
     }
@@ -60,23 +70,28 @@ export class ReviewService {
         return launch(async () => {
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
-            if (!isEmpty(enrolledCourse)) {
+            if (isNotEmpty(enrolledCourse)) {
                 if (isOfflineCourse) {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
-                    const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
+                    if (isNotEmpty(userRating)) {
+                        const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
 
-                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
-                    const decreaseReviewNumber = courseRating.reviewNumber - 1
+                        const updatedRating = RatingUtil.calculateUpdateRatingAvg(
+                            courseRating.rating,
+                            data.rating,
+                            userRating.rating,
+                            courseRating.reviewNumber
+                        )
 
-                    const updatedRating = this.calculateAddRatingAvg(decreaseRating, data.rating, decreaseReviewNumber)
-
-                    await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                        await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
+                        await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
+                    } else {
+                        // todo online course
+                        return null
+                    }
                 } else {
-                    // todo online course
-                    return null
+                    throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
                 }
-            } else {
-                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
             }
         })
     }
@@ -92,21 +107,24 @@ export class ReviewService {
         return launch(async () => {
             const isOfflineCourse = this.isOfflineCourse(courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, courseId, isOfflineCourse)
-            if (!isEmpty(enrolledCourse)) {
+            if (isNotEmpty(enrolledCourse)) {
                 if (isOfflineCourse) {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
-                    const courseRating = await this.repository.getOfflineCourseRating(courseId)
+                    if (isNotEmpty(userRating)) {
+                        const courseRating = await this.repository.getOfflineCourseRating(courseId)
 
-                    const decreaseRating = this.calculateRemoveRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
-                    const decreaseReviewNumber = courseRating.reviewNumber - 1
+                        const decreaseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
+                        const decreaseReviewNumber = courseRating.reviewNumber - 1
 
-                    await this.repository.deleteOfflineReview(enrolledCourse, userRating, decreaseRating, decreaseReviewNumber)
+                        await this.repository.deleteOfflineReview(enrolledCourse, userRating, decreaseRating, decreaseReviewNumber)
+                        await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, 0.0, false, userRating.rating)
+                    } else {
+                        // todo online course
+                        return null
+                    }
                 } else {
-                    // todo online course
-                    return null
+                    throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
                 }
-            } else {
-                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
             }
         })
     }
@@ -166,29 +184,6 @@ export class ReviewService {
                 return null
             }
         })
-    }
-
-    /**
-     * Calculate rating average rating by add new value
-     * @param avgRating
-     * @param reviewNumber
-     * @param addRating
-     * @private
-     */
-    private calculateAddRatingAvg(avgRating: number, addRating: number, reviewNumber: number): number {
-        return ((avgRating * reviewNumber) + addRating) / (reviewNumber + 1)
-    }
-
-    /**
-     * Calculate rating average rating by remove value
-     * @param avgRating
-     * @param removeRating
-     * @param reviewNumber
-     * @private
-     */
-    private calculateRemoveRatingAvg(avgRating: number, removeRating: number, reviewNumber: number): number {
-        const number = reviewNumber > 1 ? (reviewNumber - 1) : 1
-        return ((avgRating * reviewNumber) - removeRating) / (number)
     }
 
     /**

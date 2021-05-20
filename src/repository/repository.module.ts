@@ -8,6 +8,10 @@ import TutorRepository from "./TutorRepository"
 import UserRepository from "./UserRepository"
 import ReviewRepository from "./ReviewRepository"
 import OfflineCourseRepository from "./OfflineCourseRepository"
+import LearnerRepository from "./LearnerRepository"
+import AnalyticRepository from "./AnalyticRepository"
+import FavoriteRepository from "./FavoriteRepository"
+import HomeRepository from "./HomeRepository"
 
 /**
  * Class for Repository module
@@ -16,6 +20,7 @@ import OfflineCourseRepository from "./OfflineCourseRepository"
 @Module({
     imports: [CoreModule],
     providers: [
+        AnalyticRepository,
         MeRepository,
         CoinRepository,
         PaymentRepository,
@@ -23,9 +28,13 @@ import OfflineCourseRepository from "./OfflineCourseRepository"
         VerifyRepository,
         TutorRepository,
         ReviewRepository,
-        OfflineCourseRepository
+        OfflineCourseRepository,
+        LearnerRepository,
+        FavoriteRepository,
+        HomeRepository
     ],
     exports: [
+        AnalyticRepository,
         MeRepository,
         CoinRepository,
         PaymentRepository,
@@ -33,7 +42,10 @@ import OfflineCourseRepository from "./OfflineCourseRepository"
         VerifyRepository,
         TutorRepository,
         ReviewRepository,
-        OfflineCourseRepository
+        OfflineCourseRepository,
+        LearnerRepository,
+        FavoriteRepository,
+        HomeRepository
     ]
 })
 export class RepositoryModule {

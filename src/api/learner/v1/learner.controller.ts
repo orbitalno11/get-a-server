@@ -27,6 +27,11 @@ import UserError from "../../../core/exceptions/constants/user-error.enum"
 import SimpleProfile from "../../../model/profile/SimpleProfile"
 import { LearnerEntityToSimpleProfile } from "../../../utils/mapper/learner/LearnerEntityToPublicProfile.mapper"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
+import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
+import User from "../../../model/User"
+import IResponse from "../../../core/response/IResponse"
+import MyCourse from "../../../model/course/MyCourse"
+import { UserRole } from "../../../core/constant/UserRole"
 
 @Controller("v1/learner")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -71,6 +76,24 @@ export class LearnerController {
 
             const result = await this.learnerService.createLearner(data, file)
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get learner offline course
+     * @param currentUser
+     */
+    @Get("offline-course")
+    getOfflineCourse(@CurrentUser() currentUser: User): Promise<IResponse<MyCourse[]>> {
+        return launch(async () => {
+            if (currentUser.role !== UserRole.LEARNER) {
+                logger.error("Do not have a permission")
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION)
+            }
+
+            const courses = await this.learnerService.getOfflineCourse(currentUser)
+
+            return SuccessResponse.create(courses)
         })
     }
 

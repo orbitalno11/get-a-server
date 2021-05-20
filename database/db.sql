@@ -158,6 +158,19 @@ create table exam_type(
     PRIMARY KEY(id)
 );
 
+create table user_verify(
+    id varchar(255) not null,
+    member_id varchar(255) not null,
+    documentUrl1 varchar(255),
+    documentUrl2 varchar(255),
+    documentUrl3 varchar(255),
+    verify_type smallint UNSIGNED not null,
+    created timestamp not null,
+    updated timestamp not null,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
+);
+
 create table testing_history(
     id int not null AUTO_INCREMENT,
     tutorId varchar(255) not null,
@@ -179,6 +192,7 @@ create table education_history(
     tutorId varchar(255) not null,
     instituteId int not null,
     branchId int not null,
+    gradeId smallint UNSIGNED null,
     gpax float(3,2) not null,
     status varchar(10) not null,
     verified smallint not null,
@@ -187,18 +201,8 @@ create table education_history(
     CONSTRAINT `FK_EDUCATION_TUTOR` FOREIGN KEY(tutorId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_EDUCATION_INSTITUTE` FOREIGN KEY(instituteId) REFERENCES institute (id),
     CONSTRAINT `FK_EDUCATION_BRANCH` FOREIGN KEY(branchId) REFERENCES branch (id),
+    CONSTRAINT `FK_EDUCATION_GRADE` FOREIGN KEY(gradeId) REFERENCES grade (grade),
     CONSTRAINT `FK_EDUCATION_VERIFY` FOREIGN KEY(verified_id) REFERENCES user_verify (id)
-);
-
-create table user_verify(
-    id varchar(255) not null,
-    member_id varchar(255) not null,
-    documentUrl1 varchar(255),
-    documentUrl2 varchar(255),
-    documentUrl3 varchar(255),
-    verify_type smallint UNSIGNED not null,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_USER_VERIFY_MEMBER` FOREIGN KEY (member_id) REFERENCES member (id)
 );
 
 -- coin
@@ -399,14 +403,52 @@ create table clip_transaction(
     CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)
 );
 
+-- analytic data
 create table tutor_statistic(
     tutor_id varchar(255) not null,
     number_of_offline_course int not null default 0,
     number_of_online_course int not null default 0,
     number_of_learner int not null default 0,
+    number_of_favorite int not null default 0,
+    number_of_offline_review int not null default 0,
+    number_of_online_review int not null default 0,
     offline_course_rank int not null default 0,
     online_course_rank int not null default 0,
     tutor_rating float(2,1) not null default 0,
+    tutor_offline_rating float(2,1) not null default 0,
+    tutor_online_rating float(2,1) not null default 0,
     PRIMARY KEY (tutor_id),
     CONSTRAINT `FK_STAT_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
+);
+
+create table tutor_analytic_recency_data(
+    tutor_id varchar(255) not null,
+    recent_login date,
+    recent_profile_view date,
+    recent_comment date,
+    recent_approved date,
+    PRIMARY KEY (tutor_id),
+    CONSTRAINT `FK_ANA_RECENCY_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
+);
+
+create table tutor_analytic_frequency_data(
+    tutor_id varchar(255) not null,
+    number_of_login int not null default 0,
+    number_of_course_view int not null default 0,
+    number_of_profile_view int not null default 0,
+    PRIMARY KEY (tutor_id),
+    CONSTRAINT `FK_ANA_FREQ_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
+);
+
+create table tutor_analytic_monetary_data(
+    tutor_id varchar(255) not null,
+    tutor_rating float(2,1) not null default 0,
+    tutor_offline_rating float(2,1) not null default 0,
+    tutor_online_rating float(2,1) not null default 0,
+    number_of_favorite int not null default 0,
+    number_of_learner int not null default 0,
+    number_of_offline_review int not null default 0,
+    number_of_online_review int not null default 0,
+    PRIMARY KEY (tutor_id),
+    CONSTRAINT `FK_ANA_MONETARY_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
 );

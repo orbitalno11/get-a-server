@@ -1,6 +1,7 @@
 import Address from "../location/Address"
 import { Gender } from "../common/data/Gender"
 import Subject from "../common/Subject"
+import Contact from "../Contact"
 
 class PublicProfile {
     id: string
@@ -10,7 +11,8 @@ class PublicProfile {
     gender: Gender
     picture: string
     introduction: string
-    address: Address[]
+    address: Address
+    contact: Contact
     numberOfLearner: number
     rating: number
     interestedSubject: Subject[]
