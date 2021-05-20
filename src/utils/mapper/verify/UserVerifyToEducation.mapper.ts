@@ -6,6 +6,8 @@ import { UserVerifyEntity } from "../../../entity/UserVerify.entity"
 export const UserVerifyToEducationMapper = (from: UserVerifyEntity): EducationVerification => {
     const verification = new EducationVerification()
     verification.id = from.id
+    verification.firstname = from.member?.firstname
+    verification.lastname = from.member?.lastname
     verification.fullRequestName = `${from.member?.firstname} ${from.member?.lastname}`
     verification.verifiedData = UserVerifyToVerifyDataMapper(from)
     verification.educationData = new EducationEntityToEducationMapper().map(from.educationHistory)

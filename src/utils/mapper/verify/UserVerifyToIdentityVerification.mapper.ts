@@ -5,6 +5,8 @@ import { UserVerifyToVerifyDataMapper } from "./UserVerifyToVerifyData.mapper"
 export const UserVerifyToIdentityVerificationMapper = (from: UserVerifyEntity): IdentityVerification => {
     const verification = new IdentityVerification()
     verification.id = from.id
+    verification.firstname = from.member?.firstname
+    verification.lastname = from.member?.lastname
     verification.fullNameRequest = `${from.member?.firstname} ${from.member?.lastname}`
     verification.email = from.member?.email
     verification.verifiedData = UserVerifyToVerifyDataMapper(from)
