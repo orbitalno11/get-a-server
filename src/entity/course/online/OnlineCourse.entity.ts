@@ -13,6 +13,9 @@ export class OnlineCourseEntity {
     @Column({ name: "courseName" })
     name: string
 
+    @Column({ name: "courseCoverUrl" })
+    coverUrl: string
+
     // entity relation
     @ManyToOne(
         () => TutorEntity,

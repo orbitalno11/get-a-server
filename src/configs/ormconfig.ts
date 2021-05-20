@@ -40,6 +40,12 @@ import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
 import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
+import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -84,7 +90,13 @@ const ormConfig: TypeOrmModuleOptions = {
         TutorStatisticEntity,
         TutorAnalyticRecencyEntity,
         TutorAnalyticFrequencyEntity,
-        TutorAnalyticMonetaryEntity
+        TutorAnalyticMonetaryEntity,
+        OnlineCourseEntity,
+        OnlineCourseRatingEntity,
+        ClipEntity,
+        ClipRatingEntity,
+        ClipRatingTransactionEntity,
+        ClipTransactionEntity
     ]
 }
 

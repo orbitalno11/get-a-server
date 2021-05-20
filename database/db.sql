@@ -334,6 +334,7 @@ create table online_course(
     subjectCode varchar(50) not null,
     gradeId smallint UNSIGNED not null,
     courseName varchar(255) not null,
+    courseCoverUrl varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_ONLINE_COURSE_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_ONLINE_COURSE_SUBJECT` FOREIGN KEY(subjectCode) REFERENCES subject (code),
