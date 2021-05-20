@@ -232,6 +232,7 @@ create table coin_transaction(
     member_id varchar(255) not null,
     transaction_type smallint UNSIGNED not null,
     number_of_coin float(10,3) not null,
+    transaction_date timestamp,
     PRIMARY KEY (transaction_id),
     CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(member_id) REFERENCES member (id)
 );
@@ -396,11 +397,11 @@ create table clip_transaction(
     id int not null AUTO_INCREMENT,
     learnerId varchar(255) not null,
     clipId varchar(255) not null,
-    amount float(10,3) not null,
-    paidDate timestamp not null default current_timestamp,
+    transactionId varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
-    CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)
+    CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id),
+    CONSTRAINT `FK_CLIP_COIN_TRANSACTION` FOREIGN KEY(transactionId) REFERENCES coin_transaction (transaction_id)
 );
 
 -- analytic data

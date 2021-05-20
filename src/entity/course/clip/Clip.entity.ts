@@ -3,6 +3,7 @@ import { OnlineCourseEntity } from "../online/OnlineCourse.entity"
 import { TutorEntity } from "../../profile/tutor.entity"
 import { ClipRatingEntity } from "./ClipRating.entity"
 import { ClipRatingTransactionEntity } from "./ClipRatingTransaction.entity"
+import { ClipTransactionEntity } from "./ClipTransaction.entity"
 
 @Entity("clip")
 export class ClipEntity {
@@ -47,4 +48,10 @@ export class ClipEntity {
         (rating) => rating.clip
     )
     clipReview: ClipRatingTransactionEntity[]
+
+    @OneToMany(
+        () => ClipTransactionEntity,
+        (transaction) => transaction.clip
+    )
+    clipTransaction: ClipTransactionEntity[]
 }
