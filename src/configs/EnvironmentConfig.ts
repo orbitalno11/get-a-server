@@ -10,11 +10,10 @@ export const PAYMENT_CALLBACK_URL: string | undefined = process.env.PAYMENT_CALL
 export const SERVER_PORT: string | undefined = process.env.PORT
 
 export const DATABASE_HOST: string | undefined = process.env.DB_HOST
+export const DATABASE_PORT: number | undefined = process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306
 export const DATABASE_NAME: string | undefined = process.env.DB_NAME
 export const DATABASE_USER: string | undefined = process.env.DB_USER
 export const DATABASE_PASSWORD: string | undefined = process.env.DB_PASSWORD
-
-export const FIREBASE_STORAGE_URL: string | undefined = process.env.FIREBASE_STORAGE_BUCKET_URL
 
 export const AWS_BUCKET_NAME: string | undefined = process.env.AWS_BUCKET_NAME
 export const AWS_ACCESS_KEY_ID: string | undefined = process.env.AWS_ACCESS_KEY_ID
