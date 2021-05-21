@@ -21,7 +21,7 @@ import { FavoriteModule } from "./api/favorite/v1/favorite.module"
 import { HomeModule } from "./api/home/v1/home.module"
 import { AnalyticApiModule } from "./api/analytic/v1/AnalyticApi.module"
 
-const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env.prod"
+const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
 @Module({
     imports: [
