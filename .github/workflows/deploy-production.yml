@@ -26,10 +26,7 @@ jobs:
         run: |
           cd ..
           git clone https://${{secrets.MY_GITHUB_TOKEN}}@github.com/orbitalno11/${{secrets.SECRET_FILE_REPOSITORY}}.git
-          cp ./${{secrets.SECRET_FILE_REPOSITORY}}/server/dev/serviceAccountKey.json ./get-a-server
-          cp ./${{secrets.SECRET_FILE_REPOSITORY}}/server/dev/jwtRS256.key ./get-a-server
-          cp ./${{secrets.SECRET_FILE_REPOSITORY}}/server/dev/jwtRS256.key.pub ./get-a-server
-          cp ./${{secrets.SECRET_FILE_REPOSITORY}}/server/dev/{.env,.env.debug,.env.dev,.env.local} ./get-a-server
+          cp ./${{secrets.SECRET_FILE_REPOSITORY}}/server/dev/{.env.dev,jwtRS256.key,jwtRS256.key.pub,serviceAccountKey.json} ./get-a-server
           cd ./get-a-server
       - name: Build app
         run: npm run build --if-present

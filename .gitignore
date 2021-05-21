@@ -41,7 +41,6 @@ jwtRS256.key.pub
 /uploads
 /firebase
 
-.env
-.env.debug
+.env.prod
 .env.dev
 .env.local

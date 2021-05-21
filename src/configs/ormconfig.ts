@@ -3,7 +3,7 @@ import {
     DATABASE_HOST,
     DATABASE_NAME,
     DATABASE_USER,
-    DATABASE_PASSWORD
+    DATABASE_PASSWORD, DATABASE_PORT
 } from "./EnvironmentConfig"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import { MemberEntity } from "../entity/member/member.entitiy"
@@ -44,7 +44,7 @@ import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMon
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
     host: DATABASE_HOST,
-    port: 3306,
+    port: DATABASE_PORT,
     username: DATABASE_USER,
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
