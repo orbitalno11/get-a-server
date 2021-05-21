@@ -1,10 +1,26 @@
 -- grade data
-insert into grade (title, grade) values ('มัธยมศึกษาปีที่ 4', 10), ('มัธยมศึกษาปีที่ 5', 11), ('มัธยมศึกษาปีที่ 6', 12);
+insert into grade (title, grade) values
+('ปฐมวัย', 0),
+('ประถมศึกษาปีที่ 1', 1),
+('ประถมศึกษาปีที่ 2', 2),
+('ประถมศึกษาปีที่ 3', 3),
+('ประถมศึกษาปีที่ 4', 4),
+('ประถมศึกษาปีที่ 5', 5),
+('ประถมศึกษาปีที่ 6', 6),
+('มัธยมศึกษาปีที่ 1', 7),
+('มัธยมศึกษาปีที่ 2', 8),
+('มัธยมศึกษาปีที่ 3', 9),
+('มัธยมศึกษาปีที่ 4', 10),
+('มัธยมศึกษาปีที่ 5', 11),
+('มัธยมศึกษาปีที่ 6', 12),
+('ปริญญาตรี', 13),
+('ปริญญาโท', 14),
+('ปริญญาเอก', 15);
 insert into subject (title, code) values ('คณิตศาสตร์', 'MTH'), ('ภาษาไทย', 'THA'), ('วิทยาศาสตร์', 'SCI'), ('ฟิสิกส์', 'PHY'), ('เคมี', 'CHM'), ('ชีววิทยา', 'BIO'), ('สังคมศึกษา', 'SOC'), ('ภาษาอังกฤษ', 'ENG');
 insert into role (id, title) values (0, 'admin'), (1, 'learner'), (2, 'tutor'), (3, 'tutor-learner'), (4, 'visitor');
 
 -- exam type
-insert into exam_type (title) values ('O-NET');
+insert into exam_type (id, title) values (1, 'O-NET'), (2, 'GAT'), (3, 'PAT'), (4, 'PISA'), (5, 'A-NET'),  (6, 'Admission'), (7, 'สอวน.');
 
 -- exchange rate
 insert into exchange_rate(title, baht, coin, type, startDate) values ('standard', 10, 5, 'std', '1998-01-01');
@@ -172,4 +188,4 @@ INSERT INTO institute (id, title) VALUES
 (155, 'วิทยาลัยอินเตอร์เทคลำปาง');
 
 -- insert into branch()
-insert into branch (id, title) VALUES (1, "คณิตศาสตร์");
+insert into branch (id, title) VALUES (1, "คณิตศาสตร์"), (2, "วิทยาศาสตร์"), (3, "ภาษาไทย"), (4, "ภาษาอังกฤษ");
