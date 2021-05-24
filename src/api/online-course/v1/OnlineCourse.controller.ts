@@ -4,7 +4,7 @@ import {
     Get,
     HttpStatus,
     Param,
-    Post,
+    Post, Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -46,7 +46,7 @@ export class OnlineCourseController {
      * @param currentUser
      */
     @Post("create")
-    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImage2MbProperty()))
+    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImageA4Vertical()))
     createOnlineCourse(
         @Body() body: OnlineCourseForm,
         @UploadedFile() file: Express.Multer.File,
@@ -86,6 +86,42 @@ export class OnlineCourseController {
             }
             const course = await this.service.getOnlineCourseById(courseId)
             return SuccessResponse.create(course)
+        })
+    }
+
+    /**
+     * Update online course
+     * @param courseId
+     * @param body
+     * @param file
+     * @param currentUser
+     */
+    @Put(":id")
+    @UseInterceptors(FileInterceptor("image", new UploadFileUtils().uploadImageA4Vertical()))
+    updateOnlineCourse(
+        @Param("id") courseId: string,
+        @Body() body: OnlineCourseForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!courseId?.isSafeNotBlank()) {
+                logger.error("Invalid course id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const data = OnlineCourseForm.createFromBody(body)
+            const validator = new OnlineCourseFormValidator(data)
+            const { valid, error } = validator.validate()
+
+            if (!valid) {
+                logger.error("Invalid request data")
+                throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, error)
+            }
+
+            const result = await this.service.updateOnlineCourse(courseId, data, currentUser, file)
+
+            return SuccessResponse.create(result)
         })
     }
 }

@@ -28,13 +28,7 @@ class OnlineCourseRepository {
     async createOnlineCourse(courseId: string, data: OnlineCourseForm, tutor: TutorEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const onlineCourse = new OnlineCourseEntity()
-            onlineCourse.id = courseId
-            onlineCourse.name = data.name
-            onlineCourse.subject = SubjectEntity.createFromCode(data.subject)
-            onlineCourse.grade = GradeEntity.createFromGrade(data.grade)
-            onlineCourse.coverUrl = data.coverUrl
-            onlineCourse.owner = tutor
+            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
 
             const courseRating = new OnlineCourseRatingEntity()
             courseRating.onlineCourse = onlineCourse
@@ -73,6 +67,48 @@ class OnlineCourseRepository {
             logger.error(error)
             throw ErrorExceptions.create("Can not get online course", CourseError.CAN_NOT_GET_COURSE)
         }
+    }
+
+    /**
+     * Update online course
+     * @param courseId
+     * @param data
+     * @param tutor
+     */
+    async updateOnlineCourse(courseId: string, data: OnlineCourseForm, tutor: TutorEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(onlineCourse)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not create online course", CourseError.CAN_NOT_CREATE_COURSE)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Create online course entity
+     * @param courseId
+     * @param data
+     * @param tutor
+     * @private
+     */
+    private getOnlineCourseEntity(courseId: string, data: OnlineCourseForm, tutor: TutorEntity): OnlineCourseEntity {
+        const onlineCourse = new OnlineCourseEntity()
+        onlineCourse.id = courseId
+        onlineCourse.name = data.name
+        onlineCourse.subject = SubjectEntity.createFromCode(data.subject)
+        onlineCourse.grade = GradeEntity.createFromGrade(data.grade)
+        onlineCourse.coverUrl = data.coverUrl
+        onlineCourse.owner = tutor
+        return onlineCourse
     }
 }
 

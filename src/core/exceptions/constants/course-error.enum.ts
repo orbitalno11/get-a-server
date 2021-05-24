@@ -10,5 +10,6 @@ export enum CourseError {
     NOT_ENROLLED = "not-enrolled",
     CAN_NOT_GET_OFFLINE_COURSE = "can-not-get-offline-course",
     CAN_NOT_GET_ENROLL_LIST = "can-not-get-enroll-list",
-    CAN_NOT_GET_COURSE = "can-not-get-course"
+    CAN_NOT_GET_COURSE = "can-not-get-course",
+    CAN_NOT_FOUND_COURSE = "can-not-found-course"
 }
