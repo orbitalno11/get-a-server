@@ -10,6 +10,7 @@ import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.enti
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 
 /**
  * Repository for user utility
@@ -70,7 +71,7 @@ class UserRepository {
      * @param courseId
      * @param isOfflineCourse
      */
-    async getOwnCourseById(tutorId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | null> {
+    async getOwnCourseById(tutorId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
         try {
             if (isOfflineCourse) {
                 return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
@@ -78,7 +79,10 @@ class UserRepository {
                     .andWhere("offlineCourse.owner like :tutorId", { tutorId: tutorId })
                     .getOne()
             } else {
-                // todo query online course -> waiting for online course task
+                return await this.connection.createQueryBuilder(OnlineCourseEntity, "onlineCourse")
+                    .where("onlineCourse.id like :courseId", { courseId: courseId })
+                    .andWhere("onlineCourse.owner like :tutorId", { tutorId: tutorId })
+                    .getOne()
                 return null
             }
         } catch (error) {

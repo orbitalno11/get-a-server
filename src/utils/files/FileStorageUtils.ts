@@ -152,6 +152,8 @@ export class FileStorageUtils {
                 return FileExtension.PDF
             case FileMime.WEBP:
                 return FileExtension.WEBP
+            case FileMime.MP4:
+                return FileExtension.MP4
             default:
                 return ""
         }

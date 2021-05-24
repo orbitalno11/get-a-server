@@ -1,5 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import ClipForm from "../model/clip/ClipForm"
 
 /**
  * Repository class for clip
@@ -9,6 +11,8 @@ import { Connection } from "typeorm"
 class ClipRepository {
     constructor(private readonly connection: Connection) {
     }
+
+    async createClip(course: OnlineCourseEntity, data: ClipForm, clipUrl: string)
 }
 
 export default ClipRepository

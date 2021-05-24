@@ -18,6 +18,7 @@ import { launch } from "../core/common/launch"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 
 /**
  * User utility class
@@ -172,8 +173,24 @@ class UserUtil {
     async isCourseOwner(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
+                const course = await this.getCourseOwn(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
                 return isNotEmpty(course)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get course data if user is an owner
+     * @param userId
+     * @param courseId
+     * @param isOfflineCourse
+     */
+    async getCourseOwn(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
+                return await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }

@@ -3,7 +3,7 @@ import { ClipService } from "./Clip.service"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
-import { FileInterceptor } from "@nestjs/platform-express"
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 import ClipForm from "../../../model/clip/ClipForm"
 import { launch } from "../../../core/common/launch"
@@ -25,7 +25,7 @@ export class ClipController {
     }
 
     @Post("create")
-    @UseInterceptors(FileInterceptor("file", new UploadFileUtils().uploadHdVideo()))
+    @UseInterceptors(FilesInterceptor("file", 2, new UploadFileUtils().uploadHdVideo()))
     createClip(@Body() body: ClipForm, @UploadedFile() file: Express.Multer.File) {
         return launch(async () => {
             const validator = new ClipFormValidator(body)
