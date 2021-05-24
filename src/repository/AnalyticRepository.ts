@@ -42,7 +42,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner.release()
+            await queryRunner
         }
     }
 
@@ -92,7 +92,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner.release()
+            await queryRunner
         }
     }
 
@@ -307,7 +307,6 @@ class AnalyticRepository {
 
     /**
      * Track learner review offline course
-     * TODO Refactor review tracking
      * @param tutorId
      * @param updatedStatisticTutorRating
      * @param updatedStatisticRating
@@ -387,91 +386,6 @@ class AnalyticRepository {
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
             await queryRunner.release()
-        }
-    }
-
-    /**
-     * Track learner review online course
-     * TODO Refactor review tracking
-     * @param tutorId
-     * @param updatedStatisticTutorRating
-     * @param updatedStatisticRating
-     * @param updatedStatisticReviewNumber
-     * @param updatedMonetaryTutorRating
-     * @param updatedMonetaryRating
-     * @param updatedMonetaryReviewNumber
-     * @param deleteReview
-     */
-    async trackLearnerReviewOnlineCourse(
-        tutorId: string,
-        updatedStatisticTutorRating: number,
-        updatedStatisticRating: number,
-        updatedStatisticReviewNumber: number,
-        updatedMonetaryTutorRating: number,
-        updatedMonetaryRating: number,
-        updatedMonetaryReviewNumber: number,
-        deleteReview: boolean
-    ) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedStatisticTutorRating,
-                    onlineRating: updatedStatisticRating,
-                    numberOfOnlineReview: updatedStatisticReviewNumber
-                })
-            await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedMonetaryTutorRating,
-                    onlineRating: updatedMonetaryRating,
-                    numberOfOnlineReview: updatedMonetaryReviewNumber
-                })
-            if (!deleteReview) {
-                await queryRunner.manager.update(TutorAnalyticRecencyEntity,
-                    { tutor: tutorId },
-                    {
-                        recentComment: new Date()
-                    })
-            }
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
-     * Track tutor create online course
-     * @param tutorId
-     */
-    async trackCreateOnlineCourse(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
-
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    onlineCourseNumber: statistic.onlineCourseNumber + 1
-                })
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner
         }
     }
 
