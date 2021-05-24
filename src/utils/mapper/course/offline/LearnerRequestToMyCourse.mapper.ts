@@ -15,7 +15,7 @@ export const LearnerRequestToMyCourseMapper = (from: OfflineCourseLeanerRequestE
     myCourse.timeText = `${getDayOfWeekTh(myCourse.dayOfWeek)}, ${myCourse.startTime}น.-${myCourse.endTime}น.`
     myCourse.courseType = from.course?.courseType?.id
     myCourse.status = from.status
-    myCourse.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.course?.owner)
+    myCourse.owner = TutorEntityToPublicProfileMapper.getTutorNameCard(from.course?.owner)
     return myCourse
 }
 
