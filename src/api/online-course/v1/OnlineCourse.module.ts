@@ -6,6 +6,7 @@ import { OnlineCourseService } from "./OnlineCourse.service"
 import { OnlineCourseController } from "./OnlineCourse.controller"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
 import { AnalyticModule } from "../../../analytic/Analytic.module"
+import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
 
 @Module({
     imports: [CoreModule, UtilityModule, RepositoryModule, AnalyticModule],
@@ -20,5 +21,9 @@ export class OnlineCourseModule implements NestModule {
                 { path: "v1/online-course/:id", method: RequestMethod.GET }
             )
             .forRoutes(OnlineCourseController)
+            .apply(AuthenticatedRequest)
+            .forRoutes(
+                { path: "v1/online-course/list", method: RequestMethod.GET }
+            )
     }
 }

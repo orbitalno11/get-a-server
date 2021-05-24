@@ -9,6 +9,7 @@ import { GradeEntity } from "../entity/common/grade.entity"
 import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
+import OnlineCourseNameList from "../model/course/OnlineCourseNameList"
 
 /**
  * Repository for online course
@@ -66,6 +67,24 @@ class OnlineCourseRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get online course", CourseError.CAN_NOT_GET_COURSE)
+        }
+    }
+
+    /**
+     * Tutor get own course name list
+     * @param tutorId
+     */
+    async getOnlineCourseNameList(tutorId: string): Promise<OnlineCourseNameList[]> {
+        try {
+            return await this.connection.getRepository(OnlineCourseEntity).find({
+                select: ["id", "name"],
+                where: {
+                    owner: tutorId
+                }
+            })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get course name list", CourseError.CAN_NOT_GET_COURSE)
         }
     }
 

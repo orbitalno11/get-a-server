@@ -18,6 +18,7 @@ import { launch } from "../../../core/common/launch"
 import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
 import FailureResponse from "../../../core/response/FailureResponse"
 import { ImageSize } from "../../../core/constant/ImageSize.enum"
+import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
 
 /**
  * Service class for "v1/online-course"
@@ -92,6 +93,16 @@ export class OnlineCourseService {
         return launch(async () => {
             const course = await this.repository.getOnlineCourseById(courseId)
             return isNotEmpty(course) ? new OnlineCourseEntityToOnlineCourseMapper().map(course) : null
+        })
+    }
+
+    /**
+     * Tutor get own course name list
+     * @param user
+     */
+    getOnlineCourseNameList(user: User): Promise<OnlineCourseNameList[]> {
+        return launch(async () => {
+            return await this.repository.getOnlineCourseNameList(TutorProfile.getTutorId(user.id))
         })
     }
 

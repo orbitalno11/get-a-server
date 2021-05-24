@@ -4,7 +4,8 @@ import {
     Get,
     HttpStatus,
     Param,
-    Post, Put,
+    Post,
+    Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -27,6 +28,9 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import IResponse from "../../../core/response/IResponse"
 import OnlineCourse from "../../../model/course/OnlineCourse"
+import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
+import { UserRole } from "../../../core/constant/UserRole"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
 
 /**
  * Controller class for "v1/online-course"
@@ -72,6 +76,24 @@ export class OnlineCourseController {
             return SuccessResponse.create(courseId)
         })
     }
+
+    /**
+     * Tutor get own course name list
+     * Get
+     * @param currentUser
+     */
+    @Get("list")
+    getOnlineCourseNameList(@CurrentUser() currentUser: User): Promise<IResponse<OnlineCourseNameList[]>> {
+        return launch(async () => {
+            if (currentUser?.role !== UserRole.TUTOR) {
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+
+            const result = await this.service.getOnlineCourseNameList(currentUser)
+            return SuccessResponse.create(result)
+        })
+    }
+
 
     /**
      * Get Online course by id
