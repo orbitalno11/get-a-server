@@ -13,11 +13,13 @@ import { RequestStatus } from "../../../model/common/data/RequestStatus"
 import EducationVerification from "../../../model/education/EducationVerification"
 import TestingVerification from "../../../model/education/TestingVerification"
 import IdentityVerification from "../../../model/verify/IdentityVerification"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller class for "v1/verify"
  * @author oribitalno11 2021 A.D.
  */
+@ApiTags("verify")
 @Controller("v1/verify")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

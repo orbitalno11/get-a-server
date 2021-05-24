@@ -133,7 +133,7 @@ export class MeService {
      */
     getCoinBalance(user: User): Promise<CoinBalance> {
         return launch(async () => {
-            const result = await this.repository.getUserCoinBalance(user)
+            const result = await this.userUtil.getCoinBalance(user.id)
             const balance = new CoinBalance()
             balance.amount = result?.amount.isSafeNumber() ? result?.amount : 0
             balance.updated = isSafeNotNull(result?.updated) ? result?.updated : new Date()

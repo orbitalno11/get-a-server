@@ -29,12 +29,14 @@ import { CourseError } from "../../../core/exceptions/constants/course-error.enu
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import User from "../../../model/User"
 import OfflineCourseEnroll from "../../../model/course/OfflineCourseEnroll"
+import { ApiTags } from "@nestjs/swagger"
 
 // TODO Refactor this class to use repository
 /**
  * Controller for offline course
  * @author oribitalno11 2021 A.D.
  */
+@ApiTags("offline-course")
 @Controller("v1/offline-course")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

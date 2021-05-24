@@ -23,7 +23,7 @@ insert into role (id, title) values (0, 'admin'), (1, 'learner'), (2, 'tutor'), 
 insert into exam_type (id, title) values (1, 'O-NET'), (2, 'GAT'), (3, 'PAT'), (4, 'PISA'), (5, 'A-NET'),  (6, 'Admission'), (7, 'สอวน.');
 
 -- exchange rate
-insert into exchange_rate(title, baht, coin, type, startDate) values ('standard', 10, 5, 'std', '1998-01-01');
+insert into exchange_rate(title, baht, coin, type, startDate, endDate) values ('standard', 10, 5, 'std', '1998-01-01', '2021-12-31');
 
 -- course
 insert into course_type (id, title) values (1, 'เดี่ยว'), (2, 'กลุ่ม');

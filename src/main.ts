@@ -10,6 +10,7 @@ import { UnexpectedExceptionFilter } from "./core/exceptions/filters/UnexpectedE
 import { logger } from "./core/logging/Logger"
 import { ErrorExceptionFilter } from "./core/exceptions/filters/ErrorException.filter"
 import { FailureResponseExceptionFilter } from "./core/exceptions/filters/FailureResponseException.filter"
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
@@ -22,6 +23,15 @@ async function bootstrap() {
     })
     app.use(helmet())
     app.useGlobalFilters(new UnexpectedExceptionFilter(httpAdapter), new ErrorExceptionFilter(), new FailureResponseExceptionFilter())
+
+    const config = new DocumentBuilder()
+        .setTitle("GET-A")
+        .setDescription("GET-A: Web Application for Finding Tutor")
+        .setVersion("1.0")
+        .build()
+
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup("/", app, document)
 
     const portNumber = SERVER_PORT
     await app.listen(portNumber)

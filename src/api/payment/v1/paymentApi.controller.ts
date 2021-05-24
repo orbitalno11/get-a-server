@@ -14,11 +14,13 @@ import ScbConfirmBody from "../../../model/payment/ScbConfirmBody"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import { PaymentTransactionToCoinPayment } from "../../../utils/mapper/payment/PaymentTransactionToCoinPaymentMapper"
 import { PaymentStatus } from "../../../model/payment/data/PaymentStatus"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller for "v1/payment"
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("payment")
 @Controller("v1/payment")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

@@ -347,8 +347,11 @@ create table clip(
     onlineCourseId varchar(255) not null,
     name varchar(255) not null,
     description text not null,
+    cost float(10,3) not null,
     url varchar(255),
+    urlCloudPath varchar(255),
     coverUrl varchar(255),
+    coverUrlCloudPath varchar(255),
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_CLIP_COURSE` FOREIGN KEY(onlineCourseId) REFERENCES online_course (id)

@@ -7,11 +7,13 @@ import IResponse from "../../../core/response/IResponse"
 import TutorCard from "../../../model/profile/TutorCard"
 import { launch } from "../../../core/common/launch"
 import SuccessResponse from "../../../core/response/SuccessResponse"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller class for "v1/home" API
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("home")
 @Controller("v1/home")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

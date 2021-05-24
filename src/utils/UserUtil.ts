@@ -18,6 +18,9 @@ import { launch } from "../core/common/launch"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
 
 /**
  * User utility class
@@ -172,8 +175,24 @@ class UserUtil {
     async isCourseOwner(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
+                const course = await this.getCourseOwn(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
                 return isNotEmpty(course)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get course data if user is an owner
+     * @param userId
+     * @param courseId
+     * @param isOfflineCourse
+     */
+    async getCourseOwn(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
+                return await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -279,6 +298,52 @@ class UserUtil {
             }
         })
     }
+
+    /**
+     * Get user coin balance
+     * @param userId
+     */
+    async getCoinBalance(userId: string): Promise<CoinEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank()) {
+                return await this.userRepository.getCoinBalance(userId)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Check request user is already buy the clip
+     * @param userId
+     * @param clipId
+     */
+    isBoughtClip(userId: string, clipId: string): Promise<boolean> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                const clip = await this.getBoughtClip(userId, clipId)
+                return isNotEmpty(clip)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get bought clip transaction entity by learner and clip id
+     * @param userId
+     * @param clipId
+     */
+    getBoughtClip(userId: string, clipId: string): Promise<ClipTransactionEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                return await this.userRepository.getBoughtClip(LearnerProfile.getLearnerId(userId), clipId)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
 }
 
 export default UserUtil
