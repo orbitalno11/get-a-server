@@ -274,7 +274,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner
+            await queryRunner.release()
         }
     }
 
@@ -301,7 +301,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner
+            await queryRunner.release()
         }
     }
 
@@ -358,7 +358,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner
+            await queryRunner.release()
         }
     }
 
@@ -385,7 +385,7 @@ class AnalyticRepository {
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
-            await queryRunner
+            await queryRunner.release()
         }
     }
 
