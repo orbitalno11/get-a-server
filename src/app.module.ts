@@ -21,6 +21,7 @@ import { FavoriteModule } from "./api/favorite/v1/favorite.module"
 import { HomeModule } from "./api/home/v1/home.module"
 import { AnalyticApiModule } from "./api/analytic/v1/AnalyticApi.module"
 import { OnlineCourseModule } from "./api/online-course/v1/OnlineCourse.module"
+import { ClipModule } from "./api/clip/v1/Clip.module"
 
 const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
@@ -42,7 +43,8 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
         FavoriteModule,
         HomeModule,
         AnalyticApiModule,
-        OnlineCourseModule
+        OnlineCourseModule,
+        ClipModule
     ],
     controllers: [AppController],
     providers: [AppService]

@@ -10,12 +10,11 @@ import { ClipError } from "../core/exceptions/constants/clip-error.enum"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import UploadedFileProperty from "../model/common/UploadedFileProperty"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
+import CoinTransaction from "../model/coin/CoinTransaction"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
 import { LearnerEntity } from "../entity/profile/learner.entity"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { CoinEntity } from "../entity/coins/coin.entity"
-import LearnerProfile from "../model/profile/LearnerProfile"
-import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 
 /**
  * Repository class for clip
@@ -72,12 +71,12 @@ class ClipRepository {
      */
     async getClipById(clipId: string): Promise<ClipEntity> {
         try {
-            return this.connection.createQueryBuilder(ClipEntity, "clip")
-                .leftJoinAndSelect("clip.owner", "owner")
-                .leftJoinAndSelect("owner.member", "member")
-                .leftJoinAndSelect("clip.onlineCourse", "course")
-                .where("clip.id like :clipId", { clipId: clipId })
-                .getOne()
+            return this.connection.getRepository(ClipEntity)
+                .findOne({
+                    where: {
+                        id: clipId
+                    }
+                })
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
@@ -117,64 +116,35 @@ class ClipRepository {
 
     /**
      * Buy clip
-     * @param buyerTransactionId
-     * @param tutorTransactionId
-     * @param buyerUserId
      * @param clip
-     * @param buyerBalance
-     * @param tutorBalance
+     * @param learner
+     * @param member
+     * @param coin
+     * @param balance
      */
-    async buyClip(
-        buyerTransactionId: string,
-        tutorTransactionId: string,
-        buyerUserId: string,
-        clip: ClipEntity,
-        buyerBalance: CoinEntity,
-        tutorBalance: CoinEntity
-    ) {
+    async buyClip(clip: ClipEntity, learner: LearnerEntity, member: MemberEntity, coin: CoinTransaction, balance: CoinEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const buyerMember = new MemberEntity()
-            buyerMember.id = buyerUserId
+            const coinTransaction = new CoinTransactionEntity()
+            coinTransaction.transactionId = coin.transactionId
+            coinTransaction.member = member
+            coinTransaction.transactionType = coin.transactionType
+            coinTransaction.numberOfCoin = coin.numberOfCoin
+            coinTransaction.transactionDate = coin.transactionDate
 
-            const learner = new LearnerEntity()
-            learner.id = LearnerProfile.getLearnerId(buyerUserId)
-
-            const tutorMember = new MemberEntity()
-            tutorMember.id = clip.owner?.member?.id
-
-            const buyerTransaction = new CoinTransactionEntity()
-            buyerTransaction.transactionId = buyerTransactionId
-            buyerTransaction.member = buyerMember
-            buyerTransaction.transactionType = CoinTransactionType.PAID
-            buyerTransaction.numberOfCoin = clip.cost
-            buyerTransaction.transactionDate = new Date()
-
-            const tutorTransaction = new CoinTransactionEntity()
-            tutorTransaction.transactionId = tutorTransactionId
-            tutorTransaction.member = tutorMember
-            tutorTransaction.transactionType = CoinTransactionType.INCOME
-            tutorTransaction.numberOfCoin = clip.cost
-            tutorTransaction.transactionDate = new Date()
 
             const clipTransaction = new ClipTransactionEntity()
             clipTransaction.clip = clip
             clipTransaction.learner = learner
-            clipTransaction.transaction = buyerTransaction
+            clipTransaction.transaction = coinTransaction
 
-            buyerBalance.amount -= clip.cost
-            buyerBalance.updated = new Date()
-
-            tutorBalance.amount += clip.cost
-            tutorBalance.updated = new Date()
+            balance.amount = balance.amount - clip.cost
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            await queryRunner.manager.save(buyerTransaction)
-            await queryRunner.manager.save(tutorTransaction)
+            await queryRunner.manager.save(coinTransaction)
             await queryRunner.manager.save(clipTransaction)
-            await queryRunner.manager.save(buyerBalance)
-            await queryRunner.manager.save(tutorBalance)
+            await queryRunner.manager.save(balance)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

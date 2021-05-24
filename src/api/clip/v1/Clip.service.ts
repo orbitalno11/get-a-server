@@ -17,8 +17,12 @@ import { launch } from "../../../core/common/launch"
 import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEntityToClipDetail.mapper"
 import ClipDetail from "../../../model/clip/ClipDetail"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
+import CoinTransaction from "../../../model/coin/CoinTransaction"
+import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
+import { MemberEntity } from "../../../entity/member/member.entitiy"
+import { LearnerEntity } from "../../../entity/profile/learner.entity"
+import LearnerProfile from "../../../model/profile/LearnerProfile"
 import TutorProfile from "../../../model/profile/TutorProfile"
-import { UserRole } from "../../../core/constant/UserRole"
 
 /**
  * Service class for "v1/clip" controller
@@ -83,23 +87,11 @@ export class ClipService {
     /**
      * Get clip detail by clip id
      * @param clipId
-     * @param user
      */
-    getClipById(clipId: string, user?: User): Promise<ClipDetail> {
+    getClipById(clipId: string): Promise<ClipDetail> {
         return launch(async () => {
             const clip = await this.repository.getClipById(clipId)
-
-            if (isEmpty(clip)) {
-                throw ErrorExceptions.create("Can not found clip", ClipError.CAN_NOT_FOUND_CLIP)
-            }
-
-            const clipDetail = new ClipEntityToClipDetailMapper().map(clip)
-
-            if (user?.role === UserRole.LEARNER) {
-                clipDetail.bought = await this.userUtil.isBoughtClip(user.id, clipId)
-            }
-
-            return clipDetail
+            return isNotEmpty(clip) ? new ClipEntityToClipDetailMapper().map(clip) : null
         })
     }
 
@@ -171,29 +163,31 @@ export class ClipService {
             const bought = await this.userUtil.isBoughtClip(user.id, clipId)
 
             if (bought) {
-                throw ErrorExceptions.create("Your already buy this clip", ClipError.ALREADY_BUY)
+                throw ErrorExceptions.create("Your already buy this clip", CoinError.ALREADY_BUY)
             }
 
             const clip = await this.repository.getClipById(clipId)
-            const buyerBalance = await this.userUtil.getCoinBalance(user.id)
+            const userCoinBalance = await this.userUtil.getCoinBalance(user.id)
 
-            if (clip.cost > buyerBalance.amount) {
+            if (clip.cost > userCoinBalance.amount) {
                 throw ErrorExceptions.create("Your coin is not enough", CoinError.NOT_ENOUGH)
             }
 
-            const buyerTransactionId = "GET-A" + uuid()
-            const tutorTransactionId = "GET-A" + uuid()
+            const transactionId = "GET-A" + uuid()
 
-            const tutorBalance = await this.userUtil.getCoinBalance(clip.owner?.member?.id)
+            const coinTransaction = new CoinTransaction()
+            coinTransaction.transactionId = transactionId
+            coinTransaction.transactionDate = new Date()
+            coinTransaction.transactionType = CoinTransactionType.PAID
+            coinTransaction.numberOfCoin = clip.cost
 
-            await this.repository.buyClip(
-                buyerTransactionId,
-                tutorTransactionId,
-                user.id,
-                clip,
-                buyerBalance,
-                tutorBalance
-            )
+            const member = new MemberEntity()
+            member.id = user.id
+
+            const learner = new LearnerEntity()
+            learner.id = LearnerProfile.getLearnerId(user.id)
+
+            await this.repository.buyClip(clip, learner, member, coinTransaction, userCoinBalance)
         })
     }
 

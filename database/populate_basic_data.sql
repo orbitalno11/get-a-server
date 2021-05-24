@@ -25,9 +25,6 @@ insert into exam_type (id, title) values (1, 'O-NET'), (2, 'GAT'), (3, 'PAT'), (
 -- exchange rate
 insert into exchange_rate(title, baht, coin, type, startDate, endDate) values ('standard', 10, 5, 'std', '1998-01-01', '2021-12-31');
 
--- bank
-insert into bank(id, title) values ('SCB', 'ไทยพาณิชย์'), ('KTB', 'กรุงไทย'), ('KBANK', 'กสิกรไทย'), ('BBL', 'กรุงเทพ');
-
 -- course
 insert into course_type (id, title) values (1, 'เดี่ยว'), (2, 'กลุ่ม');
 

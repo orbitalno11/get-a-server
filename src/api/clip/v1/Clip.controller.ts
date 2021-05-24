@@ -1,12 +1,8 @@
 import {
     Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    Post,
-    Put,
+    Controller, Delete, Get,
+    HttpStatus, Param,
+    Post, Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -29,17 +25,15 @@ import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import {
     ApiBadRequestResponse,
-    ApiBearerAuth, 
+    ApiBody,
     ApiConsumes,
     ApiCreatedResponse,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
+    ApiHeader, ApiInternalServerErrorResponse, ApiOkResponse,
     ApiResponse,
     ApiTags
 } from "@nestjs/swagger"
 import ClipDetail from "../../../model/clip/ClipDetail"
 import IResponse from "../../../core/response/IResponse"
-import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 
 /**
  * Controller class for "v1/clip" API
@@ -61,12 +55,11 @@ export class ClipController {
      */
     @Post("create")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
-    @ApiBearerAuth()
-    @ApiConsumes("multipart/form-data")
-    @ApiImplicitFile({ name: "video", required: true })
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
     @ApiCreatedResponse({ description: "clip id" })
-    @ApiBadRequestResponse({ description: "Invalid request data" })
-    @ApiBadRequestResponse({ description: "Invalid video" })
     createClip(
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
@@ -94,22 +87,49 @@ export class ClipController {
     }
 
     /**
-     * Get clip detail by clip id
+     * Buy clip
      * @param clipId
      * @param currentUser
      */
-    @Get(":id")
-    @ApiResponse({ status: HttpStatus.OK, description: "clip detail", type: ClipDetail })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid request data" })
-    @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Can not get clip" })
-    getClip(@Param("id") clipId: string, @CurrentUser() currentUser: User) {
+    @Get(":id/buy")
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a learner token"
+    })
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid clip id" })
+    @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
+    @ApiInternalServerErrorResponse({ description: "Cna not buy clip" })
+    buyClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             if (!clipId?.isSafeNotBlank()) {
                 logger.error("Invalid clip id")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const clip = await this.service.getClipById(clipId, currentUser)
+            await this.service.buyClip(clipId, currentUser)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Get clip detail by clip id
+     * @param clipId
+     */
+    @Get(":id")
+    @ApiResponse({ status: HttpStatus.OK, description: "clip detail", type: ClipDetail })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid request data" })
+    @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Can not get clip" })
+    getClip(@Param("id") clipId: string) {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid clip id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const clip = await this.service.getClipById(clipId)
             return SuccessResponse.create(clip)
         })
     }
@@ -123,9 +143,10 @@ export class ClipController {
      */
     @Put(":id")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
-    @ApiBearerAuth()
-    @ApiConsumes("multipart/form-data")
-    @ApiImplicitFile({ name: "video" })
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
     @ApiCreatedResponse({ description: "clip id" })
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiBadRequestResponse({ description: "Invalid request data" })
@@ -163,7 +184,10 @@ export class ClipController {
      * @param currentUser
      */
     @Delete(":id")
-    @ApiBearerAuth()
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
     @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiInternalServerErrorResponse({ description: "Can not found clip data" })
@@ -177,31 +201,6 @@ export class ClipController {
             }
 
             await this.service.deleteClip(clipId, currentUser)
-
-            return SuccessResponse.create("Successful")
-        })
-    }
-
-    /**
-     * Buy clip
-     * @param clipId
-     * @param currentUser
-     */
-    @Get(":id/buy")
-    @ApiBearerAuth()
-    @ApiOkResponse({ description: "Successful" })
-    @ApiBadRequestResponse({ description: "Invalid clip id" })
-    @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
-    @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
-    @ApiInternalServerErrorResponse({ description: "Cna not buy clip" })
-    buyClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
-        return launch(async () => {
-            if (!clipId?.isSafeNotBlank()) {
-                logger.error("Invalid clip id")
-                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
-            }
-
-            await this.service.buyClip(clipId, currentUser)
 
             return SuccessResponse.create("Successful")
         })

@@ -10,6 +10,7 @@ import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRa
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import OnlineCourseNameList from "../model/course/OnlineCourseNameList"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
 
 /**
  * Repository for online course
@@ -110,6 +111,42 @@ class OnlineCourseRepository {
             throw ErrorExceptions.create("Can not create online course", CourseError.CAN_NOT_CREATE_COURSE)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get clip list in course by course id
+     * @param courseId
+     */
+    async getClipInOnlineCourse(courseId: string): Promise<ClipEntity[]> {
+        try {
+            return this.connection.getRepository(ClipEntity)
+                .find({
+                    where: {
+                        onlineCourse: courseId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip in course", CourseError.CAN_NOT_GET_CLIP_IN_COURSE)
+        }
+    }
+
+    /**
+     * Get bought clip list
+     * @param courseId
+     * @param learnerId
+     */
+    async getBoughtClipInOnlineCourse(courseId: string, learnerId: string): Promise<ClipEntity[]> {
+        try {
+            return this.connection.createQueryBuilder(ClipEntity, "clip")
+                .leftJoinAndSelect("clip.clipTransaction", "transaction")
+                .where("clip.onlineCourse like :courseId", { courseId: courseId })
+                .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip in course", CourseError.CAN_NOT_GET_CLIP_IN_COURSE)
         }
     }
 
