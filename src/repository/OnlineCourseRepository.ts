@@ -55,6 +55,10 @@ class OnlineCourseRepository {
         }
     }
 
+    /**
+     * Get Online course by id
+     * @param courseId
+     */
     async getOnlineCourseById(courseId: string): Promise<OnlineCourseEntity> {
         try {
             return await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
@@ -67,6 +71,7 @@ class OnlineCourseRepository {
                 .getOne()
         } catch (error) {
             logger.error(error)
+            throw ErrorExceptions.create("Can not get online course", CourseError.CAN_NOT_GET_COURSE)
         }
     }
 }

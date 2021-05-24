@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Param,
+    Post,
+    UploadedFile,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
@@ -63,10 +73,19 @@ export class OnlineCourseController {
         })
     }
 
+    /**
+     * Get Online course by id
+     * @param courseId
+     */
     @Get(":id")
-    getOnlineCourseDetailById(): Promise<IResponse<OnlineCourse>> {
+    getOnlineCourseDetailById(@Param("id") courseId: string): Promise<IResponse<OnlineCourse>> {
         return launch(async () => {
-            return undefined
+            if (!courseId?.isSafeNotBlank()) {
+                logger.error("course id is invalid")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+            const course = await this.service.getOnlineCourseById(courseId)
+            return SuccessResponse.create(course)
         })
     }
 }

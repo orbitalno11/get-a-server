@@ -15,6 +15,7 @@ import AnalyticManager from "../../../analytic/AnalyticManager"
 import TutorProfile from "../../../model/profile/TutorProfile"
 import OnlineCourse from "../../../model/course/OnlineCourse"
 import { launch } from "../../../core/common/launch"
+import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
 
 /**
  * Service class for "v1/online-course"
@@ -75,10 +76,14 @@ export class OnlineCourseService {
         return `${data.subject}-${CourseType.ONLINE}-${data.grade}-${uuidV4()}`
     }
 
+    /**
+     * Get Online course by id
+     * @param courseId
+     */
     getOnlineCourseById(courseId: string): Promise<OnlineCourse> {
         return launch(async () => {
-            const course = await this.getOnlineCourseById(courseId)
-            return undefined
+            const course = await this.repository.getOnlineCourseById(courseId)
+            return isNotEmpty(course) ? new OnlineCourseEntityToOnlineCourseMapper().map(course): null
         })
     }
 }
