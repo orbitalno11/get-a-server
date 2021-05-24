@@ -20,6 +20,7 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.timeText = `${getDayOfWeekTh(from.day)} ${course.startTime}น. - ${course.endTime}น.`
         course.subject = Subject.create(from.subject.code, from.subject.title)
         course.grade = new Grade(from.grade.grade, from.grade.title)
+        course.type = from.courseType?.id
         course.status = from.status
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
         course.rating = from.rating?.rating ? from.rating?.rating : 0.0
