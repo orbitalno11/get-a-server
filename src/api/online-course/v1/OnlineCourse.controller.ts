@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Body, Controller, Get, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
@@ -15,6 +15,8 @@ import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { isEmpty } from "../../../core/extension/CommonExtension"
+import IResponse from "../../../core/response/IResponse"
+import OnlineCourse from "../../../model/course/OnlineCourse"
 
 /**
  * Controller class for "v1/online-course"
@@ -58,6 +60,13 @@ export class OnlineCourseController {
             const courseId = await this.service.createOnlineCourse(data, file, currentUser)
 
             return SuccessResponse.create(courseId)
+        })
+    }
+
+    @Get(":id")
+    getOnlineCourseDetailById(): Promise<IResponse<OnlineCourse>> {
+        return launch(async () => {
+            return undefined
         })
     }
 }

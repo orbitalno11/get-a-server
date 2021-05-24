@@ -54,6 +54,21 @@ class OnlineCourseRepository {
             await queryRunner.release()
         }
     }
+
+    async getOnlineCourseById(courseId: string): Promise<OnlineCourseEntity> {
+        try {
+            return await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
+                .leftJoinAndSelect("course.subject", "subject")
+                .leftJoinAndSelect("course.grade", "grade")
+                .leftJoinAndSelect("course.owner", "tutor")
+                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("tutor.member", "member")
+                .where("course.id like :courseId", { courseId: courseId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+        }
+    }
 }
 
 export default OnlineCourseRepository

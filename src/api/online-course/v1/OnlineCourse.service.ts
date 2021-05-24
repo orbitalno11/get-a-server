@@ -13,6 +13,8 @@ import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
 import AnalyticManager from "../../../analytic/AnalyticManager"
 import TutorProfile from "../../../model/profile/TutorProfile"
+import OnlineCourse from "../../../model/course/OnlineCourse"
+import { launch } from "../../../core/common/launch"
 
 /**
  * Service class for "v1/online-course"
@@ -71,5 +73,12 @@ export class OnlineCourseService {
      */
     private generateCourseId(data: OnlineCourseForm): string {
         return `${data.subject}-${CourseType.ONLINE}-${data.grade}-${uuidV4()}`
+    }
+
+    getOnlineCourseById(courseId: string): Promise<OnlineCourse> {
+        return launch(async () => {
+            const course = await this.getOnlineCourseById(courseId)
+            return undefined
+        })
     }
 }
