@@ -18,4 +18,8 @@ export class OnlineCourseEntityToOnlineCourseMapper implements Mapper<OnlineCour
         course.numberOfView = 0 // todo keep all course view
         return course
     }
+
+    mapList(from: OnlineCourseEntity[]): OnlineCourse[] {
+        return from.map((item) => this.map(item))
+    }
 }

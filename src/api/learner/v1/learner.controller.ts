@@ -32,6 +32,7 @@ import User from "../../../model/User"
 import IResponse from "../../../core/response/IResponse"
 import MyCourse from "../../../model/course/MyCourse"
 import { UserRole } from "../../../core/constant/UserRole"
+import OnlineCourse from "../../../model/course/OnlineCourse"
 
 @Controller("v1/learner")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
@@ -92,6 +93,25 @@ export class LearnerController {
             }
 
             const courses = await this.learnerService.getOfflineCourse(currentUser)
+
+            return SuccessResponse.create(courses)
+        })
+    }
+
+    /**
+     * Get learner online course
+     * TODO recheck this when vdo clip finish
+     * @param currentUser
+     */
+    @Get("online-course")
+    getOnlineCourse(@CurrentUser() currentUser: User): Promise<IResponse<OnlineCourse[]>> {
+        return launch(async () => {
+            if (currentUser.role !== UserRole.LEARNER) {
+                logger.error("Do not have a permission")
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION)
+            }
+
+            const courses = await this.learnerService.getOnlineCourse(currentUser)
 
             return SuccessResponse.create(courses)
         })
