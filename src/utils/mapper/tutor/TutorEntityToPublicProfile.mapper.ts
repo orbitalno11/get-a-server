@@ -26,13 +26,18 @@ export class TutorEntityToPublicProfileMapper implements Mapper<TutorEntity, Pub
         return profile
     }
 
-    public static getTutorSimpleDetail(data: TutorEntity): PublicProfile {
+    public static getTutorNameCard(data: TutorEntity): PublicProfile {
         const tutorProfile = new PublicProfile()
         tutorProfile.id = data.member?.id
         tutorProfile.firstname = data.member?.firstname
         tutorProfile.lastname = data.member?.lastname
         tutorProfile.picture = data.member?.profileUrl
         tutorProfile.fullNameText = `${data.member?.firstname} ${data.member?.lastname}`
+        return tutorProfile
+    }
+
+    public static getTutorSimpleDetail(data: TutorEntity): PublicProfile {
+        const tutorProfile = this.getTutorNameCard(data)
         tutorProfile.contact = Contact.createFromContactEntity(data?.contact)
         return tutorProfile
     }
