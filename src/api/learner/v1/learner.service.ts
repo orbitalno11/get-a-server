@@ -19,6 +19,8 @@ import LearnerRepository from "../../../repository/LearnerRepository"
 import LearnerProfile from "../../../model/profile/LearnerProfile"
 import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { LearnerRequestToMyCourseListMapper } from "../../../utils/mapper/course/offline/LearnerRequestToMyCourse.mapper"
+import OnlineCourse from "../../../model/course/OnlineCourse"
+import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
 
 @Injectable()
 export class LearnerService {
@@ -132,6 +134,17 @@ export class LearnerService {
         return launch(async () => {
             const courses = await this.repository.getOfflineCourse(LearnerProfile.getLearnerId(user.id))
             return isNotEmpty(courses) ? LearnerRequestToMyCourseListMapper(courses) : []
+        })
+    }
+
+    /**
+     * Get learner online course
+     * @param user
+     */
+    getOnlineCourse(user: User): Promise<OnlineCourse[]> {
+        return launch(async () => {
+            const courses = await this.repository.getOnlineCourse(LearnerProfile.getLearnerId(user.id))
+            return isNotEmpty(courses) ? new OnlineCourseEntityToOnlineCourseMapper().mapList(courses) : []
         })
     }
 }

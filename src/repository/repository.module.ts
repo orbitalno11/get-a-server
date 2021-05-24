@@ -12,6 +12,7 @@ import LearnerRepository from "./LearnerRepository"
 import AnalyticRepository from "./AnalyticRepository"
 import FavoriteRepository from "./FavoriteRepository"
 import HomeRepository from "./HomeRepository"
+import OnlineCourseRepository from "./OnlineCourseRepository"
 
 /**
  * Class for Repository module
@@ -31,7 +32,8 @@ import HomeRepository from "./HomeRepository"
         OfflineCourseRepository,
         LearnerRepository,
         FavoriteRepository,
-        HomeRepository
+        HomeRepository,
+        OnlineCourseRepository
     ],
     exports: [
         AnalyticRepository,
@@ -45,7 +47,8 @@ import HomeRepository from "./HomeRepository"
         OfflineCourseRepository,
         LearnerRepository,
         FavoriteRepository,
-        HomeRepository
+        HomeRepository,
+        OnlineCourseRepository
     ]
 })
 export class RepositoryModule {

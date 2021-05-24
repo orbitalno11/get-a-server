@@ -175,6 +175,16 @@ class AnalyticManager {
             }
         })
     }
+
+    /**
+     * Track tutor create online course
+     * @param tutorId
+     */
+    trackCreateOnlineCourse(tutorId: string) {
+        return launch(async () => {
+            await this.repository.trackCreateOnlineCourse(tutorId)
+        })
+    }
 }
 
 export default AnalyticManager

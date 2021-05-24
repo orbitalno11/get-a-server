@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm"
 import { MemberEntity } from "../member/member.entitiy"
+import { ClipTransactionEntity } from "../course/clip/ClipTransaction.entity"
 
 @Entity("coin_transaction")
 export class CoinTransactionEntity {
@@ -22,4 +23,10 @@ export class CoinTransactionEntity {
     )
     @JoinColumn({ name: "member_id" })
     member: MemberEntity
+
+    @OneToOne(
+        () => ClipTransactionEntity,
+        (paidClip) => paidClip.transaction
+    )
+    paidClip: ClipTransactionEntity
 }

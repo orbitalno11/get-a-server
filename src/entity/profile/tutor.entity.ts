@@ -9,6 +9,8 @@ import { TutorStatisticEntity } from "../analytic/TutorStatistic.entity"
 import { TutorAnalyticRecencyEntity } from "../analytic/TutorAnalyticRecency.entity"
 import { TutorAnalyticFrequencyEntity } from "../analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../analytic/TutorAnalyticMonetary.entity"
+import { OnlineCourseEntity } from "../course/online/OnlineCourse.entity"
+import { ClipEntity } from "../course/clip/Clip.entity"
 
 @Entity("tutor_profile")
 export class TutorEntity {
@@ -53,6 +55,18 @@ export class TutorEntity {
         (offlineCourse) => offlineCourse.owner
     )
     offlineCourse: OfflineCourseEntity[]
+
+    @OneToMany(
+        () => OnlineCourseEntity,
+        (course) => course.owner
+    )
+    onlineCourse: OnlineCourseEntity[]
+
+    @OneToMany(
+        () => ClipEntity,
+        (clip) => clip.owner
+    )
+    onlineClips: ClipEntity[]
 
     @OneToOne(
         () => TutorStatisticEntity,

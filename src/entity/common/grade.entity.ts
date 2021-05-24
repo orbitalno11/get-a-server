@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm"
 import { OfflineCourseEntity } from '../course/offline/offlineCourse.entity'
 import { Grade } from "../../model/common/data/Grade"
 import { EducationHistoryEntity } from "../education/educationHistory.entity"
+import { OnlineCourseEntity } from "../course/online/OnlineCourse.entity"
 
 @Entity('grade')
 export class GradeEntity {
@@ -12,8 +13,16 @@ export class GradeEntity {
   title: string
 
   // entity relation
-  @OneToMany(() => OfflineCourseEntity, (offlineCourse) => offlineCourse.grade)
+  @OneToMany(
+      () => OfflineCourseEntity,
+      (course) => course.grade)
   offlineCourse: OfflineCourseEntity[]
+
+  @OneToMany(
+      () => OnlineCourseEntity,
+      (course) => course.grade
+  )
+  onlineCourse: OnlineCourseEntity[]
 
   @OneToMany(
       () => EducationHistoryEntity,
