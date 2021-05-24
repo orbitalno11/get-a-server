@@ -10,7 +10,10 @@ export enum FileMime {
     WEBP = "image/webp",
 
     // document
-    PDF = "application/pdf"
+    PDF = "application/pdf",
+
+    // video
+    MP4 = "video/mp4"
 }
 
 export enum FileExtension {
@@ -27,5 +30,8 @@ export enum FileExtension {
     WEBP = ".webp",
 
     // document
-    PDF = ".pdf"
+    PDF = ".pdf",
+
+    // video
+    MP4 = ".mp4"
 }
