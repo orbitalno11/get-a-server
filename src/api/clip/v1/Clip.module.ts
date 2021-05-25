@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common"
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common"
 import { CoreModule } from "../../../core/core.module"
 import { UtilityModule } from "../../../utils/utility.module"
 import { RepositoryModule } from "../../../repository/repository.module"
@@ -20,6 +20,9 @@ export class ClipModule implements NestModule{
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(TutorAuthenticated)
+            .exclude(
+                { path: "v1/clip/:id", method: RequestMethod.GET }
+            )
             .forRoutes(ClipController)
     }
 }

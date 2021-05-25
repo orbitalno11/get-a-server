@@ -1,7 +1,7 @@
 import {
     Body,
-    Controller,
-    HttpStatus,
+    Controller, Get,
+    HttpStatus, Param,
     Post,
     UploadedFile,
     UseFilters,
@@ -23,7 +23,8 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
-import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger"
+import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger"
+import ClipDetail from "../../../model/clip/ClipDetail"
 
 /**
  * Controller class for "v1/clip" API
@@ -49,7 +50,7 @@ export class ClipController {
         name: "Authorization",
         description: "get-a tutor token"
     })
-    @ApiResponse({ status: 201, description: "clip id" })
+    @ApiCreatedResponse({ description: "clip id" })
     createClip(
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
@@ -73,6 +74,26 @@ export class ClipController {
             const clipId = await this.service.createClip(data, file, currentUser)
 
             return SuccessResponse.create(clipId)
+        })
+    }
+
+    /**
+     * Get clip detail by clip id
+     * @param clipId
+     */
+    @Get(":id")
+    @ApiResponse({ status: HttpStatus.OK, description: "clip detail", type: ClipDetail })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid request data" })
+    @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Can not get clip" })
+    getClip(@Param("id") clipId: string) {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid request data")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const clip = await this.service.getClipById(clipId)
+            return SuccessResponse.create(clip)
         })
     }
 }

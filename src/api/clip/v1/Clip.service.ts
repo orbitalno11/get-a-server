@@ -5,13 +5,16 @@ import ClipForm from "../../../model/clip/ClipForm"
 import { logger } from "../../../core/logging/Logger"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import UserUtil from "../../../utils/UserUtil"
-import { isEmpty } from "../../../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { OnlineCourseEntity } from "../../../entity/course/online/OnlineCourse.entity"
 import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
 import UploadedFileProperty from "../../../model/common/UploadedFileProperty"
 import { ClipError } from "../../../core/exceptions/constants/clip-error.enum"
+import { launch } from "../../../core/common/launch"
+import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEntityToClipDetail.mapper"
+import ClipDetail from "../../../model/clip/ClipDetail"
 
 /**
  * Service class for "v1/clip" controller
@@ -71,5 +74,16 @@ export class ClipService {
      */
     private generateClipId(course: OnlineCourseEntity): string {
         return course.id + "-" + Date.now()
+    }
+
+    /**
+     * Get clip detail by clip id
+     * @param clipId
+     */
+    getClipById(clipId: string): Promise<ClipDetail> {
+        return launch(async () => {
+            const clip = await this.repository.getClipById(clipId)
+            return isNotEmpty(clip) ? new ClipEntityToClipDetailMapper().map(clip) : null
+        })
     }
 }

@@ -58,6 +58,24 @@ class ClipRepository {
             await queryRunner.release()
         }
     }
+
+    /**
+     * Get clip detail by clip id
+     * @param clipId
+     */
+    async getClipById(clipId: string): Promise<ClipEntity> {
+        try {
+            return this.connection.getRepository(ClipEntity)
+                .findOne({
+                    where: {
+                        id: clipId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
+        }
+    }
 }
 
 export default ClipRepository
