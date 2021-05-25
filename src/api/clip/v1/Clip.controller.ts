@@ -1,6 +1,6 @@
 import {
     Body,
-    Controller, Get,
+    Controller, Delete, Get,
     HttpStatus, Param,
     Post, Put,
     UploadedFile,
@@ -28,7 +28,7 @@ import {
     ApiBody,
     ApiConsumes,
     ApiCreatedResponse,
-    ApiHeader, ApiInternalServerErrorResponse,
+    ApiHeader, ApiInternalServerErrorResponse, ApiOkResponse,
     ApiResponse,
     ApiTags
 } from "@nestjs/swagger"
@@ -96,7 +96,7 @@ export class ClipController {
         name: "Authorization",
         description: "get-a learner token"
     })
-    @ApiCreatedResponse({ description: "Successful" })
+    @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
     @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
@@ -175,6 +175,34 @@ export class ClipController {
             const result = await this.service.updateClip(clipId, data, currentUser, file)
 
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Delete clip by clip id
+     * @param clipId
+     * @param currentUser
+     */
+    @Delete(":id")
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid clip id" })
+    @ApiInternalServerErrorResponse({ description: "Can not found clip data" })
+    @ApiInternalServerErrorResponse({ description: "Can not delete clip data" })
+    @ApiInternalServerErrorResponse({ description: "Can not delete clip" })
+    deleteClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid clip id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.deleteClip(clipId, currentUser)
+
+            return SuccessResponse.create("Successful")
         })
     }
 }

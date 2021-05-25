@@ -22,6 +22,7 @@ import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.en
 import { MemberEntity } from "../../../entity/member/member.entitiy"
 import { LearnerEntity } from "../../../entity/profile/learner.entity"
 import LearnerProfile from "../../../model/profile/LearnerProfile"
+import TutorProfile from "../../../model/profile/TutorProfile"
 
 /**
  * Service class for "v1/clip" controller
@@ -190,5 +191,31 @@ export class ClipService {
         })
     }
 
+    /**
+     * Delete clip
+     * @param clipId
+     * @param user
+     */
+    async deleteClip(clipId: string, user: User) {
+        try {
+            const clip = await this.repository.getClipOwner(clipId, TutorProfile.getTutorId(user.id))
 
+            if (isEmpty(clip)) {
+                throw ErrorExceptions.create("Can not found clip data", ClipError.CAN_NOT_FOUND_CLIP)
+            }
+
+            const subscribers = await this.repository.getClipSubscriberList(clipId)
+
+            if (isNotEmpty(subscribers)) {
+                throw ErrorExceptions.create("Can not delete clip data", ClipError.CAN_NOT_DELETE_CLIP_HAVE_SUBSCRIBER)
+            }
+
+            await this.repository.deleteClip(clip)
+
+            await this.fileStorageUtil.deleteFileFromPath(clip.urlCloudPath)
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+    }
 }

@@ -154,6 +154,74 @@ class ClipRepository {
             await queryRunner.release()
         }
     }
+
+    /**
+     * Get clip detail with owner id
+     * @param clipId
+     * @param tutorId
+     */
+    async getClipOwner(clipId: string, tutorId: string): Promise<ClipEntity> {
+        try {
+            return await this.connection.getRepository(ClipEntity)
+                .findOne({
+                    where: {
+                        id: clipId,
+                        owner: tutorId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found clip", ClipError.CAN_NOT_FOUND_CLIP)
+        }
+    }
+
+    /**
+     * Get clip subscribers
+     * @param clipId
+     */
+    async getClipSubscriberList(clipId: string): Promise<ClipTransactionEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(ClipTransactionEntity, "transaction")
+                .leftJoinAndSelect("transaction.clip", "clip")
+                .leftJoinAndSelect("transaction.learner", "learner")
+                .leftJoinAndSelect("learner.member", "member")
+                .where("transaction.clip.id like :clipId", { clipId: clipId })
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found clip", ClipError.CAN_NOT_GET_SUBSCRIBE_LIST)
+        }
+    }
+
+    /**
+     * Delete clip
+     * @param clip
+     */
+    async deleteClip(clip: ClipEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            const clipRating = await queryRunner.manager.getRepository(ClipRatingEntity).findOne(
+                {
+                    where: {
+                        clip: clip
+                    }
+                }
+            )
+
+            await queryRunner.manager.remove(clipRating)
+            await queryRunner.manager.remove(clip)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not delete clip", ClipError.CAN_NOT_DELETE_CLIP)
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }
 
 export default ClipRepository
