@@ -163,7 +163,6 @@ export class OnlineCourseService {
 
     /**
      * Get clip list in course by course id
-     * TODO check this function after learner can buy a clip
      * @param courseId
      * @param user
      */
