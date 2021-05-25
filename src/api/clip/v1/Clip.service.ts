@@ -8,7 +8,10 @@ import UserUtil from "../../../utils/UserUtil"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
-import { FileExtension } from "../../../core/constant/FileType"
+import { OnlineCourseEntity } from "../../../entity/course/online/OnlineCourse.entity"
+import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
+import UploadedFileProperty from "../../../model/common/UploadedFileProperty"
+import { ClipError } from "../../../core/exceptions/constants/clip-error.enum"
 
 /**
  * Service class for "v1/clip" controller
@@ -24,23 +27,49 @@ export class ClipService {
     ) {
     }
 
+    /**
+     * Create clip data
+     * @param data
+     * @param file
+     * @param user
+     */
     async createClip(data: ClipForm, file: Express.Multer.File, user: User) {
-        let clipUrl = ""
+        let uploadedFile: UploadedFileProperty
         try {
-            const tutor = await this.userUtil.getTutor(user.id)
             const course = await this.userUtil.getCourseOwn(user.id, data.courseId, false)
+            const tutor = await this.userUtil.getTutor(user.id)
 
-            if (isEmpty(course)) {
+            if (isEmpty(course) || course instanceof OfflineCourseEntity) {
                 logger.error("Do not have permission")
                 throw ErrorExceptions.create("Do not have permission", UserError.DO_NOT_HAVE_PERMISSION)
             }
 
-            clipUrl = await this.fileStorageUtil.uploadFileTo(file, user.id, `online-${course.id}`, FileExtension.MP4)
+            const clipId = this.generateClipId(course)
 
+            uploadedFile = await this.fileStorageUtil.uploadVideoFromLocalStorageTo(
+                file,
+                user.id,
+                `online-course/${course.id}`
+            )
 
+            await this.repository.createClip(clipId, course, tutor, data, uploadedFile)
 
+            return clipId
         } catch (error) {
             logger.error(error)
+            if (uploadedFile?.path?.isSafeNotBlank()) {
+                await this.fileStorageUtil.deleteFileFromPath(uploadedFile?.path)
+            }
+            throw ErrorExceptions.create("Can not create clip", ClipError.CAN_NOT_CREATE_CLIP)
         }
+    }
+
+    /**
+     * Generate clip id
+     * @param course
+     * @private
+     */
+    private generateClipId(course: OnlineCourseEntity): string {
+        return course.id + "-" + Date.now()
     }
 }

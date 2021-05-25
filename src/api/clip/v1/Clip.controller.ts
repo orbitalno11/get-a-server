@@ -1,9 +1,17 @@
-import { Body, Controller, HttpStatus, Post, UploadedFile, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    HttpStatus,
+    Post,
+    UploadedFile,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { ClipService } from "./Clip.service"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
-import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express"
+import { FileInterceptor } from "@nestjs/platform-express"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 import ClipForm from "../../../model/clip/ClipForm"
 import { launch } from "../../../core/common/launch"
@@ -12,6 +20,9 @@ import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { isEmpty } from "../../../core/extension/CommonExtension"
+import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
+import User from "../../../model/User"
+import SuccessResponse from "../../../core/response/SuccessResponse"
 
 /**
  * Controller class for "v1/clip" API
@@ -25,8 +36,12 @@ export class ClipController {
     }
 
     @Post("create")
-    @UseInterceptors(FilesInterceptor("file", 2, new UploadFileUtils().uploadHdVideo()))
-    createClip(@Body() body: ClipForm, @UploadedFile() file: Express.Multer.File) {
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
+    createClip(
+        @Body() body: ClipForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ) {
         return launch(async () => {
             const validator = new ClipFormValidator(body)
             const { valid, error } = validator.validate()
@@ -41,7 +56,9 @@ export class ClipController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, "Video is not found")
             }
 
+            const clipId = await this.service.createClip(body, file, currentUser)
 
+            return SuccessResponse.create(clipId)
         })
     }
 }

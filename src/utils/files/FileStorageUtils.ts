@@ -1,8 +1,10 @@
 import * as aws from "aws-sdk"
+import * as fs from "fs"
 import {
     AWS_ACCESS_KEY_ID,
     AWS_BUCKET_NAME,
     AWS_SECRET_ACCESS_KEY,
+    DIGITAL_OCEAN_SPACE_CDN_ENDPOINT,
     DIGITAL_OCEAN_SPACE_ENDPOINT
 } from "../../configs/EnvironmentConfig"
 import { FileExtension, FileMime } from "../../core/constant/FileType"
@@ -11,6 +13,8 @@ import FileError from "../../core/exceptions/constants/file-error.enum"
 import { logger } from "../../core/logging/Logger"
 import { Injectable } from "@nestjs/common"
 import { ImageUtils } from "./ImageUtils"
+import FileProperty from "../../model/common/FileProperty"
+import UploadedFileProperty from "../../model/common/UploadedFileProperty"
 
 /**
  * Utility class for upload image to could storage
@@ -28,33 +32,72 @@ export class FileStorageUtils {
     /**
      * Upload image to storage (It will convert to webp)
      * @param file
+     * @param identityName
      * @param folderName
-     * @param identifyName
      * @param width
      * @param height
      */
     async uploadImageTo(
         file: Express.Multer.File,
+        identityName: string,
         folderName: string,
-        identifyName: string,
         width: number | null = 200,
         height: number | null = 200
     ): Promise<string> {
-        const property = this.getFileProperty(file, folderName, identifyName, FileExtension.WEBP)
+        const property = this.getFileProperty(file, identityName, folderName, FileExtension.WEBP)
         const imageBuffer = await ImageUtils.convertImageToWebP(file, width, height)
-        return await this.uploadFile(imageBuffer, property.filePath, property.contentType)
+        const uploadedFile = await this.uploadFile(imageBuffer, property.filePath, property.contentType)
+        return uploadedFile.url
     }
 
     /**
      * Upload any file to storage
      * @param file
+     * @param identityName
      * @param folderName
-     * @param identifyName
      * @param fileType
      */
-    async uploadFileTo(file: Express.Multer.File, folderName: string, identifyName: string, fileType?: string): Promise<string> {
-        const property = this.getFileProperty(file, folderName, identifyName, fileType)
-        return await this.uploadFile(file.buffer, property.filePath, property.contentType)
+    async uploadFileTo(file: Express.Multer.File, identityName: string, folderName: string, fileType?: string): Promise<string> {
+        const property = this.getFileProperty(file, identityName, folderName, fileType)
+        const uploadedFile = await this.uploadFile(file.buffer, property.filePath, property.contentType)
+        return uploadedFile.url
+    }
+
+    /**
+     * Upload .mp4 file to cloud storage
+     * @param file
+     * @param identityName
+     * @param folderName
+     */
+    async uploadVideoFromLocalStorageTo(
+        file: Express.Multer.File,
+        identityName: string,
+        folderName: string
+    ): Promise<UploadedFileProperty> {
+        const property = this.getFileProperty(file, identityName, folderName, FileExtension.MP4)
+        return await this.uploadFileFromLocalStorage(file.path, property.filePath, property.contentType)
+    }
+
+    /**
+     * Upload any file from local storage to cloud storage
+     * @param localPath
+     * @param cloudPath
+     * @param contentType
+     */
+    private async uploadFileFromLocalStorage(
+        localPath: string,
+        cloudPath: string,
+        contentType: string
+    ): Promise<UploadedFileProperty> {
+        try {
+            const fileBuffer = fs.readFileSync(localPath)
+            const uploadedFile = await this.uploadFile(fileBuffer, cloudPath, contentType)
+            fs.unlinkSync(localPath)
+            return uploadedFile
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not upload file to storage", FileError.CAN_NOT_UPLOAD_TO_STORAGE)
+        }
     }
 
     /**
@@ -64,20 +107,23 @@ export class FileStorageUtils {
      * @param contentType
      * @private
      */
-    private async uploadFile(file: Buffer, filePath: string, contentType: string): Promise<string> {
-        this.s3.putObject({
-            Bucket: AWS_BUCKET_NAME,
-            Key: filePath,
-            ACL: "public-read",
-            ContentType: contentType,
-            Body: file
-        }, (error, data) => {
-            if (error) {
-                logger.error(error)
-                throw ErrorExceptions.create("Can not upload file to storage", FileError.CAN_NOT_UPLOAD_TO_STORAGE)
+    private async uploadFile(file: Buffer, filePath: string, contentType: string): Promise<UploadedFileProperty> {
+        try {
+            const uploadedFile = await this.s3.upload({
+                Bucket: AWS_BUCKET_NAME,
+                Key: filePath,
+                ACL: "public-read",
+                ContentType: contentType,
+                Body: file
+            }).promise()
+            return {
+                url: uploadedFile.Location,
+                path: uploadedFile.Key
             }
-        })
-        return `${DIGITAL_OCEAN_SPACE_ENDPOINT}/${filePath}`
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not upload file to storage", FileError.CAN_NOT_UPLOAD_TO_STORAGE)
+        }
     }
 
     /**
@@ -100,15 +146,34 @@ export class FileStorageUtils {
     }
 
     /**
+     * Delete file from file path
+     * @param path
+     */
+    async deleteFileFromPath(path: string) {
+        try {
+            if (path?.isSafeNotBlank()) {
+                await this.s3.deleteObject({
+                    Bucket: AWS_BUCKET_NAME,
+                    Key: path
+                }).promise()
+            }
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not delete file from storage", FileError.CAN_NOT_DELETE)
+        }
+    }
+
+    /**
      * Get file property to upload
      * @param file
+     * @param identityName
      * @param folderName
-     * @param identifyName
      * @param fileType
      * @private
      */
-    private getFileProperty(file: Express.Multer.File, folderName: string, identifyName: string, fileType?: string): FileProperty {
+    private getFileProperty(file: Express.Multer.File, identityName: string, folderName: string, fileType?: string): FileProperty {
         const fileExt = fileType ? fileType : this.getFileExtension(file)
+        const _folderName = folderName.includes("/") ? folderName.replace("/", "-") : folderName
         if (fileExt.isBlank()) {
             throw ErrorExceptions.create("File type is invalid", FileError.NOT_ALLOW)
         }
@@ -116,8 +181,8 @@ export class FileStorageUtils {
         if (contentType.isBlank()) {
             throw ErrorExceptions.create("File type is invalid", FileError.NOT_ALLOW)
         }
-        const fileName = this.getFileName(identifyName, fileExt)
-        const filePath = `${folderName}/${identifyName}/${fileName}`
+        const fileName = this.getFileName(_folderName, fileExt)
+        const filePath = `${identityName}/${folderName}/${fileName}`
         return {
             fileName: fileName,
             filePath: filePath,
@@ -128,12 +193,12 @@ export class FileStorageUtils {
 
     /**
      * Get custom file name
-     * @param identify
+     * @param identity
      * @param fileType
      * @private
      */
-    private getFileName(identify: string, fileType: string): string {
-        return identify + "-" + Date.now().toString() + fileType
+    private getFileName(identity: string, fileType: string): string {
+        return identity + "-" + Date.now().toString() + fileType
     }
 
     /**
@@ -176,6 +241,8 @@ export class FileStorageUtils {
                 return FileMime.PDF
             case FileExtension.WEBP:
                 return FileMime.WEBP
+            case FileExtension.MP4:
+                return FileMime.MP4
             default:
                 return ""
         }
@@ -187,17 +254,10 @@ export class FileStorageUtils {
      * @private
      */
     private extractFilePathFromUrl(url: string): string {
-        return url.split(DIGITAL_OCEAN_SPACE_ENDPOINT + "/")[1]
+        if (url.includes(DIGITAL_OCEAN_SPACE_ENDPOINT)) {
+            return url.split(DIGITAL_OCEAN_SPACE_ENDPOINT + "/")[1]
+        } else {
+            return url.split(DIGITAL_OCEAN_SPACE_CDN_ENDPOINT + "/")[1]
+        }
     }
-}
-
-/**
- * Interface for file property
- * @author orbitalno11 2021 A.D.
- */
-interface FileProperty {
-    fileName: string
-    filePath: string
-    fileExt: string
-    contentType: string
 }

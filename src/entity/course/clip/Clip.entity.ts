@@ -20,7 +20,13 @@ export class ClipEntity {
     url: string
 
     @Column()
+    urlCloudPath: string
+
+    @Column()
     coverUrl: string
+
+    @Column()
+    coverUrlCloudPath: string
 
     // entity relation
     @ManyToOne(

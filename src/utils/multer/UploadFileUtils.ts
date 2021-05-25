@@ -66,7 +66,7 @@ export class UploadFileUtils {
     uploadHdVideo() {
         return {
             storage: diskStorage({
-                destination: "./temp"
+                destination: "../upload"
             }),
             limits: {
                 fileSize: 1024 * ImageSize.HD_WIDTH_HORIZONTAL * ImageSize.HD_HEIGHT_HORIZONTAL

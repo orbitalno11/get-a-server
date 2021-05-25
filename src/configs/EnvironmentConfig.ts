@@ -19,3 +19,4 @@ export const AWS_BUCKET_NAME: string | undefined = process.env.AWS_BUCKET_NAME
 export const AWS_ACCESS_KEY_ID: string | undefined = process.env.AWS_ACCESS_KEY_ID
 export const AWS_SECRET_ACCESS_KEY: string | undefined = process.env.AWS_SECRET_ACCESS_KEY
 export const DIGITAL_OCEAN_SPACE_ENDPOINT: string | undefined = process.env.DIGITAL_OCEAN_SPACE_ENDPOINT
+export const DIGITAL_OCEAN_SPACE_CDN_ENDPOINT: string | undefined = process.env.DIGITAL_OCEAN_SPACE_CDN_ENDPOINT
