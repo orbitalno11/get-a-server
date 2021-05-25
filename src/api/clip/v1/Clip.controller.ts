@@ -23,11 +23,13 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
+import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller class for "v1/clip" API
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("clip")
 @Controller("v1/clip")
 @UseFilters(ErrorExceptionFilter, FailureResponseExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
@@ -35,8 +37,19 @@ export class ClipController {
     constructor(private readonly service: ClipService) {
     }
 
+    /**
+     * Create clip detail and upload clip
+     * @param body
+     * @param file
+     * @param currentUser
+     */
     @Post("create")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
+    @ApiResponse({ status: 201, description: "clip id" })
     createClip(
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,

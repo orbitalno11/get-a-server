@@ -14,11 +14,13 @@ import User from "../../../model/User"
 import TutorCard from "../../../model/profile/TutorCard"
 import UserUtil from "../../../utils/UserUtil"
 import { FavoriteError } from "../../../core/exceptions/constants/favorite-error.enum"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller for "v1/favorite"
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("favorite")
 @Controller("v1/favorite")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

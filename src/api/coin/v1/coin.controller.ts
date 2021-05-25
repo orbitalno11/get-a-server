@@ -12,11 +12,13 @@ import IResponse from "../../../core/response/IResponse"
 import { launch } from "../../../core/common/launch"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Class for coin api controller
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("coin")
 @Controller("v1/coin")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

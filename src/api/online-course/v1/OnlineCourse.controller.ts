@@ -31,11 +31,13 @@ import OnlineCourse from "../../../model/course/OnlineCourse"
 import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
 import { UserRole } from "../../../core/constant/UserRole"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller class for "v1/online-course"
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("online-course")
 @Controller("v1/online-course")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

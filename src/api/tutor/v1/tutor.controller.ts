@@ -41,7 +41,9 @@ import PublicProfile from "../../../model/profile/PublicProfile"
 import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
 import Document from "../../../model/common/Document"
 import OnlineCourse from "../../../model/course/OnlineCourse"
+import { ApiTags } from "@nestjs/swagger"
 
+@ApiTags("tutor")
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

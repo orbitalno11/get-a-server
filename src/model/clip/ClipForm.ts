@@ -1,7 +1,13 @@
+import { ApiProperty } from "@nestjs/swagger"
+
 class ClipForm {
+    @ApiProperty()
     courseId: string
+    @ApiProperty()
     name: string
+    @ApiProperty()
     description: string
+    @ApiProperty()
     cost: number
 
     public static createFormBody(body: ClipForm): ClipForm {

@@ -26,11 +26,13 @@ import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import Review from "../../../model/review/Review"
 import { CourseType } from "../../../model/course/data/CourseType"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Class for controller "v1/review"
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("review")
 @Controller("v1/review")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
