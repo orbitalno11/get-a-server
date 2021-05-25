@@ -76,6 +76,37 @@ class ClipRepository {
             throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
         }
     }
+
+    /**
+     * Update clip detail
+     * @param clipId
+     * @param course
+     * @param data
+     * @param clipUrl
+     */
+    async updateClipDetail(clipId: string, course: OnlineCourseEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const clip = new ClipEntity()
+            clip.id = clipId
+            clip.name = data.name
+            clip.description = data.description
+            clip.cost = data.cost
+            clip.url = clipUrl.url
+            clip.urlCloudPath = clipUrl.path
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(clip)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update clip detail", ClipError.CAN_NOT_UPDATE_CLIP)
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }
 
 export default ClipRepository

@@ -2,7 +2,7 @@ import {
     Body,
     Controller, Get,
     HttpStatus, Param,
-    Post,
+    Post, Put,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -23,7 +23,15 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
-import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger"
+import {
+    ApiBadRequestResponse,
+    ApiBody,
+    ApiConsumes,
+    ApiCreatedResponse,
+    ApiHeader, ApiInternalServerErrorResponse,
+    ApiResponse,
+    ApiTags
+} from "@nestjs/swagger"
 import ClipDetail from "../../../model/clip/ClipDetail"
 
 /**
@@ -94,6 +102,43 @@ export class ClipController {
 
             const clip = await this.service.getClipById(clipId)
             return SuccessResponse.create(clip)
+        })
+    }
+
+    @Put(":id")
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a tutor token"
+    })
+    @ApiCreatedResponse({ description: "clip id" })
+    @ApiBadRequestResponse({ description: "Invalid clip id" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not update clip detail" })
+    editClipDetail(
+        @Param("id") clipId: string,
+        @Body() body: ClipForm,
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser() currentUser: User
+    ) {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid clip id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const data = ClipForm.createFormBody(body)
+            const validator = new ClipFormValidator(data)
+            const { valid, error } = validator.validate()
+
+            if (!valid) {
+                logger.error("Invalid request data")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, error)
+            }
+
+            const result = await this.service.editClip(clipId, data, currentUser, file)
+
+            return SuccessResponse.create(result)
         })
     }
 }

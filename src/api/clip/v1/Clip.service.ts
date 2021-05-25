@@ -63,7 +63,7 @@ export class ClipService {
             if (uploadedFile?.path?.isSafeNotBlank()) {
                 await this.fileStorageUtil.deleteFileFromPath(uploadedFile?.path)
             }
-            throw ErrorExceptions.create("Can not create clip", ClipError.CAN_NOT_CREATE_CLIP)
+            throw error
         }
     }
 
@@ -85,5 +85,63 @@ export class ClipService {
             const clip = await this.repository.getClipById(clipId)
             return isNotEmpty(clip) ? new ClipEntityToClipDetailMapper().map(clip) : null
         })
+    }
+
+    /**
+     * Update clip detail
+     * @param clipId
+     * @param data
+     * @param user
+     * @param file
+     */
+    async editClip(clipId: string, data: ClipForm, user: User, file?: Express.Multer.File) {
+        let uploadedFile: UploadedFileProperty
+        let oldUploadedFile: UploadedFileProperty
+        try {
+            const clip = await this.repository.getClipById(clipId)
+
+            if (isEmpty(clip)) {
+                logger.error("Can not found clip data")
+                throw ErrorExceptions.create("Can not found clip data", ClipError.CAN_NOT_FOUND_CLIP)
+            }
+
+            const course = await this.userUtil.getCourseOwn(user.id, data.courseId, false)
+
+            if (isEmpty(course) || course instanceof OfflineCourseEntity) {
+                logger.error("Do not have permission")
+                throw ErrorExceptions.create("Do not have permission", UserError.DO_NOT_HAVE_PERMISSION)
+            }
+
+            if (isNotEmpty(file)) {
+                uploadedFile = await this.fileStorageUtil.uploadVideoFromLocalStorageTo(
+                    file,
+                    user.id,
+                    `online-course/${course.id}`
+                )
+                oldUploadedFile = {
+                    path: clip.urlCloudPath,
+                    url: clip.url
+                }
+            } else {
+                uploadedFile = {
+                    path: clip.urlCloudPath,
+                    url: clip.url
+                }
+            }
+
+            await this.repository.updateClipDetail(clipId, course, data, uploadedFile)
+
+            if (oldUploadedFile?.path?.isSafeNotBlank()) {
+                await this.fileStorageUtil.deleteFileFromPath(oldUploadedFile?.path)
+            }
+
+            return clipId
+        } catch (error) {
+            logger.error(error)
+            if (uploadedFile?.path?.isSafeNotBlank() && oldUploadedFile?.path?.isSafeNotBlank()) {
+                await this.fileStorageUtil.deleteFileFromPath(uploadedFile?.path)
+            }
+            throw error
+        }
     }
 }
