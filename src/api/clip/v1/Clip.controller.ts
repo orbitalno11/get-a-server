@@ -105,6 +105,13 @@ export class ClipController {
         })
     }
 
+    /**
+     * Update clip detail
+     * @param clipId
+     * @param body
+     * @param file
+     * @param currentUser
+     */
     @Put(":id")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
     @ApiHeader({
@@ -115,7 +122,7 @@ export class ClipController {
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiBadRequestResponse({ description: "Invalid request data" })
     @ApiInternalServerErrorResponse({ description: "Can not update clip detail" })
-    editClipDetail(
+    updateClipDetail(
         @Param("id") clipId: string,
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
@@ -136,7 +143,7 @@ export class ClipController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, error)
             }
 
-            const result = await this.service.editClip(clipId, data, currentUser, file)
+            const result = await this.service.updateClip(clipId, data, currentUser, file)
 
             return SuccessResponse.create(result)
         })

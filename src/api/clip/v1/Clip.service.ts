@@ -94,7 +94,7 @@ export class ClipService {
      * @param user
      * @param file
      */
-    async editClip(clipId: string, data: ClipForm, user: User, file?: Express.Multer.File) {
+    async updateClip(clipId: string, data: ClipForm, user: User, file?: Express.Multer.File) {
         let uploadedFile: UploadedFileProperty
         let oldUploadedFile: UploadedFileProperty
         try {
