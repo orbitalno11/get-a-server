@@ -31,7 +31,8 @@ import OnlineCourse from "../../../model/course/OnlineCourse"
 import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
 import { UserRole } from "../../../core/constant/UserRole"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
-import { ApiTags } from "@nestjs/swagger"
+import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"
+import ClipDetail from "../../../model/clip/ClipDetail"
 
 /**
  * Controller class for "v1/online-course"
@@ -146,6 +147,28 @@ export class OnlineCourseController {
             const result = await this.service.updateOnlineCourse(courseId, data, currentUser, file)
 
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get clip list in course by course id
+     * @param courseId
+     * @param currentUser
+     */
+    @Get(":id/clip")
+    @ApiOkResponse({ description: "list of clip detail", type: ClipDetail, isArray: true })
+    @ApiBadRequestResponse({ description: "Invalid course id" })
+    @ApiInternalServerErrorResponse({ description: "Can not get clip in course"})
+    getClipInOnlineCourse(@Param("id") courseId: string, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            if (!courseId?.isSafeNotBlank()) {
+                logger.error("Invalid course id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const clips = await this.service.getClipInOnlineCourse(courseId, currentUser)
+
+            return SuccessResponse.create(clips)
         })
     }
 }

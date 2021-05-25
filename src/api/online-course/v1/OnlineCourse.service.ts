@@ -19,6 +19,9 @@ import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/co
 import FailureResponse from "../../../core/response/FailureResponse"
 import { ImageSize } from "../../../core/constant/ImageSize.enum"
 import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
+import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEntityToClipDetail.mapper"
+import { UserRole } from "../../../core/constant/UserRole"
+import LearnerProfile from "../../../model/profile/LearnerProfile"
 
 /**
  * Service class for "v1/online-course"
@@ -156,5 +159,24 @@ export class OnlineCourseService {
             if (error instanceof error || error instanceof FailureResponse) throw error
             throw ErrorExceptions.create("Can not update online course", CourseError.CAN_NOT_UPDATE)
         }
+    }
+
+    /**
+     * Get clip list in course by course id
+     * TODO check this function after learner can buy a clip
+     * @param courseId
+     * @param user
+     */
+    getClipInOnlineCourse(courseId: string, user?: User) {
+        return launch(async () => {
+            const clips = await this.repository.getClipInOnlineCourse(courseId)
+            if (user?.role === UserRole.LEARNER) {
+                const boughtClips = await this.repository.getBoughtClipInOnlineCourse(courseId, LearnerProfile.getLearnerId(user.id))
+                if (isNotEmpty(boughtClips)) {
+                    return new ClipEntityToClipDetailMapper().mapBoughtList(clips, boughtClips)
+                }
+            }
+            return isNotEmpty(clips) ? new ClipEntityToClipDetailMapper().mapList(clips) : []
+        })
     }
 }
