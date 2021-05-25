@@ -9,6 +9,12 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { ClipError } from "../core/exceptions/constants/clip-error.enum"
 import { TutorEntity } from "../entity/profile/tutor.entity"
 import UploadedFileProperty from "../model/common/UploadedFileProperty"
+import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
+import CoinTransaction from "../model/coin/CoinTransaction"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
+import { LearnerEntity } from "../entity/profile/learner.entity"
+import { MemberEntity } from "../entity/member/member.entitiy"
+import { CoinEntity } from "../entity/coins/coin.entity"
 
 /**
  * Repository class for clip
@@ -103,6 +109,47 @@ class ClipRepository {
             logger.error(error)
             await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update clip detail", ClipError.CAN_NOT_UPDATE_CLIP)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Buy clip
+     * @param clip
+     * @param learner
+     * @param member
+     * @param coin
+     * @param balance
+     */
+    async buyClip(clip: ClipEntity, learner: LearnerEntity, member: MemberEntity, coin: CoinTransaction, balance: CoinEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const coinTransaction = new CoinTransactionEntity()
+            coinTransaction.transactionId = coin.transactionId
+            coinTransaction.member = member
+            coinTransaction.transactionType = coin.transactionType
+            coinTransaction.numberOfCoin = coin.numberOfCoin
+            coinTransaction.transactionDate = coin.transactionDate
+
+
+            const clipTransaction = new ClipTransactionEntity()
+            clipTransaction.clip = clip
+            clipTransaction.learner = learner
+            clipTransaction.transaction = coinTransaction
+
+            balance.amount = balance.amount - clip.cost
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(coinTransaction)
+            await queryRunner.manager.save(clipTransaction)
+            await queryRunner.manager.save(balance)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not by clip", ClipError.CAN_NOT_BUY_CLIP)
         } finally {
             await queryRunner.release()
         }

@@ -11,6 +11,11 @@ import { EnrollStatus } from "../model/course/data/EnrollStatus"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import { CoinError } from "../core/exceptions/constants/coin.error"
+import { isEmpty } from "../core/extension/CommonExtension"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
+import { ClipError } from "../core/exceptions/constants/clip-error.enum"
 
 /**
  * Repository for user utility
@@ -155,6 +160,56 @@ class UserRepository {
         } catch (error) {
             logger.error(error)
             throw error
+        }
+    }
+
+    /**
+     * Get coin balance
+     * @param userId
+     */
+    async getCoinBalance(userId: string): Promise<CoinEntity> {
+        try {
+            let balance = await this.connection.getRepository(CoinEntity)
+                .findOne({
+                    where: {
+                        member: userId
+                    }
+                })
+
+            if (isEmpty(balance)) {
+                const member = await this.getUserWithRole(userId)
+                balance = new CoinEntity()
+                balance.member = member
+                balance.amount = 0
+                balance.updated = new Date()
+                await this.connection.getRepository(CoinEntity).save(balance)
+            }
+            
+            return balance
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found coin balance", CoinError.CAN_NOT_FOUND_COIN_BALANCE)
+        }
+    }
+
+    /**
+     * Get bought clip transaction entity by learner and clip id
+     * @param learnerId
+     * @param clipId
+     */
+    async getBoughtClip(learnerId: string, clipId: string): Promise<ClipTransactionEntity> {
+        try {
+            const clip =  await this.connection.getRepository(ClipTransactionEntity)
+                .findOne({
+                    where: {
+                        learner: learnerId,
+                        clip: clipId
+                    }
+                })
+            return clip
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can get clip transaction", ClipError.CAN_NOT_FOUND_CLIP)
         }
     }
 }

@@ -33,6 +33,7 @@ import {
     ApiTags
 } from "@nestjs/swagger"
 import ClipDetail from "../../../model/clip/ClipDetail"
+import IResponse from "../../../core/response/IResponse"
 
 /**
  * Controller class for "v1/clip" API
@@ -63,7 +64,7 @@ export class ClipController {
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
         @CurrentUser() currentUser: User
-    ) {
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ClipForm.createFormBody(body)
             const validator = new ClipFormValidator(data)
@@ -86,6 +87,34 @@ export class ClipController {
     }
 
     /**
+     * Buy clip
+     * @param clipId
+     * @param currentUser
+     */
+    @Get(":id/buy")
+    @ApiHeader({
+        name: "Authorization",
+        description: "get-a learner token"
+    })
+    @ApiCreatedResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid clip id" })
+    @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
+    @ApiInternalServerErrorResponse({ description: "Cna not buy clip" })
+    buyClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid clip id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.buyClip(clipId, currentUser)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
      * Get clip detail by clip id
      * @param clipId
      */
@@ -96,7 +125,7 @@ export class ClipController {
     getClip(@Param("id") clipId: string) {
         return launch(async () => {
             if (!clipId?.isSafeNotBlank()) {
-                logger.error("Invalid request data")
+                logger.error("Invalid clip id")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
@@ -127,7 +156,7 @@ export class ClipController {
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
         @CurrentUser() currentUser: User
-    ) {
+    ): Promise<IResponse<string>> {
         return launch(async () => {
             if (!clipId?.isSafeNotBlank()) {
                 logger.error("Invalid clip id")

@@ -5,6 +5,7 @@ import { RepositoryModule } from "../../../repository/repository.module"
 import { ClipController } from "./Clip.controller"
 import { ClipService } from "./Clip.service"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
+import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
 
 /**
  * Module class for "v1/clip" controller
@@ -16,13 +17,18 @@ import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.midd
     controllers: [ClipController],
     providers: [ClipService]
 })
-export class ClipModule implements NestModule{
+export class ClipModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(TutorAuthenticated)
             .exclude(
-                { path: "v1/clip/:id", method: RequestMethod.GET }
+                { path: "v1/clip/:id", method: RequestMethod.GET },
+                { path: "v1/clip/:id/buy", method: RequestMethod.GET }
             )
             .forRoutes(ClipController)
+            .apply(LearnerAuthenticated)
+            .forRoutes(
+                { path: "v1/clip/:id/buy", method: RequestMethod.GET }
+            )
     }
 }
