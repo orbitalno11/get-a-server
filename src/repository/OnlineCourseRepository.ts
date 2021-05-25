@@ -62,6 +62,7 @@ class OnlineCourseRepository {
                 .leftJoinAndSelect("course.owner", "tutor")
                 .leftJoinAndSelect("course.rating", "rating")
                 .leftJoinAndSelect("tutor.member", "member")
+                .leftJoinAndSelect("tutor.contact", "contact")
                 .where("course.id like :courseId", { courseId: courseId })
                 .getOne()
         } catch (error) {
