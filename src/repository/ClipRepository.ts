@@ -36,6 +36,7 @@ class ClipRepository {
             clip.onlineCourse = course
             clip.name = data.name
             clip.description = data.description
+            clip.cost = data.cost
             clip.url = clipUrl.url
             clip.urlCloudPath = clipUrl.path
 

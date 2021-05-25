@@ -21,6 +21,10 @@ class ClipFormValidator extends AbstractValidator2<ClipForm> {
             this.errors["description"] = "clip name is required"
         }
 
+        if (!this.form.cost?.isBetween(0, 9999999.999)) {
+            this.errors["cost"] = "clip cost is invalid"
+        }
+
         this.isValid = isEmpty(this.errors)
 
         return {

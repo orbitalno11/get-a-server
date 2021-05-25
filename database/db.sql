@@ -347,6 +347,7 @@ create table clip(
     onlineCourseId varchar(255) not null,
     name varchar(255) not null,
     description text not null,
+    cost float(10,3) not null,
     url varchar(255),
     urlCloudPath varchar(255),
     coverUrl varchar(255),

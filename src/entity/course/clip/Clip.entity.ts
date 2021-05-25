@@ -17,6 +17,9 @@ export class ClipEntity {
     description: string
 
     @Column()
+    cost: number
+
+    @Column()
     url: string
 
     @Column()

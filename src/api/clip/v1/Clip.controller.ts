@@ -43,7 +43,8 @@ export class ClipController {
         @CurrentUser() currentUser: User
     ) {
         return launch(async () => {
-            const validator = new ClipFormValidator(body)
+            const data = ClipForm.createFormBody(body)
+            const validator = new ClipFormValidator(data)
             const { valid, error } = validator.validate()
 
             if (!valid) {
@@ -56,7 +57,7 @@ export class ClipController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, "Video is not found")
             }
 
-            const clipId = await this.service.createClip(body, file, currentUser)
+            const clipId = await this.service.createClip(data, file, currentUser)
 
             return SuccessResponse.create(clipId)
         })
