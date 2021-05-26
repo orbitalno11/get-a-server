@@ -30,7 +30,7 @@ import {
     ApiBadRequestResponse,
     ApiBearerAuth,
     ApiCreatedResponse,
-    ApiInternalServerErrorResponse, ApiOkResponse,
+    ApiInternalServerErrorResponse, ApiOkResponse, ApiQuery,
     ApiTags
 } from "@nestjs/swagger"
 
@@ -114,6 +114,7 @@ export class ReviewController {
      */
     @Get("course/:id")
     @ApiBearerAuth()
+    @ApiQuery({ name: "type", enum: CourseType })
     @ApiOkResponse({ description: "course review", type: Review, isArray: true })
     @ApiBadRequestResponse({ description: "invalid-request-data" })
     @ApiInternalServerErrorResponse({ description: "Can not get user review" })
@@ -167,6 +168,7 @@ export class ReviewController {
      */
     @Delete(":id")
     @ApiBearerAuth()
+    @ApiQuery({ name: "type", enum: CourseType })
     @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "invalid-request-data" })
     @ApiInternalServerErrorResponse({ description: "Your is not subscribe this clip" })
@@ -208,6 +210,7 @@ export class ReviewController {
      * @param courseType
      */
     @Get(":id")
+    @ApiQuery({ name: "type", enum: CourseType })
     @ApiOkResponse({ description: "review detail", type: Review })
     @ApiBadRequestResponse({ description: "invalid-request-data" })
     @ApiInternalServerErrorResponse({ description: "Can not get user review" })
