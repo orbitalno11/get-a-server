@@ -11,6 +11,8 @@ import { MemberEntity } from "../entity/member/member.entitiy"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
 import CoinPayment from "../model/payment/CoinPayment"
 import { CoinError } from "../core/exceptions/constants/coin.error"
+import CoinRate from "../model/coin/CoinRate"
+import { CoinRateFormToExchangeRateEntityMapper } from "../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
 
 /**
  * Repository for "v1/coin"
@@ -21,6 +23,20 @@ class CoinRepository {
     constructor(
         private readonly connection: Connection,
     ) {
+    }
+
+    /**
+     * Create an exchange coin rate data
+     * @param data
+     */
+    async createCoinRate(data: CoinRate) {
+        try {
+            const exchangeRate = CoinRateFormToExchangeRateEntityMapper(data)
+            await this.connection.getRepository(ExchangeRateEntity).save(exchangeRate)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not create exchange rate", CoinError.CAN_NOT_CREATE_EXCHANGE_RATE)
+        }
     }
 
     /**

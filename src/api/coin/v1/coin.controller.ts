@@ -12,7 +12,9 @@ import IResponse from "../../../core/response/IResponse"
 import { launch } from "../../../core/common/launch"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
-import { ApiTags } from "@nestjs/swagger"
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"
+import User from "../../../model/User"
+import { UserRole } from "../../../core/constant/UserRole"
 
 /**
  * Class for coin api controller
@@ -31,6 +33,7 @@ export class CoinController {
      * @param body
      */
     @Post("rate")
+    @ApiCreatedResponse({ description: "Successful" })
     createCoinRate(@Body() body: CoinRate): Promise<IResponse<string>> {
         return launch(async () => {
             const data = CoinRate.createFormBody(body)
@@ -42,20 +45,23 @@ export class CoinController {
                 throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            const result = await this.service.createCoinRate(data)
+            await this.service.createCoinRate(data)
 
-            return SuccessResponse.create(result)
+            return SuccessResponse.create("Successful")
         })
     }
 
     /**
      * Get coin rate depend on user role and view page
      * @param userRole
+     * @param currentUser
      */
     @Get("rates")
-    getCoinRateList(@Query("user") userRole: number): Promise<IResponse<CoinRate[]>> {
+    @ApiOkResponse({ description: "coin rate list", type: CoinRate, isArray: true })
+    getCoinRateList(@Query("user") userRole: string, @CurrentUser() currentUser: User): Promise<IResponse<CoinRate[]>> {
         return launch(async () => {
-            const result = await this.service.getCoinRateList(Number(userRole))
+            const role = userRole?.isSafeNotBlank() ? userRole.toNumber() : UserRole.LEARNER
+            const result = await this.service.getCoinRateList(role, currentUser)
             return SuccessResponse.create(result)
         })
     }
@@ -66,6 +72,7 @@ export class CoinController {
      * @param coinRateId
      */
     @Post()
+    @ApiCreatedResponse({ description: "transaction no." })
     buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
         return launch(async () => {
             const result = await this.service.buyCoin(currentUserId, coinRateId)

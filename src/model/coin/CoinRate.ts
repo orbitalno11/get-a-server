@@ -2,14 +2,17 @@
  * Data class for coin rate form
  * @author orbitalno11 2021 A.D.
  */
+import { ApiProperty } from "@nestjs/swagger"
+
 class CoinRate {
-    title: string
-    baht: number
-    coin: number
-    type: string
-    startDate: Date
-    endDate: Date
-    updateDate: Date
+    @ApiProperty() id: number
+    @ApiProperty() title: string
+    @ApiProperty() baht: number
+    @ApiProperty() coin: number
+    @ApiProperty() type: string
+    @ApiProperty() startDate: Date
+    @ApiProperty() endDate: Date
+    @ApiProperty() updateDate: Date
 
     public static createFormBody(body: CoinRate): CoinRate {
         const out = new CoinRate()

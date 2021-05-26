@@ -9,6 +9,7 @@ import CoinRate from "../../../model/coin/CoinRate";
  */
 export const ExchangeRateEntityToCoinRateMapper = (from: ExchangeRateEntity): CoinRate => {
     const out = new CoinRate()
+    out.id = from.id
     out.title = from.title
     out.baht = from.baht
     out.coin = from.coin
