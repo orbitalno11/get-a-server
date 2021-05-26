@@ -157,7 +157,7 @@ export class ReviewController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const review = await this.service.getCourseReviewById(reviewId.toNumber(), courseType.toNumber())
+            const review = await this.service.getReviewById(reviewId.toNumber(), courseType.toNumber())
 
             return SuccessResponse.create(review)
         })

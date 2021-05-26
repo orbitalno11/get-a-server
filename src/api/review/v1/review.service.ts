@@ -19,6 +19,7 @@ import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCours
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { ClipError } from "../../../core/exceptions/constants/clip-error.enum"
 import { OnlineCourseEntity } from "../../../entity/course/online/OnlineCourse.entity"
+import { ClipReviewToReviewMapper } from "../../../utils/mapper/clip/ClipReviewToReview.mapper"
 
 /**
  * Class for review service
@@ -236,18 +237,14 @@ export class ReviewService {
      * @param reviewId
      * @param courseType
      */
-    getCourseReviewById(reviewId: number, courseType: CourseType): Promise<Review> {
+    getReviewById(reviewId: number, courseType: CourseType): Promise<Review> {
         return launch(async () => {
             if (this.isOfflineCourse(courseType)) {
                 const review = await this.repository.getOfflineCourseReviewById(reviewId)
-                if (!isEmpty(review)) {
-                    return new OfflineCourseReviewToReviewMapper().map(review)
-                } else {
-                    return null
-                }
+                return isNotEmpty(review) ? new OfflineCourseReviewToReviewMapper().map(review) : null
             } else {
-                // todo online course
-                return null
+                const review = await this.repository.getClipReviewById(reviewId)
+                return isNotEmpty(review) ? new ClipReviewToReviewMapper().map(review) : null
             }
         })
     }

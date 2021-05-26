@@ -360,6 +360,7 @@ class ReviewRepository {
      * Update Clip review
      * @param data
      * @param course
+     * @param clip
      * @param updatedCourseRating
      * @param updatedCourseReviewNumber
      * @param updatedClipRating
@@ -406,6 +407,19 @@ class ReviewRepository {
             throw ErrorExceptions.create("Can not update review", ReviewError.CAN_NOT_UPDATE_REVIEW)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    async getClipReviewById(reviewId: number): Promise<ClipRatingTransactionEntity> {
+        try {
+            return await this.connection.createQueryBuilder(ClipRatingTransactionEntity, "review")
+                .leftJoinAndSelect("review.learner", "learner")
+                .leftJoinAndSelect("learner.member", "member")
+                .where("review.id like :reviewId", { reviewId: reviewId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get user review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
         }
     }
 }
