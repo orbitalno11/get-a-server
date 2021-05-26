@@ -13,6 +13,7 @@ import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
+import { Clip } from "aws-sdk/clients/elastictranscoder"
 
 /**
  * Repository for review
@@ -337,7 +338,76 @@ class ReviewRepository {
         }
     }
 
+    /**
+     * Get clip rating by user
+     * @param reviewId
+     */
+    async getClipRatingByUser(reviewId: number): Promise<ClipRatingTransactionEntity> {
+        try {
+            return await this.connection.getRepository(ClipRatingTransactionEntity)
+                .findOne({
+                    where: {
+                        id: reviewId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
+        }
+    }
 
+    /**
+     * Update Clip review
+     * @param data
+     * @param course
+     * @param updatedCourseRating
+     * @param updatedCourseReviewNumber
+     * @param updatedClipRating
+     * @param updatedClipReviewNumber
+     */
+    async updateOnlineCourseReview(
+        data: ReviewForm,
+        course: OnlineCourseEntity,
+        clip: ClipEntity,
+        updatedCourseRating: number,
+        updatedCourseReviewNumber: number,
+        updatedClipRating: number,
+        updatedClipReviewNumber: number
+    ) {
+        const queryRunner = await this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            await queryRunner.manager.update(ClipRatingTransactionEntity,
+                { id: data.reviewId },
+                {
+                    rating: data.rating,
+                    review: data.comment,
+                    reviewDate: new Date()
+                })
+            await queryRunner.manager.update(ClipRatingEntity,
+                { clip: clip },
+                {
+                    reviewNumber: updatedClipReviewNumber,
+                    rating: updatedClipRating
+                })
+            await queryRunner.manager.update(OnlineCourseRatingEntity,
+                { onlineCourse: course },
+                {
+                    reviewNumber: updatedCourseReviewNumber,
+                    rating: updatedCourseRating
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update review", ReviewError.CAN_NOT_UPDATE_REVIEW)
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }
 
 export default ReviewRepository

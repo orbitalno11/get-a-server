@@ -103,9 +103,9 @@ export class ReviewService {
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
             if (isNotEmpty(enrolledCourse)) {
-                if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
-                    const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
-                    if (isNotEmpty(userRating)) {
+                const userRating = isOfflineCourse ? await this.repository.getOfflineCourseRatingByUser(data.reviewId) : await this.repository.getClipRatingByUser(data.reviewId)
+                if (isNotEmpty(userRating)) {
+                    if (enrolledCourse instanceof OfflineCourseEntity) {
                         const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
 
                         const updatedRating = RatingUtil.calculateUpdateRatingAvg(
@@ -117,13 +117,47 @@ export class ReviewService {
 
                         await this.repository.updateOfflineCourseReview(data, enrolledCourse, updatedRating, courseRating.reviewNumber)
                         await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
+                    } else if (enrolledCourse instanceof OnlineCourseEntity) {
+                        const subscribeClip = await this.userUtil.getSubscribeClip(user.id, data.clipId)
+                        if (isNotEmpty(subscribeClip)) {
+                            const courseRating = await this.repository.getOnlineCourseRating(data.courseId)
+                            const clipRating = await this.repository.getClipRating(data.clipId)
+
+                            const updatedCourseRating = RatingUtil.calculateUpdateRatingAvg(
+                                courseRating.rating,
+                                data.rating,
+                                userRating.rating,
+                                courseRating.reviewNumber
+                            )
+
+                            const updateClipRating = RatingUtil.calculateUpdateRatingAvg(
+                                clipRating.rating,
+                                data.rating,
+                                userRating.rating,
+                                clipRating.reviewNumber
+                            )
+
+                            await this.repository.updateOnlineCourseReview(
+                                data,
+                                enrolledCourse,
+                                subscribeClip,
+                                updatedCourseRating,
+                                courseRating.reviewNumber,
+                                updateClipRating,
+                                clipRating.reviewNumber
+                            )
+                            await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
+                        } else {
+                            throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                        }
                     } else {
-                        // todo online course
-                        return null
+                        throw ErrorExceptions.create("Unexpected", CommonError.UNEXPECTED_ERROR)
                     }
                 } else {
-                    throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+                    throw ErrorExceptions.create("You found review", ReviewError.CAN_NOT_FOUND_REVIEW)
                 }
+            } else {
+                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
             }
         })
     }
