@@ -1,6 +1,8 @@
+import { ApiProperty } from "@nestjs/swagger"
+
 class Grade {
-    grade: number
-    title: string
+    @ApiProperty() grade: number
+    @ApiProperty() title: string
 
     constructor(grade: number, title: string) {
         this.grade = grade
