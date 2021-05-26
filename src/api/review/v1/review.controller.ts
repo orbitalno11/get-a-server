@@ -49,8 +49,7 @@ export class ReviewController {
     createReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
-            const validator = new ReviewFormValidator()
-            validator.setData(data)
+            const validator = new ReviewFormValidator(data)
             const validate = validator.validate()
 
             if (!validate.valid) {
@@ -73,8 +72,7 @@ export class ReviewController {
     editReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
-            const validator = new ReviewFormValidator()
-            validator.setData(data)
+            const validator = new ReviewFormValidator(data)
             const validate = validator.validate()
 
             if (!validate.valid || !data.reviewId?.isPositiveValue()) {

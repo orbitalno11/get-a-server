@@ -1,12 +1,14 @@
 import { CourseType } from "../course/data/CourseType"
+import { ApiProperty } from "@nestjs/swagger"
 
 class ReviewForm {
-    courseId: string
-    reviewId: number | null
-    rating: number
-    comment: string
-    isClip: boolean
-    courseType: CourseType
+    @ApiProperty() courseId: string | null
+    @ApiProperty() reviewId: number | null
+    @ApiProperty() clipId: string | null
+    @ApiProperty() rating: number
+    @ApiProperty() comment: string
+    @ApiProperty() isClip: boolean
+    @ApiProperty({ enum: [CourseType] }) courseType: CourseType
 
     // static method
     public static createFromBody(body: ReviewForm): ReviewForm {
