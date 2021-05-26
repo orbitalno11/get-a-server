@@ -14,6 +14,10 @@ class ReviewFormValidator extends AbstractValidator2<ReviewForm>{
     }
 
     validator(): ValidateResult<any> {
+        if (!this.form.courseId?.isSafeNotBlank()) {
+            this.errors["courseId"] = "course id is invalid"
+        }
+
         if (!(typeof this.form.isClip === "boolean")) {
             this.errors["isClip"] = "value is invalid"
         }
@@ -21,10 +25,6 @@ class ReviewFormValidator extends AbstractValidator2<ReviewForm>{
         if (this.form.isClip) {
             if (!this.form.clipId?.isSafeNotBlank()) {
                 this.errors["clipId"] = "clip id is invalid"
-            }
-        } else {
-            if (!this.form.courseId?.isSafeNotBlank()) {
-                this.errors["courseId"] = "course id is invalid"
             }
         }
 

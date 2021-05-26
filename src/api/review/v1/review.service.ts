@@ -16,6 +16,9 @@ import RatingUtil from "../../../utils/rating/RatingUtil"
 import AnalyticManager from "../../../analytic/AnalyticManager"
 import { ReviewError } from "../../../core/exceptions/constants/review-error.enum"
 import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
+import CommonError from "../../../core/exceptions/constants/common-error.enum"
+import { ClipError } from "../../../core/exceptions/constants/clip-error.enum"
+import { OnlineCourseEntity } from "../../../entity/course/online/OnlineCourse.entity"
 
 /**
  * Class for review service
@@ -31,7 +34,7 @@ export class ReviewService {
     }
 
     /**
-     * Create course review
+     * Create course and clip review
      * @param data
      * @param user
      */
@@ -39,25 +42,52 @@ export class ReviewService {
         return launch(async () => {
             const learner = await this.userUtil.getLearner(user.id)
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
-            const isReviewed = await this.userUtil.isReviewCourse(user.id, data.courseId)
+            const isReviewed = isOfflineCourse ? await this.userUtil.isReviewCourse(user.id, data.courseId) : await this.userUtil.isReviewClip(user.id, data.clipId)
+
             if (!isReviewed) {
                 const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
-                if (!isEmpty(enrolledCourse)) {
-                    if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
+                if (isNotEmpty(enrolledCourse)) {
+                    if (enrolledCourse instanceof OfflineCourseEntity) {
                         const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
+
                         const updatedRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
                         const updatedReviewNumber = courseRating.reviewNumber + 1
+
                         await this.repository.createOfflineCourseReview(data, learner, enrolledCourse, updatedRating, updatedReviewNumber)
                         await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, data.rating)
+                    } else if (enrolledCourse instanceof OnlineCourseEntity) {
+                        const subscribeClip = await this.userUtil.getSubscribeClip(user.id, data.clipId)
+                        if (isNotEmpty(subscribeClip)) {
+                            const courseRating = await this.repository.getOnlineCourseRating(data.courseId)
+                            const clipRating = await this.repository.getClipRating(data.clipId)
+
+                            const updateCourseRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
+                            const updateCourseReviewNumber = courseRating.reviewNumber + 1
+
+                            const updateClipRating = RatingUtil.calculateIncreaseRatingAvg(clipRating.rating, data.rating, clipRating.reviewNumber)
+                            const updateClipReviewNumber = clipRating.reviewNumber + 1
+
+                            await this.repository.createOnlineCourseReview(
+                                data,
+                                learner,
+                                enrolledCourse,
+                                subscribeClip,
+                                updateCourseRating,
+                                updateCourseReviewNumber,
+                                updateClipRating,
+                                updateClipReviewNumber
+                            )
+                        } else {
+                            throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                        }
                     } else {
-                        // todo online course
-                        return null
+                        throw ErrorExceptions.create("Unexpected", CommonError.UNEXPECTED_ERROR)
                     }
                 } else {
                     throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
                 }
             } else {
-                throw ErrorExceptions.create("Your already review this course", ReviewError.ALREADY_REVIEW)
+                throw ErrorExceptions.create("Your already review this clip", ReviewError.ALREADY_REVIEW)
             }
         })
     }

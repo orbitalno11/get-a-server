@@ -14,6 +14,7 @@ class ReviewForm {
     public static createFromBody(body: ReviewForm): ReviewForm {
         const form = new ReviewForm()
         form.courseId = body.courseId
+        form.clipId = body.clipId
         form.reviewId = body.reviewId ? Number(body.reviewId) : null
         form.rating = Number(body.rating)
         form.comment = body.comment

@@ -41,7 +41,7 @@ export class ReviewController {
     }
 
     /**
-     * Create course review
+     * Create course and clip review
      * @param body
      * @param currentUser
      */
