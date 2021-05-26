@@ -13,7 +13,7 @@ export class OnlineCourseEntityToOnlineCourseMapper implements Mapper<OnlineCour
         course.coverUrl = from.coverUrl
         course.subject = Subject.create(from.subject?.code, from.subject?.title)
         course.grade = new Grade(from.grade?.grade, from.grade?.title)
-        course.owner = TutorEntityToPublicProfileMapper.getTutorNameCard(from.owner)
+        course.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner)
         course.rating = from.rating?.rating
         course.numberOfView = 0 // todo keep all course view
         return course
