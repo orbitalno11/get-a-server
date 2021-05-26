@@ -41,7 +41,7 @@ export class FavoriteController {
     @ApiBadRequestResponse({ description: "Request data is invalid"})
     @ApiInternalServerErrorResponse({ description: "Can not like tutor by id"})
     @ApiInternalServerErrorResponse({ description: "Can not unlike tutor by id"})
-    likeTutor(@Query("tutorId") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+    likeTutor(@Query("tutor") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             if (!userId?.isSafeNotBlank()) {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
@@ -76,7 +76,7 @@ export class FavoriteController {
     @Get("liked")
     @ApiBearerAuth()
     @ApiOkResponse({ description: "like status"})
-    checkLikedTutor(@Query("tutorId") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
+    checkLikedTutor(@Query("tutor") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
         return launch(async () => {
             if (!userId?.isSafeNotBlank()) {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
