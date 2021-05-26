@@ -8,6 +8,7 @@ import TutorCard from "../../../model/profile/TutorCard"
 import { launch } from "../../../core/common/launch"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import { ApiTags } from "@nestjs/swagger"
+import OnlineCourseCard from "../../../model/course/OnlineCourseCard"
 
 /**
  * Controller class for "v1/home" API
@@ -31,6 +32,19 @@ export class HomeController {
             const limit = rankLimit?.isNumber() ? rankLimit.toNumber() : null
             const tutorList = await this.service.getTutorListByRank(limit)
             return SuccessResponse.create(tutorList)
+        })
+    }
+
+    /**
+     * Get online course by rank
+     * @param rankLimit
+     */
+    @Get("online/ranking")
+    getOnlineCourseByRank(@Query("rank") rankLimit: string): Promise<IResponse<OnlineCourseCard[]>> {
+        return launch(async () => {
+            const limit = rankLimit?.isNumber() ? rankLimit.toNumber() : null
+            const courseList = await this.service.getOnlineCourseListByRank(limit)
+            return SuccessResponse.create(courseList)
         })
     }
 }
