@@ -5,5 +5,6 @@ export enum ReviewError {
     CAN_NOT_UPDATE_REVIEW = "can-not-delete-review",
     CAN_NOT_DELETE_REVIEW = "can-not-delete-review",
     CAN_NOT_GET_COURSE_REVIEW = "can-not-get-course-review",
-    ALREADY_REVIEW = "already-review-this-course"
+    ALREADY_REVIEW = "already-review-this-course",
+    CAN_NOT_GET_CLIP_REVIEW = "can-not-get-clip-review"
 }

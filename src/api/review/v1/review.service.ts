@@ -15,6 +15,7 @@ import Review from "../../../model/review/Review"
 import RatingUtil from "../../../utils/rating/RatingUtil"
 import AnalyticManager from "../../../analytic/AnalyticManager"
 import { ReviewError } from "../../../core/exceptions/constants/review-error.enum"
+import { OfflineCourseEntity } from "../../../entity/course/offline/offlineCourse.entity"
 
 /**
  * Class for review service
@@ -38,11 +39,11 @@ export class ReviewService {
         return launch(async () => {
             const learner = await this.userUtil.getLearner(user.id)
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
-            const isReviewed = await this.userUtil.isReviewed(user.id, data.courseId, isOfflineCourse)
+            const isReviewed = await this.userUtil.isReviewCourse(user.id, data.courseId)
             if (!isReviewed) {
                 const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
                 if (!isEmpty(enrolledCourse)) {
-                    if (isOfflineCourse) {
+                    if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
                         const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
                         const updatedRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
                         const updatedReviewNumber = courseRating.reviewNumber + 1
@@ -71,7 +72,7 @@ export class ReviewService {
             const isOfflineCourse = this.isOfflineCourse(data.courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, data.courseId, isOfflineCourse)
             if (isNotEmpty(enrolledCourse)) {
-                if (isOfflineCourse) {
+                if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
                     if (isNotEmpty(userRating)) {
                         const courseRating = await this.repository.getOfflineCourseRating(data.courseId)
@@ -108,7 +109,7 @@ export class ReviewService {
             const isOfflineCourse = this.isOfflineCourse(courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, courseId, isOfflineCourse)
             if (isNotEmpty(enrolledCourse)) {
-                if (isOfflineCourse) {
+                if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
                     const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
                     if (isNotEmpty(userRating)) {
                         const courseRating = await this.repository.getOfflineCourseRating(courseId)
