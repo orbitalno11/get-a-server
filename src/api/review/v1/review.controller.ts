@@ -111,6 +111,25 @@ export class ReviewController {
     }
 
     /**
+     * Get clip review
+     * @param clipId
+     * @param currentUser
+     */
+    @Get("clip/:id")
+    getClipReview(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<Review[]>> {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const reviews = await this.service.getClipReview(clipId, currentUser)
+
+            return SuccessResponse.create(reviews)
+        })
+    }
+
+    /**
      * Delete course review
      * @param courseId
      * @param courseType

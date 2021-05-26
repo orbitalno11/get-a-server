@@ -205,32 +205,35 @@ export class ReviewService {
     getCourseReview(courseId: string, courseType: CourseType, user?: User): Promise<Review[]> {
         return launch(async () => {
             if (this.isOfflineCourse(courseType)) {
+                const allReview = await this.repository.getOfflineCourseReview(courseId)
+                let userReview
                 if (user && user.role === UserRole.LEARNER) {
-                    const isEnrolled = await this.userUtil.isEnrolled(user.id, courseId)
-                    if (isEnrolled) {
-                        const learnerId = LearnerProfile.getLearnerId(user.id)
-                        const userReview = await this.repository.getOfflineCourseReviewByUser(courseId, learnerId)
-                        const allReview = await this.repository.getOfflineCourseReview(courseId, learnerId)
-                        const reviews = new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
-                        if (!isEmpty(userReview)) {
-                            const review = new OfflineCourseReviewToReviewMapper(true).map(userReview)
-                            reviews.push(review)
-                        }
-                        return reviews
-                    } else {
-                        const allReview = await this.repository.getOfflineCourseReview(courseId)
-                        return new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
-                    }
-                } else {
-                    const allReview = await this.repository.getOfflineCourseReview(courseId)
-                    return new OfflineCourseReviewToReviewMapper().toReviewArray(allReview)
+                    userReview = await this.userUtil.getCourseReview(user.id, courseId)
                 }
+                return new OfflineCourseReviewToReviewMapper().mapList(allReview, userReview)
             } else {
-                // todo online course
-                return null
+                const reviews = await this.repository.getOnlineCourseReview(courseId)
+                return new ClipReviewToReviewMapper().mapCourseList(reviews)
             }
         })
     }
+
+    /**
+     * Get clip review
+     * @param clipId
+     * @param user
+     */
+    getClipReview(clipId: string, user: User): Promise<Review[]> {
+        return launch(async () => {
+            const allReview = await this.repository.getClipCourseReview(clipId)
+            let userReview
+            if (user && user.role === UserRole.LEARNER) {
+                userReview = await this.userUtil.getClipReview(user.id, clipId)
+            }
+            return new ClipReviewToReviewMapper().mapList(allReview, userReview)
+        })
+    }
+
 
     /**
      * Get course review by review id

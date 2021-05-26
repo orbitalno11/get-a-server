@@ -23,12 +23,14 @@ export class ReviewModule implements NestModule {
             .apply(LearnerAuthenticated)
             .exclude(
                 { path: "v1/review/course/:id", method: RequestMethod.GET },
-                { path: "v1/review/user/:userId/course/:courseId", method: RequestMethod.GET }
+                { path: "v1/review/user/:userId/course/:courseId", method: RequestMethod.GET },
+                { path: "v1/review/clip/:id", method: RequestMethod.GET }
             )
             .forRoutes(ReviewController)
             .apply(AuthenticatedRequest)
             .forRoutes(
-                { path: "v1/review/course/:id", method: RequestMethod.GET }
+                { path: "v1/review/course/:id", method: RequestMethod.GET },
+                { path: "v1/review/clip/:id", method: RequestMethod.GET }
             )
     }
 }

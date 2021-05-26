@@ -1,14 +1,9 @@
-import {OfflineCourseRatingTransactionEntity} from "../../../../entity/course/offline/offlineCourseRatingTransaction.entity";
-import Mapper from "../../../../core/common/Mapper";
+import { OfflineCourseRatingTransactionEntity } from "../../../../entity/course/offline/offlineCourseRatingTransaction.entity"
+import Mapper from "../../../../core/common/Mapper"
 import Review from "../../../../model/review/Review"
 import { LearnerEntityToSimpleProfile } from "../../learner/LearnerEntityToPublicProfile.mapper"
 
 export class OfflineCourseReviewToReviewMapper implements Mapper<OfflineCourseRatingTransactionEntity, Review> {
-    private readonly isOwner: boolean
-
-    constructor(isOwner: boolean = false) {
-        this.isOwner = isOwner
-    }
 
     map(from: OfflineCourseRatingTransactionEntity): Review {
         const review = new Review()
@@ -16,19 +11,15 @@ export class OfflineCourseReviewToReviewMapper implements Mapper<OfflineCourseRa
         review.rating = from.rating
         review.review = from.review
         review.reviewDate = from.reviewDate
-        review.owner = this.isOwner
         review.reviewer = LearnerEntityToSimpleProfile(from.learner)
         return review
     }
 
-    toReviewArray(list: OfflineCourseRatingTransactionEntity[]): Review[] {
-        const out: Review[] = []
-        list.forEach(data => {
-            out.push(this.map(data))
+    mapList(list: OfflineCourseRatingTransactionEntity[], ownReview?: OfflineCourseRatingTransactionEntity): Review[] {
+        return list.map((item) => {
+            const review = this.map(item)
+            review.owner = item.id === ownReview?.id
+            return review
         })
-        list.sort((previous, current) => {
-            return previous.reviewDate.getTime() - current.reviewDate.getTime()
-        })
-        return out
     }
 }
