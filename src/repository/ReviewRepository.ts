@@ -455,6 +455,44 @@ class ReviewRepository {
             throw ErrorExceptions.create("Can not get user review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
         }
     }
+
+    async deleteClipReview(
+        course: OnlineCourseEntity,
+        clip: ClipEntity,
+        userReview: ClipRatingTransactionEntity,
+        updatedCourseRating: number,
+        updatedCourseReviewNumber: number,
+        updatedClipRating: number,
+        updatedClipReviewNumber: number
+    ) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            await queryRunner.manager.remove(userReview)
+            await queryRunner.manager.update(ClipRatingEntity,
+                { clip: clip },
+                {
+                    reviewNumber: updatedClipReviewNumber,
+                    rating: updatedClipRating
+                })
+            await queryRunner.manager.update(OnlineCourseRatingEntity,
+                { onlineCourse: course },
+                {
+                    reviewNumber: updatedCourseReviewNumber,
+                    rating: updatedCourseRating
+                })
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not delete review", ReviewError.CAN_NOT_DELETE_REVIEW)
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }
 
 export default ReviewRepository

@@ -4,12 +4,11 @@ import ReviewForm from "../../../model/review/ReviewForm"
 import User from "../../../model/User"
 import { launch } from "../../../core/common/launch"
 import UserUtil from "../../../utils/UserUtil"
-import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
+import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import { CourseError } from "../../../core/exceptions/constants/course-error.enum"
 import { CourseType } from "../../../model/course/data/CourseType"
 import { UserRole } from "../../../core/constant/UserRole"
-import LearnerProfile from "../../../model/profile/LearnerProfile"
 import { OfflineCourseReviewToReviewMapper } from "../../../utils/mapper/course/offline/OfflineCourseReviewToReviewMapper"
 import Review from "../../../model/review/Review"
 import RatingUtil from "../../../utils/rating/RatingUtil"
@@ -20,6 +19,8 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { ClipError } from "../../../core/exceptions/constants/clip-error.enum"
 import { OnlineCourseEntity } from "../../../entity/course/online/OnlineCourse.entity"
 import { ClipReviewToReviewMapper } from "../../../utils/mapper/clip/ClipReviewToReview.mapper"
+import { OfflineCourseRatingTransactionEntity } from "../../../entity/course/offline/offlineCourseRatingTransaction.entity"
+import { ClipRatingTransactionEntity } from "../../../entity/course/clip/ClipRatingTransaction.entity"
 
 /**
  * Class for review service
@@ -89,7 +90,7 @@ export class ReviewService {
                     throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
                 }
             } else {
-                throw ErrorExceptions.create("Your already review this clip", ReviewError.ALREADY_REVIEW)
+                throw ErrorExceptions.create("Your already review", ReviewError.ALREADY_REVIEW)
             }
         })
     }
@@ -155,7 +156,7 @@ export class ReviewService {
                         throw ErrorExceptions.create("Unexpected", CommonError.UNEXPECTED_ERROR)
                     }
                 } else {
-                    throw ErrorExceptions.create("You found review", ReviewError.CAN_NOT_FOUND_REVIEW)
+                    throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
                 }
             } else {
                 throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
@@ -169,15 +170,16 @@ export class ReviewService {
      * @param courseId
      * @param courseType
      * @param user
+     * @param clipId
      */
-    deleteReview(reviewId: number, courseId: string, courseType: CourseType, user: User) {
+    deleteReview(reviewId: number, courseId: string, courseType: CourseType, user: User, clipId?: string) {
         return launch(async () => {
             const isOfflineCourse = this.isOfflineCourse(courseType)
             const enrolledCourse = await this.userUtil.getEnrolled(user.id, courseId, isOfflineCourse)
             if (isNotEmpty(enrolledCourse)) {
-                if (isOfflineCourse && enrolledCourse instanceof OfflineCourseEntity) {
-                    const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
-                    if (isNotEmpty(userRating)) {
+                const userRating = isOfflineCourse ? await this.repository.getOfflineCourseRatingByUser(reviewId) : await this.repository.getClipRatingByUser(reviewId)
+                if (isNotEmpty(userRating)) {
+                    if (enrolledCourse instanceof OfflineCourseEntity && userRating instanceof OfflineCourseRatingTransactionEntity) {
                         const courseRating = await this.repository.getOfflineCourseRating(courseId)
 
                         const decreaseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
@@ -185,13 +187,37 @@ export class ReviewService {
 
                         await this.repository.deleteOfflineReview(enrolledCourse, userRating, decreaseRating, decreaseReviewNumber)
                         await this.analytic.trackLearnerReviewOfflineCourse(enrolledCourse.owner?.id, 0.0, false, userRating.rating)
+                    } else if (enrolledCourse instanceof OnlineCourseEntity && userRating instanceof ClipRatingTransactionEntity) {
+                        const subscribeClip = await this.userUtil.getSubscribeClip(user.id, clipId)
+                        if (isNotEmpty(subscribeClip)) {
+                            const courseRating = await this.repository.getOnlineCourseRating(courseId)
+                            const clipRating = await this.repository.getClipRating(clipId)
+
+                            const updatedCourseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
+
+                            const updateClipRating = RatingUtil.calculateDecreaseRatingAvg(clipRating.rating, userRating.rating, clipRating.reviewNumber)
+
+                            await this.repository.deleteClipReview(
+                                enrolledCourse,
+                                subscribeClip,
+                                userRating,
+                                updatedCourseRating,
+                                courseRating.reviewNumber - 1,
+                                updateClipRating,
+                                clipRating.reviewNumber - 1
+                            )
+                            await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, 0.0, false, userRating.rating)
+                        } else {
+                            throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                        }
                     } else {
-                        // todo online course
-                        return null
+                        throw ErrorExceptions.create("Unexpected", CommonError.UNEXPECTED_ERROR)
                     }
                 } else {
-                    throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
+                    throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
                 }
+            } else {
+                throw ErrorExceptions.create("Your is not enroll this course", CourseError.NOT_ENROLLED)
             }
         })
     }
