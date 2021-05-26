@@ -17,10 +17,19 @@ export class ClipEntity {
     description: string
 
     @Column()
+    cost: number
+
+    @Column()
     url: string
 
     @Column()
+    urlCloudPath: string
+
+    @Column()
     coverUrl: string
+
+    @Column()
+    coverUrlCloudPath: string
 
     // entity relation
     @ManyToOne(

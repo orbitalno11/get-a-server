@@ -4,5 +4,7 @@ export enum CoinError {
     CAN_NOT_FOUND_COIN_BALANCE = "can-not-found-coin-balance",
     CAN_NOT_FOUND_COIN_TRANSACTION = "can-not-found-transaction",
     CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION = "can-not-found-transaction",
-    INVALID = "coin-rate-is-invalid"
+    INVALID = "coin-rate-is-invalid",
+    NOT_ENOUGH = "not-enough-coin",
+    ALREADY_BUY = "already-buy"
 }

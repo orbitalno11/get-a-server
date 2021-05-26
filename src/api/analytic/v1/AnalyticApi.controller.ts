@@ -6,11 +6,13 @@ import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { CourseType } from "../../../model/course/data/CourseType"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Controller class for "v1/analytic"
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("analytic")
 @Controller("v1/analytic")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 export class AnalyticApiController {

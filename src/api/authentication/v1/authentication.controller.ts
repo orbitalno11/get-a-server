@@ -14,11 +14,13 @@ import { TransformSuccessResponse } from "../../../interceptors/TransformSuccess
 import { AuthenticationService } from "./authentication.service"
 import TokenError from "../../../core/exceptions/constants/token-error.enum"
 import { launch } from "../../../core/common/launch"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Class for authentication route
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("authentication")
 @Controller("v1/auth")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

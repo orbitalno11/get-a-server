@@ -321,24 +321,6 @@ class MeRepository {
     }
 
     /**
-     * Get user coin balance
-     * @param user
-     */
-    async getUserCoinBalance(user: User): Promise<CoinEntity> {
-        try {
-            return await this.connection.getRepository(CoinEntity)
-                .findOne({
-                    where: {
-                        member: user.id
-                    }
-                })
-        } catch (error) {
-            logger.error(error)
-            throw ErrorExceptions.create("Can not found coin balance", CoinError.CAN_NOT_FOUND_COIN_BALANCE)
-        }
-    }
-
-    /**
      * Get user coin transaction
      * @param user
      */
