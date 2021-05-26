@@ -119,6 +119,7 @@ class UserRepository {
             } else {
                 return await this.connection.createQueryBuilder(OnlineCourseEntity, "onlineCourse")
                     .leftJoinAndSelect("onlineCourse.clips", "clip")
+                    .leftJoinAndSelect("onlineCourse.owner", "owner")
                     .leftJoinAndSelect("clip.transaction", "transaction")
                     .where("onlineCourse.id like :courseId", {courseId: courseId})
                     .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })

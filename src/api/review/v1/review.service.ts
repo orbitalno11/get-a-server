@@ -77,6 +77,7 @@ export class ReviewService {
                                 updateClipRating,
                                 updateClipReviewNumber
                             )
+                            await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, data.rating)
                         } else {
                             throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
                         }
