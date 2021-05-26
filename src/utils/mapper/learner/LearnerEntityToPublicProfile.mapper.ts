@@ -8,6 +8,7 @@ export const LearnerEntityToSimpleProfile = (from: LearnerEntity): SimpleProfile
     out.firstName = from.member?.firstname
     out.lastName = from.member?.lastname
     out.fullName = `${out.firstName} ${out.lastName}`
+    out.picture = from.member?.profileUrl
     out.gender = from.member?.gender
     out.contact = new Contact()
     out.contact.lineId = from.contact?.lineId

@@ -62,5 +62,5 @@ export class ClipEntity {
         () => ClipTransactionEntity,
         (transaction) => transaction.clip
     )
-    clipTransaction: ClipTransactionEntity[]
+    transaction: ClipTransactionEntity[]
 }

@@ -141,7 +141,7 @@ class OnlineCourseRepository {
     async getBoughtClipInOnlineCourse(courseId: string, learnerId: string): Promise<ClipEntity[]> {
         try {
             return this.connection.createQueryBuilder(ClipEntity, "clip")
-                .leftJoinAndSelect("clip.clipTransaction", "transaction")
+                .leftJoinAndSelect("clip.transaction", "transaction")
                 .where("clip.onlineCourse like :courseId", { courseId: courseId })
                 .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
                 .getMany()

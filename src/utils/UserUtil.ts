@@ -21,6 +21,8 @@ import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
+import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
 
 /**
  * User utility class
@@ -106,7 +108,7 @@ class UserUtil {
      * Get basic user data (member, role)
      * @param userId
      */
-    async getBaseUser(userId: string): Promise<User> {
+    getBaseUser(userId: string): Promise<User> {
         return launch(async () => {
             if (!userId?.isSafeNotBlank()) {
                 logger.error("Can not found user id")
@@ -128,7 +130,7 @@ class UserUtil {
      * Get tutor entity from user id
      * @param userId
      */
-    async getTutor(userId: string): Promise<TutorEntity> {
+    getTutor(userId: string): Promise<TutorEntity> {
         return launch(async () => {
             if (!userId?.isSafeNotNull()) {
                 logger.error("Can not found user id")
@@ -149,7 +151,7 @@ class UserUtil {
      * Get learner entity from user id
      * @param userId
      */
-    async getLearner(userId: string): Promise<LearnerEntity> {
+    getLearner(userId: string): Promise<LearnerEntity> {
         return launch(async () => {
             if (!userId?.isSafeNotNull()) {
                 logger.error("Can not found user id")
@@ -172,7 +174,7 @@ class UserUtil {
      * @param courseId
      * @param isOfflineCourse
      */
-    async isCourseOwner(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
+    isCourseOwner(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 const course = await this.getCourseOwn(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
@@ -189,7 +191,7 @@ class UserUtil {
      * @param courseId
      * @param isOfflineCourse
      */
-    async getCourseOwn(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
+    getCourseOwn(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 return await this.userRepository.getOwnCourseById(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
@@ -205,7 +207,7 @@ class UserUtil {
      * @param courseId
      * @param isOfflineCourse
      */
-    async isEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
+    isEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
@@ -222,7 +224,7 @@ class UserUtil {
      * @param courseId
      * @param isOfflineCourse
      */
-    async getEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity> {
+    getEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
                 return await this.userRepository.getEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
@@ -233,15 +235,45 @@ class UserUtil {
     }
 
     /**
+     * Check request learner is already subscribe clip
+     * @param userId
+     * @param clipId
+     */
+    isSubscribeClip(userId: string, clipId: string): Promise<boolean> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                const course = await this.getSubscribeClip(userId, clipId)
+                return isNotEmpty(course)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get learner subscribe clip detail
+     * @param userId
+     * @param clipId
+     */
+    getSubscribeClip(userId: string, clipId: string): Promise<ClipEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                return await this.userRepository.getSubscribeClipById(LearnerProfile.getLearnerId(userId), clipId)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
      * Check the request learner reviewed course
      * @param userId
      * @param courseId
-     * @param isOfflineCourse
      */
-    async isReviewed(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
+    isReviewCourse(userId: string, courseId: string): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const review = await this.getReview(userId, courseId, isOfflineCourse)
+                const review = await this.getCourseReview(userId, courseId)
                 return isNotEmpty(review)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
@@ -253,12 +285,42 @@ class UserUtil {
      * Get review detail
      * @param userId
      * @param courseId
-     * @param isOfflineCourse
      */
-    async getReview(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseRatingTransactionEntity> {
+    getCourseReview(userId: string, courseId: string): Promise<OfflineCourseRatingTransactionEntity> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                return await this.userRepository.getReviewCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
+                return await this.userRepository.getReviewCourseById(LearnerProfile.getLearnerId(userId), courseId)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Check the request learner reviewed clip
+     * @param userId
+     * @param clipId
+     */
+    isReviewClip(userId: string, clipId: string): Promise<boolean> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                const review = await this.getClipReview(userId, clipId)
+                return isNotEmpty(review)
+            } else {
+                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
+            }
+        })
+    }
+
+    /**
+     * Get clip review detail
+     * @param userId
+     * @param clipId
+     */
+    getClipReview(userId: string, clipId: string): Promise<ClipRatingTransactionEntity> {
+        return launch(async () => {
+            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
+                return await this.userRepository.getReviewClipById(LearnerProfile.getLearnerId(userId), clipId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -270,7 +332,7 @@ class UserUtil {
      * @param learnerId
      * @param tutorId
      */
-    async isLiked(learnerId: string, tutorId: string): Promise<boolean> {
+    isLiked(learnerId: string, tutorId: string): Promise<boolean> {
         return launch(async () => {
             if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
                 const result = await this.getFavoriteTutor(learnerId, tutorId)
@@ -286,7 +348,7 @@ class UserUtil {
      * @param learnerId
      * @param tutorId
      */
-    async getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity> {
+    getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity> {
         return launch(async () => {
             if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
                 return await this.userRepository.getFavoriteTutor(
@@ -303,7 +365,7 @@ class UserUtil {
      * Get user coin balance
      * @param userId
      */
-    async getCoinBalance(userId: string): Promise<CoinEntity> {
+    getCoinBalance(userId: string): Promise<CoinEntity> {
         return launch(async () => {
             if (userId?.isSafeNotBlank()) {
                 return await this.userRepository.getCoinBalance(userId)

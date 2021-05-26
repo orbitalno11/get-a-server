@@ -26,7 +26,13 @@ import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import Review from "../../../model/review/Review"
 import { CourseType } from "../../../model/course/data/CourseType"
-import { ApiTags } from "@nestjs/swagger"
+import {
+    ApiBadRequestResponse,
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiInternalServerErrorResponse, ApiOkResponse,
+    ApiTags
+} from "@nestjs/swagger"
 
 /**
  * Class for controller "v1/review"
@@ -41,16 +47,22 @@ export class ReviewController {
     }
 
     /**
-     * Create course review
+     * Create course and clip review
      * @param body
      * @param currentUser
      */
     @Post()
+    @ApiBearerAuth()
+    @ApiCreatedResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Your is not subscribe this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your is not enroll this course" })
+    @ApiInternalServerErrorResponse({ description: "Your already review" })
+    @ApiInternalServerErrorResponse({ description: "Unexpected" })
     createReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
-            const validator = new ReviewFormValidator()
-            validator.setData(data)
+            const validator = new ReviewFormValidator(data)
             const validate = validator.validate()
 
             if (!validate.valid) {
@@ -70,11 +82,17 @@ export class ReviewController {
      * @param currentUser
      */
     @Put()
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Your is not subscribe this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your is not enroll this course" })
+    @ApiInternalServerErrorResponse({ description: "Can not found review" })
+    @ApiInternalServerErrorResponse({ description: "Unexpected" })
     editReview(@Body() body: ReviewForm, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ReviewForm.createFromBody(body)
-            const validator = new ReviewFormValidator()
-            validator.setData(data)
+            const validator = new ReviewFormValidator(data)
             const validate = validator.validate()
 
             if (!validate.valid || !data.reviewId?.isPositiveValue()) {
@@ -95,6 +113,10 @@ export class ReviewController {
      * @param currentUser
      */
     @Get("course/:id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "course review", type: Review, isArray: true })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Can not get user review" })
     getCourseReview(
         @Param("id") courseId: string,
         @Query("type") courseType: string,
@@ -113,17 +135,49 @@ export class ReviewController {
     }
 
     /**
+     * Get clip review
+     * @param clipId
+     * @param currentUser
+     */
+    @Get("clip/:id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "clip review", type: Review, isArray: true })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Can not get user review" })
+    getClipReview(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<Review[]>> {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const reviews = await this.service.getClipReview(clipId, currentUser)
+
+            return SuccessResponse.create(reviews)
+        })
+    }
+
+    /**
      * Delete course review
      * @param courseId
      * @param courseType
      * @param reviewId
+     * @param clipId
      * @param currentUser
      */
     @Delete(":id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Your is not subscribe this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your is not enroll this course" })
+    @ApiInternalServerErrorResponse({ description: "Can not found review" })
+    @ApiInternalServerErrorResponse({ description: "Unexpected" })
     deleteReview(
         @Param("id") reviewId: string,
         @Query("type") courseType: string,
         @Query("course") courseId: string,
+        @Query("clip") clipId: string,
         @CurrentUser() currentUser: User
     ) {
         return launch(async () => {
@@ -137,7 +191,12 @@ export class ReviewController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            await this.service.deleteReview(reviewId.toNumber(), courseId, courseType.toNumber(), currentUser)
+            if (courseType.toNumber() === CourseType.ONLINE && !clipId?.isSafeNotBlank()) {
+                logger.error("Invalid request")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.deleteReview(reviewId.toNumber(), courseId, courseType.toNumber(), currentUser, clipId)
 
             return SuccessResponse.create("Successful")
         })
@@ -149,6 +208,9 @@ export class ReviewController {
      * @param courseType
      */
     @Get(":id")
+    @ApiOkResponse({ description: "review detail", type: Review })
+    @ApiBadRequestResponse({ description: "invalid-request-data" })
+    @ApiInternalServerErrorResponse({ description: "Can not get user review" })
     getCourseReviewById(
         @Param("id") reviewId: string,
         @Query("type") courseType: string
@@ -159,7 +221,7 @@ export class ReviewController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const review = await this.service.getCourseReviewById(reviewId.toNumber(), courseType.toNumber())
+            const review = await this.service.getReviewById(reviewId.toNumber(), courseType.toNumber())
 
             return SuccessResponse.create(review)
         })
