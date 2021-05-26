@@ -11,7 +11,6 @@ import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import TutorCard from "../../../model/profile/TutorCard"
-import UserUtil from "../../../utils/UserUtil"
 import {
     ApiBadRequestResponse, ApiBearerAuth,
     ApiInternalServerErrorResponse,
@@ -28,10 +27,7 @@ import {
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
 export class FavoriteController {
-    constructor(
-        private readonly service: FavoriteService,
-        private readonly userUtil: UserUtil
-    ) {
+    constructor(private readonly service: FavoriteService) {
     }
 
     /**
@@ -45,19 +41,13 @@ export class FavoriteController {
     @ApiBadRequestResponse({ description: "Request data is invalid"})
     @ApiInternalServerErrorResponse({ description: "Can not like tutor by id"})
     @ApiInternalServerErrorResponse({ description: "Can not unlike tutor by id"})
-    likeTutor(@Query("tutor") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+    likeTutor(@Query("tutorId") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             if (!userId?.isSafeNotBlank()) {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const liked = await this.userUtil.isLiked(currentUser.id, userId)
-
-            if (liked) {
-                await this.service.unLikeTutor(userId, currentUser.id)
-            } else {
-                await this.service.likeTutor(userId, currentUser.id)
-            }
+            await this.service.likedAction(userId, currentUser.id)
 
             return SuccessResponse.create("Successful")
         })
@@ -67,7 +57,6 @@ export class FavoriteController {
      * Get favorite tutor list
      * @param currentUser
      */
-
     @Get("list")
     @ApiBearerAuth()
     @ApiOkResponse({ description: "tutor list", type: TutorCard })
@@ -79,4 +68,23 @@ export class FavoriteController {
         })
     }
 
+    /**
+     * Check already like tutor
+     * @param userId
+     * @param currentUser
+     */
+    @Get("liked")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "like status"})
+    checkLikedTutor(@Query("tutorId") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<boolean>> {
+        return launch(async () => {
+            if (!userId?.isSafeNotBlank()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const liked = await this.service.isLiked(currentUser.id, userId)
+
+            return SuccessResponse.create(liked)
+        })
+    }
 }
