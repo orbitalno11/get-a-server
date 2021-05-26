@@ -25,11 +25,28 @@ export class FavoriteService {
     }
 
     /**
+     * Like action
+     * @param tutorUserId
+     * @param learnerUserId
+     */
+    likedAction(tutorUserId: string, learnerUserId: string) {
+        return launch(async () => {
+            const liked = await this.userUtils.isLiked(learnerUserId, tutorUserId)
+
+            if (liked) {
+                await this.unLikeTutor(tutorUserId, learnerUserId)
+            } else {
+                await this.likeTutor(tutorUserId, learnerUserId)
+            }
+        })
+    }
+
+    /**
      * Like tutor by tutor id
      * @param tutorUserId
      * @param learnerUserId
      */
-    likeTutor(tutorUserId: string, learnerUserId: string) {
+    private likeTutor(tutorUserId: string, learnerUserId: string) {
         return launch(async () => {
             const tutor = await this.userUtils.getTutor(tutorUserId)
             const learner = await this.userUtils.getLearner(learnerUserId)
@@ -45,7 +62,7 @@ export class FavoriteService {
      * @param tutorUserId
      * @param learnerUserId
      */
-    unLikeTutor(tutorUserId: string, learnerUserId: string) {
+    private unLikeTutor(tutorUserId: string, learnerUserId: string) {
         return launch(async () => {
             const tutor = await this.userUtils.getTutor(tutorUserId)
             const learner = await this.userUtils.getLearner(learnerUserId)
@@ -64,6 +81,17 @@ export class FavoriteService {
         return launch(async () => {
             const tutorList = await this.repository.getFavoriteTutorList(LearnerProfile.getLearnerId(user.id))
             return isNotEmpty(tutorList) ? new FavoriteTutorEntityToTutorCardListMapper().map(tutorList) : []
+        })
+    }
+
+    /**
+     * Check already like tutor
+     * @param learnerUserId
+     * @param tutorUserId
+     */
+    isLiked(learnerUserId: string, tutorUserId: string): Promise<boolean> {
+        return launch(async () => {
+            return await this.userUtils.isLiked(learnerUserId, tutorUserId)
         })
     }
 }
