@@ -9,6 +9,7 @@ export class FavoriteTutorEntityToTutorCardMapper implements Mapper<FavoriteTuto
         const card = new TutorCard()
         card.id = from.tutor?.member?.id
         card.fullNameText = `${from.tutor?.member?.firstname} ${from.tutor?.member?.lastname}`
+        card.pictureUrl = from.tutor?.member?.profileUrl
         card.rating = from.tutor?.statistic?.rating
         card.address = new Address().getConvenienceAddress(from.tutor?.member.memberAddress)
         card.subject = new Subject().getFirstSubject(from.tutor?.member?.interestedSubject)

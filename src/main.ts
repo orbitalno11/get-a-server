@@ -28,6 +28,7 @@ async function bootstrap() {
         .setTitle("GET-A")
         .setDescription("GET-A: Web Application for Finding Tutor")
         .setVersion("1.0")
+        .addBearerAuth()
         .build()
 
     const document = SwaggerModule.createDocument(app, config)
