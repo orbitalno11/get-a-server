@@ -1,13 +1,14 @@
 import Address from "../location/Address"
 import Subject from "../common/Subject"
+import { ApiProperty } from "@nestjs/swagger"
 
 class TutorCard {
-    id: string
-    fullNameText: string
-    pictureUrl: string
-    address: Address
-    subject: Subject
-    rating: number
+    @ApiProperty() id: string
+    @ApiProperty() fullNameText: string
+    @ApiProperty() pictureUrl: string
+    @ApiProperty() address: Address
+    @ApiProperty() subject: Subject
+    @ApiProperty() rating: number
 }
 
 export default TutorCard

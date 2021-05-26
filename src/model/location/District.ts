@@ -1,6 +1,8 @@
+import { ApiProperty } from "@nestjs/swagger"
+
 class District {
-    id: string
-    title: string
+    @ApiProperty() id: string
+    @ApiProperty() title: string
 }
 
 export default District

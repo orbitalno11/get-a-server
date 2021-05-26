@@ -6,18 +6,19 @@ import {LocationType} from "./data/LocationType";
 import { MemberAddressEntity } from "../../entity/member/memberAddress.entity"
 import { isNotEmpty } from "../../core/extension/CommonExtension"
 import { MemberAddressToAddressMapper } from "../../utils/mapper/location/MemberAddressToAddress.mapper"
+import { ApiProperty } from "@nestjs/swagger"
 
 class Address {
-    address: string
-    hintAddress: string | null
-    road: string | null
-    subDistrict: SubDistrict
-    district: District
-    province: Province
-    postcode: string
-    geoLocation: GeoLocation
-    type: LocationType
-    fullAddressText: string
+    @ApiProperty() address: string
+    @ApiProperty() hintAddress: string | null
+    @ApiProperty() road: string | null
+    @ApiProperty() subDistrict: SubDistrict
+    @ApiProperty() district: District
+    @ApiProperty() province: Province
+    @ApiProperty() postcode: string
+    @ApiProperty() geoLocation: GeoLocation
+    @ApiProperty({ enum: [LocationType] }) type: LocationType
+    @ApiProperty() fullAddressText: string
 
     public static create(
         address: string,

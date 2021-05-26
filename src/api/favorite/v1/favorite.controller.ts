@@ -6,15 +6,18 @@ import { FavoriteService } from "./favorite.service"
 import IResponse from "../../../core/response/IResponse"
 import { launch } from "../../../core/common/launch"
 import SuccessResponse from "../../../core/response/SuccessResponse"
-import { logger } from "../../../core/logging/Logger"
 import FailureResponse from "../../../core/response/FailureResponse"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import TutorCard from "../../../model/profile/TutorCard"
 import UserUtil from "../../../utils/UserUtil"
-import { FavoriteError } from "../../../core/exceptions/constants/favorite-error.enum"
-import { ApiTags } from "@nestjs/swagger"
+import {
+    ApiBadRequestResponse, ApiBearerAuth,
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiTags
+} from "@nestjs/swagger"
 
 /**
  * Controller for "v1/favorite"
@@ -34,34 +37,26 @@ export class FavoriteController {
     /**
      * Like and unlike tutor by tutor id
      * @param userId
-     * @param like
      * @param currentUser
      */
     @Get()
-    likeTutor(
-        @Query("tutor") userId: string,
-        @Query("like") like: string,
-        @CurrentUser() currentUser: User
-    ): Promise<IResponse<string>> {
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Request data is invalid"})
+    @ApiInternalServerErrorResponse({ description: "Can not like tutor by id"})
+    @ApiInternalServerErrorResponse({ description: "Can not unlike tutor by id"})
+    likeTutor(@Query("tutor") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
-            if (!userId?.isSafeNotBlank() || !like?.isSafeNotBlank() || !like?.isBoolean()) {
-                logger.error("Request data is invalid")
+            if (!userId?.isSafeNotBlank()) {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const isLiked = await this.userUtil.isLiked(currentUser.id, userId)
-            if (like === "true") {
-                if (!isLiked) {
-                    await this.service.likeTutor(userId, currentUser.id)
-                } else {
-                    throw FailureResponse.create(FavoriteError.ALREADY_LIKE_TUTOR, HttpStatus.BAD_REQUEST)
-                }
+            const liked = await this.userUtil.isLiked(currentUser.id, userId)
+
+            if (liked) {
+                await this.service.unLikeTutor(userId, currentUser.id)
             } else {
-                if (isLiked) {
-                    await this.service.unLikeTutor(userId, currentUser.id)
-                } else {
-                    throw FailureResponse.create(FavoriteError.NEVER_LIKE_TUTOR, HttpStatus.BAD_REQUEST)
-                }
+                await this.service.likeTutor(userId, currentUser.id)
             }
 
             return SuccessResponse.create("Successful")
@@ -72,7 +67,11 @@ export class FavoriteController {
      * Get favorite tutor list
      * @param currentUser
      */
+
     @Get("list")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "tutor list", type: TutorCard })
+    @ApiInternalServerErrorResponse({ description: "Can not get favorite list"})
     getFavoriteList(@CurrentUser() currentUser: User): Promise<IResponse<TutorCard[]>> {
         return launch(async () => {
             const favorites = await this.service.getFavoriteTutorList(currentUser)
