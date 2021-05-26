@@ -13,6 +13,12 @@ import CoinPayment from "../model/payment/CoinPayment"
 import { CoinError } from "../core/exceptions/constants/coin.error"
 import CoinRate from "../model/coin/CoinRate"
 import { CoinRateFormToExchangeRateEntityMapper } from "../utils/mapper/coin/CoinRateFormToExchangeRateEntityMapper"
+import { RedeemTransactionEntity } from "../entity/coins/RedeemTransaction.entity"
+import RedeemForm from "../model/coin/RedeemForm"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import User from "../model/User"
+import { BankEntity } from "../entity/common/Bank.entity"
+import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 
 /**
  * Repository for "v1/coin"
@@ -79,11 +85,7 @@ class CoinRepository {
      */
     async getCoinRate(rateId: number): Promise<ExchangeRateEntity> {
         try {
-            if (rateId) {
-                return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
-            } else {
-                throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
-            }
+            return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
@@ -124,6 +126,49 @@ class CoinRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not create transaction", CommonError.UNEXPECTED_ERROR)
+        }
+    }
+
+    async redeemCoin(data: RedeemForm, balance: CoinEntity, rate: ExchangeRateEntity, bank: BankEntity, fileUrl: string, user: User) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            const member = new MemberEntity()
+            member.id = user.id
+
+            const redeem = new RedeemTransactionEntity()
+            redeem.member = member
+            redeem.exchangeRate = rate
+            redeem.bank = bank
+            redeem.accountNo = data.accountNo
+            redeem.accountName = data.accountName
+            redeem.accountPic = fileUrl
+            redeem.amount = data.amount
+            redeem.amountCoin = data.numberOfCoin
+            redeem.requestDate = new Date()
+            redeem.requestStatus = CoinTransactionType.REQUEST_REDEEM
+
+            balance.amount = balance.amount - data.numberOfCoin
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(redeem)
+            await queryRunner.manager.save(balance)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not create redeem", CoinError.CAN_NOT_CREATE_REDEEM)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async getBankDetailById(bankId: string): Promise<BankEntity> {
+        try {
+            return await this.connection.getRepository(BankEntity).findOne(bankId)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get bank detail", CoinError.CAN_NOT_GET_BANK)
         }
     }
 }

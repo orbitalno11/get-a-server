@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import { v4 as uuidV4 } from "uuid"
 import CoinRate from "../../../model/coin/CoinRate"
-import { logger } from "../../../core/logging/Logger"
 import CoinRepository from "../../../repository/CoinRepository"
 import { ExchangeRateEntityToCoinRateMapper } from "../../../utils/mapper/coin/ExchangeRateEntityToCoinRate.mapper"
 import { UserRole } from "../../../core/constant/UserRole"
@@ -12,6 +11,13 @@ import * as config from "../../../configs/EnvironmentConfig"
 import User from "../../../model/User"
 import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
+import RedeemForm from "../../../model/coin/RedeemForm"
+import UserUtil from "../../../utils/UserUtil"
+import { isEmpty, isNotEmpty } from "../../../core/extension/CommonExtension"
+import { CoinError } from "../../../core/exceptions/constants/coin.error"
+import { logger } from "../../../core/logging/Logger"
+import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
+import { ImageSize } from "../../../core/constant/ImageSize.enum"
 
 /**
  * Class for coin api service
@@ -21,7 +27,9 @@ import UserError from "../../../core/exceptions/constants/user-error.enum"
 export class CoinService {
     constructor(
         private readonly connection: Connection,
-        private readonly repository: CoinRepository
+        private readonly repository: CoinRepository,
+        private readonly userUtil: UserUtil,
+        private readonly fileStorageUtil: FileStorageUtils
     ) {
     }
 
@@ -61,18 +69,22 @@ export class CoinService {
             const transactionId = "GET-A" + uuidV4()
             const rateDetail = await this.repository.getCoinRate(rateId)
 
-            const orderDetail = new CoinPayment()
-            orderDetail.transactionId = transactionId
-            orderDetail.userId = userId
-            orderDetail.amount = rateDetail.baht
-            orderDetail.coinRate = rateDetail.id
-            orderDetail.created = new Date()
-            orderDetail.refNo1 = this.createRefNo(1)
-            orderDetail.refNo2 = this.createRefNo(2)
-            orderDetail.refNo3 = this.createRefNo(3)
+            if (isNotEmpty(rateDetail)) {
+                const orderDetail = new CoinPayment()
+                orderDetail.transactionId = transactionId
+                orderDetail.userId = userId
+                orderDetail.amount = rateDetail.baht
+                orderDetail.coinRate = rateDetail.id
+                orderDetail.created = new Date()
+                orderDetail.refNo1 = this.createRefNo(1)
+                orderDetail.refNo2 = this.createRefNo(2)
+                orderDetail.refNo3 = this.createRefNo(3)
 
-            await this.repository.buyCoin(orderDetail, rateDetail)
-            return transactionId
+                await this.repository.buyCoin(orderDetail, rateDetail)
+                return transactionId
+            } else {
+                throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
+            }
         })
     }
 
@@ -98,6 +110,43 @@ export class CoinService {
             }
             const resultString = result.join("")
             return `${config.SCB_REF3_PREFIX}${Date.now()}${resultString}`
+        }
+    }
+
+    async redeemCoin(data: RedeemForm, file: Express.Multer.File, user: User) {
+        let fileUrl = ""
+        try {
+            const rate = await this.repository.getCoinRate(data.rateId)
+            if (isEmpty(rate)) {
+                throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
+            }
+
+            const bank = await this.repository.getBankDetailById(data.bankId)
+            if (isEmpty(bank)) {
+                throw ErrorExceptions.create("Can not found bank", CoinError.CAN_NOT_FOUND_BANK)
+            }
+
+            fileUrl = await this.fileStorageUtil.uploadImageTo(file, user.id, "redeem", ImageSize.A4_WIDTH_VERTICAL_PX, ImageSize.A4_HEIGHT_VERTICAL_PX)
+
+            const userBalance = await this.userUtil.getCoinBalance(user.id)
+
+            if (data.numberOfCoin > userBalance.amount) {
+                throw ErrorExceptions.create("Your coin is not enough", CoinError.NOT_ENOUGH)
+            }
+
+            const totalAmount = data.numberOfCoin * rate.baht
+
+            if (totalAmount !== data.amount) {
+                throw ErrorExceptions.create("Total amount is invalid", CoinError.INVALID_AMOUNT)
+            }
+
+            await this.repository.redeemCoin(data, userBalance, rate, bank, fileUrl, user)
+        } catch (error) {
+            logger.error(error)
+            if (fileUrl.isSafeNotBlank()) {
+                await this.fileStorageUtil.deleteFileFromPath(fileUrl)
+            }
+            throw ErrorExceptions.create("Can not request redeem", CoinError.CAN_NOT_CREATE_REDEEM)
         }
     }
 }

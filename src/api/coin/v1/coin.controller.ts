@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, UseFilters, UseInterceptors } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Post,
+    Query,
+    UploadedFile,
+    UseFilters,
+    UseInterceptors
+} from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { TransformSuccessResponse } from "../../../interceptors/TransformSuccessResponse.interceptor"
@@ -15,6 +25,11 @@ import { CoinError } from "../../../core/exceptions/constants/coin.error"
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"
 import User from "../../../model/User"
 import { UserRole } from "../../../core/constant/UserRole"
+import RedeemForm from "../../../model/coin/RedeemForm"
+import { FileInterceptor } from "@nestjs/platform-express"
+import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
+import { isEmpty } from "../../../core/extension/CommonExtension"
+import CommonError from "../../../core/exceptions/constants/common-error.enum"
 
 /**
  * Class for coin api controller
@@ -77,6 +92,21 @@ export class CoinController {
         return launch(async () => {
             const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)
+        })
+    }
+
+    @Post("redeem")
+    @UseInterceptors(FileInterceptor("accountPic", new UploadFileUtils().uploadImageA4Vertical()))
+    redeemCoin(@Body() body: RedeemForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User) {
+        return launch(async () => {
+            const data = RedeemForm.createFromBody(body)
+
+            if (isEmpty(file)) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, "Can not found account picture")
+            }
+            await this.service.redeemCoin(data, file, currentUser)
+
+            return SuccessResponse.create("Successful")
         })
     }
 }

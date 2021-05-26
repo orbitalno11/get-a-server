@@ -1,4 +1,4 @@
-import { ExchangeTransactionEntity } from "../../../entity/coins/exchangeTransaction.entity"
+import { RedeemTransactionEntity } from "../../../entity/coins/RedeemTransaction.entity"
 import RedeemTransaction from "../../../model/coin/RedeemTransaction"
 import { ExchangeRateEntityToCoinRateMapper } from "./ExchangeRateEntityToCoinRate.mapper"
 
@@ -12,7 +12,7 @@ import { ExchangeRateEntityToCoinRateMapper } from "./ExchangeRateEntityToCoinRa
  * @param from
  * @constructor
  */
-export const ExchangeTransactionToRedeemListMapper = (from: ExchangeTransactionEntity[]): RedeemTransaction[] => {
+export const ExchangeTransactionToRedeemListMapper = (from: RedeemTransactionEntity[]): RedeemTransaction[] => {
     return from.map((item) => ExchangeTransactionToRedeemMapper(item))
 }
 
@@ -22,7 +22,7 @@ export const ExchangeTransactionToRedeemListMapper = (from: ExchangeTransactionE
  * @param from
  * @constructor
  */
-export const ExchangeTransactionToRedeemMapper = (from: ExchangeTransactionEntity): RedeemTransaction => {
+export const ExchangeTransactionToRedeemMapper = (from: RedeemTransactionEntity): RedeemTransaction => {
     const redeem = new RedeemTransaction()
     redeem.coinRate = ExchangeRateEntityToCoinRateMapper(from.exchangeRate)
     redeem.requestDate = from.requestDate

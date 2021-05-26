@@ -7,6 +7,7 @@ import { RepositoryModule } from "../../../repository/repository.module"
 import { PaymentModule } from "../../../payment/payment.module"
 import AdminAuthenticated from "../../../middleware/auth/AdminAuthenticated.middleware"
 import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
+import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
 
 /**
  * Class for "v1/coin" module
@@ -22,12 +23,18 @@ export class CoinModule implements NestModule {
         consumer
             .apply(AdminAuthenticated)
             .exclude(
-                { path: "v1/coin/rates", method: RequestMethod.GET }
+                { path: "v1/coin/rates", method: RequestMethod.GET },
+                { path: "v1/coin/redeem", method: RequestMethod.POST }
             )
             .forRoutes(CoinController)
             .apply(AuthenticatedRequest)
             .forRoutes(
-                { path: "v1/coin/rates", method: RequestMethod.GET }
+                { path: "v1/coin/rates", method: RequestMethod.GET },
+                { path: "v1/coin/redeem", method: RequestMethod.POST }
+            )
+            .apply(TutorAuthenticated)
+            .forRoutes(
+                { path: "v1/coin/redeem", method: RequestMethod.POST }
             )
     }
 }
