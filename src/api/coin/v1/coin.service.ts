@@ -18,6 +18,7 @@ import { CoinError } from "../../../core/exceptions/constants/coin.error"
 import { logger } from "../../../core/logging/Logger"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import { ImageSize } from "../../../core/constant/ImageSize.enum"
+import { CoinRateType } from "../../../model/coin/data/CoinRateType"
 
 /**
  * Class for coin api service
@@ -113,11 +114,17 @@ export class CoinService {
         }
     }
 
+    /**
+     * Create redeem request
+     * @param data
+     * @param file
+     * @param user
+     */
     async redeemCoin(data: RedeemForm, file: Express.Multer.File, user: User) {
         let fileUrl = ""
         try {
             const rate = await this.repository.getCoinRate(data.rateId)
-            if (isEmpty(rate)) {
+            if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER) {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
             }
 
@@ -134,7 +141,7 @@ export class CoinService {
                 throw ErrorExceptions.create("Your coin is not enough", CoinError.NOT_ENOUGH)
             }
 
-            const totalAmount = data.numberOfCoin * rate.baht
+            const totalAmount = this.calculateAmountBahtTransfer(data.numberOfCoin, rate.baht, rate.coin)
 
             if (totalAmount !== data.amount) {
                 throw ErrorExceptions.create("Total amount is invalid", CoinError.INVALID_AMOUNT)
@@ -144,9 +151,20 @@ export class CoinService {
         } catch (error) {
             logger.error(error)
             if (fileUrl.isSafeNotBlank()) {
-                await this.fileStorageUtil.deleteFileFromPath(fileUrl)
+                await this.fileStorageUtil.deleteFile(fileUrl)
             }
             throw ErrorExceptions.create("Can not request redeem", CoinError.CAN_NOT_CREATE_REDEEM)
         }
+    }
+
+    /**
+     * Calculate amount baht for transfer
+     * @param numberOfCoin
+     * @param exchangeBaht
+     * @param exchangeCoin
+     * @private
+     */
+    private calculateAmountBahtTransfer(numberOfCoin: number, exchangeBaht: number, exchangeCoin: number): number {
+        return (numberOfCoin * exchangeBaht) / exchangeCoin
     }
 }

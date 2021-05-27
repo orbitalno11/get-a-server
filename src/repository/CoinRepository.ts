@@ -129,6 +129,15 @@ class CoinRepository {
         }
     }
 
+    /**
+     * Create redeem request
+     * @param data
+     * @param balance
+     * @param rate
+     * @param bank
+     * @param fileUrl
+     * @param user
+     */
     async redeemCoin(data: RedeemForm, balance: CoinEntity, rate: ExchangeRateEntity, bank: BankEntity, fileUrl: string, user: User) {
         const queryRunner = this.connection.createQueryRunner()
         try {
@@ -163,6 +172,10 @@ class CoinRepository {
         }
     }
 
+    /**
+     * Get bank detail by bank id
+     * @param bankId
+     */
     async getBankDetailById(bankId: string): Promise<BankEntity> {
         try {
             return await this.connection.getRepository(BankEntity).findOne(bankId)

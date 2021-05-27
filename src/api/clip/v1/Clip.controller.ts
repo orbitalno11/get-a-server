@@ -25,8 +25,6 @@ import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import {
     ApiBadRequestResponse,
-    ApiBody,
-    ApiConsumes,
     ApiCreatedResponse,
     ApiHeader, ApiInternalServerErrorResponse, ApiOkResponse,
     ApiResponse,

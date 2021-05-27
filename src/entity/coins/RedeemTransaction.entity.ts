@@ -23,7 +23,7 @@ export class RedeemTransactionEntity {
     @Column({ name: "amount_coin" })
     amountCoin: number
 
-    @Column({ name: "approve_date" })
+    @Column({ name: "request_date" })
     requestDate: Date
 
     @Column({ name: "approve_date" })

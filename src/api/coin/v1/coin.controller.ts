@@ -22,7 +22,15 @@ import IResponse from "../../../core/response/IResponse"
 import { launch } from "../../../core/common/launch"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiCreatedResponse,
+    ApiOkResponse,
+    ApiQuery,
+    ApiTags
+} from "@nestjs/swagger"
 import User from "../../../model/User"
 import { UserRole } from "../../../core/constant/UserRole"
 import RedeemForm from "../../../model/coin/RedeemForm"
@@ -30,6 +38,8 @@ import { FileInterceptor } from "@nestjs/platform-express"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 import { isEmpty } from "../../../core/extension/CommonExtension"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
+import RedeemFormValidator from "../../../utils/validator/coin/RedeemFormValidator"
+import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 
 /**
  * Class for coin api controller
@@ -48,6 +58,7 @@ export class CoinController {
      * @param body
      */
     @Post("rate")
+    @ApiBearerAuth()
     @ApiCreatedResponse({ description: "Successful" })
     createCoinRate(@Body() body: CoinRate): Promise<IResponse<string>> {
         return launch(async () => {
@@ -72,10 +83,11 @@ export class CoinController {
      * @param currentUser
      */
     @Get("rates")
+    @ApiBearerAuth()
     @ApiOkResponse({ description: "coin rate list", type: CoinRate, isArray: true })
-    getCoinRateList(@Query("user") userRole: string, @CurrentUser() currentUser: User): Promise<IResponse<CoinRate[]>> {
+    getCoinRateList(@Query("user") userRole: UserRole = UserRole.VISITOR, @CurrentUser() currentUser: User): Promise<IResponse<CoinRate[]>> {
         return launch(async () => {
-            const role = userRole?.isSafeNotBlank() ? userRole.toNumber() : UserRole.LEARNER
+            const role = Number(userRole).isSafeNumber() ? Number(userRole) : UserRole.VISITOR
             const result = await this.service.getCoinRateList(role, currentUser)
             return SuccessResponse.create(result)
         })
@@ -87,6 +99,17 @@ export class CoinController {
      * @param coinRateId
      */
     @Post()
+    @ApiBearerAuth()
+    @ApiBody({
+        schema: {
+            type: "object",
+            properties: {
+                rate: {
+                    type: "number"
+                }
+            }
+        }
+    })
     @ApiCreatedResponse({ description: "transaction no." })
     buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
         return launch(async () => {
@@ -95,16 +118,31 @@ export class CoinController {
         })
     }
 
+    /**
+     * Create redeem request
+     * @param body
+     * @param accountPic
+     * @param currentUser
+     */
     @Post("redeem")
+    @ApiBearerAuth()
+    @ApiConsumes("multipart/form-data")
+    @ApiImplicitFile({ name: "accountPic", required: true })
     @UseInterceptors(FileInterceptor("accountPic", new UploadFileUtils().uploadImageA4Vertical()))
-    redeemCoin(@Body() body: RedeemForm, @UploadedFile() file: Express.Multer.File, @CurrentUser() currentUser: User) {
+    redeemCoin(@Body() body: RedeemForm, @UploadedFile() accountPic: Express.Multer.File, @CurrentUser() currentUser: User) {
         return launch(async () => {
             const data = RedeemForm.createFromBody(body)
+            const validator = new RedeemFormValidator(data)
+            const { valid, error } = validator.validate()
 
-            if (isEmpty(file)) {
+            if (!valid) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, error)
+            }
+
+            if (isEmpty(accountPic)) {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, "Can not found account picture")
             }
-            await this.service.redeemCoin(data, file, currentUser)
+            await this.service.redeemCoin(data, accountPic, currentUser)
 
             return SuccessResponse.create("Successful")
         })

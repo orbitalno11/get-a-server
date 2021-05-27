@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { Bank } from "../common/data/Bank.enum"
 
 class RedeemForm {
     @ApiProperty() rateId: number
-    @ApiProperty() bankId: string
+    @ApiProperty({ enum: Bank }) bankId: string
     @ApiProperty() accountNo: string
     @ApiProperty() accountName: string
     @ApiProperty() numberOfCoin: number
