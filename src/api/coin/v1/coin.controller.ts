@@ -225,6 +225,11 @@ export class CoinController {
         })
     }
 
+    /**
+     * Denied redeem request
+     * @param redeemId
+     * @param userId
+     */
     @Get("redeem/:id/denied")
     @ApiBearerAuth()
     @ApiOkResponse({ description: "Successful" })

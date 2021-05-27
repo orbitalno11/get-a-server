@@ -251,6 +251,11 @@ class CoinRepository {
         }
     }
 
+    /**
+     * Denied redeem request
+     * @param detail
+     * @param userBalance
+     */
     async deniedRedeemCoinById(detail: RedeemTransactionEntity, userBalance: CoinEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
