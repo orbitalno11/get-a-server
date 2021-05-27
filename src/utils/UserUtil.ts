@@ -105,6 +105,17 @@ class UserUtil {
     }
 
     /**
+     * Check user already verify account
+     * @param userId
+     */
+    isVerified(userId: string): Promise<boolean> {
+        return launch(async () => {
+            const member = await this.userRepository.getUserWithRole(userId)
+            return member.verified
+        })
+    }
+
+    /**
      * Get basic user data (member, role)
      * @param userId
      */

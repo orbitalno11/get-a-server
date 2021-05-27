@@ -2,6 +2,7 @@ export enum CoinError {
     CAN_NOT_CREATE_EXCHANGE_RATE = "can-not-create-exchange-rate",
     CAN_NOT_CREATE_REDEEM = "can-not-create-redeem",
     CAN_NOT_GET_RATE = "can-not-get-coin-rate",
+    CAN_NOT_GET_REDEEM = "can-not-get-coin-redeem",
     CAN_NOT_FOUND_COIN_RATE = "can-not-found-coin-rate",
     CAN_NOT_FOUND_COIN_BALANCE = "can-not-found-coin-balance",
     CAN_NOT_FOUND_COIN_TRANSACTION = "can-not-found-transaction",

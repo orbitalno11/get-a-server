@@ -9,5 +9,6 @@ export enum CoinTransactionType {
     PAID = 3,
     REQUEST_REDEEM = 4,
     WAITING_FOR_APPROVE = 5,
-    REQUEST_REDEEM_APPROVED = 6
+    REQUEST_REDEEM_APPROVED = 6,
+    CANCEL_REDEEM = 7
 }

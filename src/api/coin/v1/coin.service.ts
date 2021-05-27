@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { HttpStatus, Injectable } from "@nestjs/common"
 import { Connection } from "typeorm"
 import { v4 as uuidV4 } from "uuid"
 import CoinRate from "../../../model/coin/CoinRate"
@@ -19,6 +19,9 @@ import { logger } from "../../../core/logging/Logger"
 import { FileStorageUtils } from "../../../utils/files/FileStorageUtils"
 import { ImageSize } from "../../../core/constant/ImageSize.enum"
 import { CoinRateType } from "../../../model/coin/data/CoinRateType"
+import FailureResponse from "../../../core/response/FailureResponse"
+import RedeemDetail from "../../../model/coin/RedeemDetail"
+import { RedeemTransactionToRedeemDetailMapper } from "../../../utils/mapper/coin/RedeemTransactionToRedeemDetail.mapper"
 
 /**
  * Class for coin api service
@@ -123,6 +126,10 @@ export class CoinService {
     async redeemCoin(data: RedeemForm, file: Express.Multer.File, user: User) {
         let fileUrl = ""
         try {
+            if (!await this.userUtil.isVerified(user.id)) {
+                throw ErrorExceptions.create("Your account is not verified", UserError.NOT_VERIFIED)
+            }
+
             const rate = await this.repository.getCoinRate(data.rateId)
             if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER) {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
@@ -166,5 +173,26 @@ export class CoinService {
      */
     private calculateAmountBahtTransfer(numberOfCoin: number, exchangeBaht: number, exchangeCoin: number): number {
         return (numberOfCoin * exchangeBaht) / exchangeCoin
+    }
+
+    /**
+     * Get redeem detail by id
+     * @param redeemId
+     * @param user
+     */
+    getRedeemCoinById(redeemId: number, user: User): Promise<RedeemDetail> {
+        return launch(async () => {
+            const detail = await this.repository.getRedeemCoinById(redeemId)
+
+            if (isEmpty(detail)) {
+                throw ErrorExceptions.create("Can not found detail", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
+            }
+
+            if (detail.member?.id !== user.id && user.role !== UserRole.ADMIN) {
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+
+            return new RedeemTransactionToRedeemDetailMapper().map(detail)
+        })
     }
 }

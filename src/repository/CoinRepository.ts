@@ -1,11 +1,11 @@
-import {Injectable} from "@nestjs/common"
-import {Connection} from "typeorm"
-import {logger} from "../core/logging/Logger"
-import {ExchangeRateEntity} from "../entity/coins/exchangeRate.entity"
-import {CoinRateType} from "../model/coin/data/CoinRateType"
+import { Injectable } from "@nestjs/common"
+import { Connection } from "typeorm"
+import { logger } from "../core/logging/Logger"
+import { ExchangeRateEntity } from "../entity/coins/exchangeRate.entity"
+import { CoinRateType } from "../model/coin/data/CoinRateType"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import CommonError from "../core/exceptions/constants/common-error.enum"
-import {UserRole} from "../core/constant/UserRole"
+import { UserRole } from "../core/constant/UserRole"
 import { PaymentError } from "../core/exceptions/constants/payment-error.enum"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
@@ -27,7 +27,7 @@ import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 @Injectable()
 class CoinRepository {
     constructor(
-        private readonly connection: Connection,
+        private readonly connection: Connection
     ) {
     }
 
@@ -62,13 +62,13 @@ class CoinRepository {
                 }
                 case UserRole.LEARNER: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
-                        .where("exchangeRate.type not like :type", {type: CoinRateType.TRANSFER})
+                        .where("exchangeRate.type not like :type", { type: CoinRateType.TRANSFER })
                         .andWhere("exchangeRate.endDate >= CURDATE()")
                         .getMany()
                 }
                 default: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
-                        .where("exchangeRate.type not like :type", {type: CoinRateType.TRANSFER})
+                        .where("exchangeRate.type not like :type", { type: CoinRateType.TRANSFER })
                         .andWhere("exchangeRate.endDate >= CURDATE()")
                         .getMany()
                 }
@@ -182,6 +182,24 @@ class CoinRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get bank detail", CoinError.CAN_NOT_GET_BANK)
+        }
+    }
+
+    /**
+     * Get redeem coin by id
+     * @param redeemId
+     */
+    async getRedeemCoinById(redeemId: number): Promise<RedeemTransactionEntity> {
+        try {
+            return await this.connection.createQueryBuilder(RedeemTransactionEntity, "transaction")
+                .leftJoinAndSelect("transaction.member", "member")
+                .leftJoinAndSelect("transaction.exchangeRate", "rate")
+                .leftJoinAndSelect("transaction.bank", "bank")
+                .where("transaction.id = :redeemId", { redeemId: redeemId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get redeem detail", CoinError.CAN_NOT_GET_REDEEM)
         }
     }
 }

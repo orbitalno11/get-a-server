@@ -3,6 +3,7 @@ import {
     Controller,
     Get,
     HttpStatus,
+    Param,
     Post,
     Query,
     UploadedFile,
@@ -23,12 +24,12 @@ import { launch } from "../../../core/common/launch"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
 import {
+    ApiBadRequestResponse,
     ApiBearerAuth,
     ApiBody,
     ApiConsumes,
-    ApiCreatedResponse,
+    ApiCreatedResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse,
     ApiOkResponse,
-    ApiQuery,
     ApiTags
 } from "@nestjs/swagger"
 import User from "../../../model/User"
@@ -40,6 +41,8 @@ import { isEmpty } from "../../../core/extension/CommonExtension"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
 import RedeemFormValidator from "../../../utils/validator/coin/RedeemFormValidator"
 import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
+import UserError from "../../../core/exceptions/constants/user-error.enum"
+import RedeemDetail from "../../../model/coin/RedeemDetail"
 
 /**
  * Class for coin api controller
@@ -129,7 +132,7 @@ export class CoinController {
     @ApiConsumes("multipart/form-data")
     @ApiImplicitFile({ name: "accountPic", required: true })
     @UseInterceptors(FileInterceptor("accountPic", new UploadFileUtils().uploadImageA4Vertical()))
-    redeemCoin(@Body() body: RedeemForm, @UploadedFile() accountPic: Express.Multer.File, @CurrentUser() currentUser: User) {
+    redeemCoin(@Body() body: RedeemForm, @UploadedFile() accountPic: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
             const data = RedeemForm.createFromBody(body)
             const validator = new RedeemFormValidator(data)
@@ -145,6 +148,34 @@ export class CoinController {
             await this.service.redeemCoin(data, accountPic, currentUser)
 
             return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Get redeem detail by id
+     * @param redeemId
+     * @param currentUser
+     */
+    @Get("redeem/:id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "redeem detail", type: RedeemDetail })
+    @ApiBadRequestResponse({ description: "invalid request data" })
+    @ApiForbiddenResponse({ description: "do not have permission" })
+    @ApiInternalServerErrorResponse({ description: "Can not found detail" })
+    @ApiInternalServerErrorResponse({ description: "Can not get redeem detail" })
+    getRedeemCoin(@Param("id") redeemId: string, @CurrentUser() currentUser: User): Promise<IResponse<RedeemDetail>> {
+        return launch(async () => {
+            if (!redeemId?.isSafeNotBlank() || !redeemId?.isNumber()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            if (currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.TUTOR) {
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+
+            const detail = await this.service.getRedeemCoinById(redeemId.toNumber(), currentUser)
+
+            return SuccessResponse.create(detail)
         })
     }
 }
