@@ -202,6 +202,21 @@ class CoinRepository {
             throw ErrorExceptions.create("Can not get redeem detail", CoinError.CAN_NOT_GET_REDEEM)
         }
     }
+
+    async getRedeemCoinList(status: number): Promise<Array<RedeemTransactionEntity>> {
+        try {
+            return await this.connection.createQueryBuilder(RedeemTransactionEntity, "transaction")
+                .leftJoinAndSelect("transaction.member", "member")
+                .leftJoinAndSelect("transaction.exchangeRate", "rate")
+                .leftJoinAndSelect("transaction.bank", "bank")
+                .where("transaction.requestStatus = :status", { status: status })
+                .orderBy("transaction.requestDate", "ASC")
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get redeem detail", CoinError.CAN_NOT_GET_REDEEM)
+        }
+    }
 }
 
 export default CoinRepository

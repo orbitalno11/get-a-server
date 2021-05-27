@@ -22,6 +22,7 @@ import { CoinRateType } from "../../../model/coin/data/CoinRateType"
 import FailureResponse from "../../../core/response/FailureResponse"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
 import { RedeemTransactionToRedeemDetailMapper } from "../../../utils/mapper/coin/RedeemTransactionToRedeemDetail.mapper"
+import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
 
 /**
  * Class for coin api service
@@ -193,6 +194,17 @@ export class CoinService {
             }
 
             return new RedeemTransactionToRedeemDetailMapper().map(detail)
+        })
+    }
+
+    /**
+     * Get redeem detail list
+     * @param status
+     */
+    getRedeemCoinList(status: number =  CoinTransactionType.REQUEST_REDEEM): Promise<Array<RedeemDetail>> {
+        return launch(async () => {
+            const redeemList = await this.repository.getRedeemCoinList(status)
+            return isNotEmpty(redeemList) ? new RedeemTransactionToRedeemDetailMapper().mapList(redeemList) : Array()
         })
     }
 }

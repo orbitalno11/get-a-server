@@ -43,6 +43,7 @@ import RedeemFormValidator from "../../../utils/validator/coin/RedeemFormValidat
 import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
+import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
 
 /**
  * Class for coin api controller
@@ -148,6 +149,27 @@ export class CoinController {
             await this.service.redeemCoin(data, accountPic, currentUser)
 
             return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Get redeem list
+     * @param status
+     */
+    @Get("redeem")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "redeem detail", type: RedeemDetail, isArray: true })
+    @ApiBadRequestResponse({ description: "invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not get redeem detail" })
+    getRedeemList(@Query("status") status: string): Promise<IResponse<Array<RedeemDetail>>> {
+        return launch(async () => {
+            if (status?.isSafeNotBlank() && !status?.isNumber()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const redeemList = await this.service.getRedeemCoinList(status?.toNumber())
+
+            return SuccessResponse.create(redeemList)
         })
     }
 

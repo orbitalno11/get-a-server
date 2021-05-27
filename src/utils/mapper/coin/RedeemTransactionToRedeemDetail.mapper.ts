@@ -25,6 +25,10 @@ export class RedeemTransactionToRedeemDetailMapper implements Mapper<RedeemTrans
         return detail
     }
 
+    mapList(from: Array<RedeemTransactionEntity>): Array<RedeemDetail> {
+        return from.map((item) => this.map(item))
+    }
+
     private mapBank(from: BankEntity): Bank {
         const bank = new Bank()
         bank.id = from.id
