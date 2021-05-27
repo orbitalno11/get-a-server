@@ -127,6 +127,18 @@ export class FileStorageUtils {
     }
 
     /**
+     * Delete file
+     * @param param
+     */
+    async deleteFile(param: string) {
+        if (param.includes(DIGITAL_OCEAN_SPACE_ENDPOINT) || param.includes(DIGITAL_OCEAN_SPACE_CDN_ENDPOINT)) {
+            await this.deleteFileFromUrl(param)
+        } else {
+            await this.deleteFileFromPath(param)
+        }
+    }
+
+    /**
      * delete file form file url
      * @param url
      */
