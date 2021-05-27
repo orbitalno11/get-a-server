@@ -71,12 +71,12 @@ class ClipRepository {
      */
     async getClipById(clipId: string): Promise<ClipEntity> {
         try {
-            return this.connection.getRepository(ClipEntity)
-                .findOne({
-                    where: {
-                        id: clipId
-                    }
-                })
+            return this.connection.createQueryBuilder(ClipEntity, "clip")
+                .leftJoinAndSelect("clip.owner", "owner")
+                .leftJoinAndSelect("owner.member", "member")
+                .leftJoinAndSelect("clip.onlineCourse", "course")
+                .where("clip.id like :clipId", { clipId: clipId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
