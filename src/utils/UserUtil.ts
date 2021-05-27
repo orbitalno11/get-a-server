@@ -177,7 +177,7 @@ class UserUtil {
     isCourseOwner(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.getCourseOwn(TutorProfile.getTutorId(userId), courseId, isOfflineCourse)
+                const course = await this.getCourseOwn(userId, courseId, isOfflineCourse)
                 return isNotEmpty(course)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
