@@ -17,11 +17,6 @@ import { launch } from "../../../core/common/launch"
 import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEntityToClipDetail.mapper"
 import ClipDetail from "../../../model/clip/ClipDetail"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
-import CoinTransaction from "../../../model/coin/CoinTransaction"
-import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
-import { MemberEntity } from "../../../entity/member/member.entitiy"
-import { LearnerEntity } from "../../../entity/profile/learner.entity"
-import LearnerProfile from "../../../model/profile/LearnerProfile"
 import TutorProfile from "../../../model/profile/TutorProfile"
 
 /**
@@ -167,27 +162,25 @@ export class ClipService {
             }
 
             const clip = await this.repository.getClipById(clipId)
-            const userCoinBalance = await this.userUtil.getCoinBalance(user.id)
+            const buyerBalance = await this.userUtil.getCoinBalance(user.id)
 
-            if (clip.cost > userCoinBalance.amount) {
+            if (clip.cost > buyerBalance.amount) {
                 throw ErrorExceptions.create("Your coin is not enough", CoinError.NOT_ENOUGH)
             }
 
-            const transactionId = "GET-A" + uuid()
+            const buyerTransactionId = "GET-A" + uuid()
+            const tutorTransactionId = "GET-A" + uuid()
 
-            const coinTransaction = new CoinTransaction()
-            coinTransaction.transactionId = transactionId
-            coinTransaction.transactionDate = new Date()
-            coinTransaction.transactionType = CoinTransactionType.PAID
-            coinTransaction.numberOfCoin = clip.cost
+            const tutorBalance = await this.userUtil.getCoinBalance(clip.owner?.member?.id)
 
-            const member = new MemberEntity()
-            member.id = user.id
-
-            const learner = new LearnerEntity()
-            learner.id = LearnerProfile.getLearnerId(user.id)
-
-            await this.repository.buyClip(clip, learner, member, coinTransaction, userCoinBalance)
+            await this.repository.buyClip(
+                buyerTransactionId,
+                tutorTransactionId,
+                user.id,
+                clip,
+                buyerBalance,
+                tutorBalance
+            )
         })
     }
 
