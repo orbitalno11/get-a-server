@@ -24,9 +24,7 @@ import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import User from "../../../model/User"
 import SuccessResponse from "../../../core/response/SuccessResponse"
 import {
-    ApiBadRequestResponse,
-    ApiBody,
-    ApiConsumes,
+    ApiBadRequestResponse, ApiBearerAuth, ApiConsumes,
     ApiCreatedResponse,
     ApiHeader, ApiInternalServerErrorResponse, ApiOkResponse,
     ApiResponse,
@@ -34,6 +32,7 @@ import {
 } from "@nestjs/swagger"
 import ClipDetail from "../../../model/clip/ClipDetail"
 import IResponse from "../../../core/response/IResponse"
+import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 
 /**
  * Controller class for "v1/clip" API
@@ -55,11 +54,12 @@ export class ClipController {
      */
     @Post("create")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
-    @ApiHeader({
-        name: "Authorization",
-        description: "get-a tutor token"
-    })
+    @ApiBearerAuth()
+    @ApiConsumes("multipart/form-data")
+    @ApiImplicitFile({ name: "video", required: true })
     @ApiCreatedResponse({ description: "clip id" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiBadRequestResponse({ description: "Invalid video" })
     createClip(
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
@@ -83,34 +83,6 @@ export class ClipController {
             const clipId = await this.service.createClip(data, file, currentUser)
 
             return SuccessResponse.create(clipId)
-        })
-    }
-
-    /**
-     * Buy clip
-     * @param clipId
-     * @param currentUser
-     */
-    @Get(":id/buy")
-    @ApiHeader({
-        name: "Authorization",
-        description: "get-a learner token"
-    })
-    @ApiOkResponse({ description: "Successful" })
-    @ApiBadRequestResponse({ description: "Invalid clip id" })
-    @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
-    @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
-    @ApiInternalServerErrorResponse({ description: "Cna not buy clip" })
-    buyClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
-        return launch(async () => {
-            if (!clipId?.isSafeNotBlank()) {
-                logger.error("Invalid clip id")
-                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
-            }
-
-            await this.service.buyClip(clipId, currentUser)
-
-            return SuccessResponse.create("Successful")
         })
     }
 
@@ -143,10 +115,9 @@ export class ClipController {
      */
     @Put(":id")
     @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
-    @ApiHeader({
-        name: "Authorization",
-        description: "get-a tutor token"
-    })
+    @ApiBearerAuth()
+    @ApiConsumes("multipart/form-data")
+    @ApiImplicitFile({ name: "video" })
     @ApiCreatedResponse({ description: "clip id" })
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiBadRequestResponse({ description: "Invalid request data" })
@@ -184,10 +155,7 @@ export class ClipController {
      * @param currentUser
      */
     @Delete(":id")
-    @ApiHeader({
-        name: "Authorization",
-        description: "get-a tutor token"
-    })
+    @ApiBearerAuth()
     @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "Invalid clip id" })
     @ApiInternalServerErrorResponse({ description: "Can not found clip data" })
@@ -201,6 +169,31 @@ export class ClipController {
             }
 
             await this.service.deleteClip(clipId, currentUser)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Buy clip
+     * @param clipId
+     * @param currentUser
+     */
+    @Get(":id/buy")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid clip id" })
+    @ApiInternalServerErrorResponse({ description: "Your already buy this clip" })
+    @ApiInternalServerErrorResponse({ description: "Your coin is not enough" })
+    @ApiInternalServerErrorResponse({ description: "Cna not buy clip" })
+    buyClip(@Param("id") clipId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!clipId?.isSafeNotBlank()) {
+                logger.error("Invalid clip id")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.buyClip(clipId, currentUser)
 
             return SuccessResponse.create("Successful")
         })

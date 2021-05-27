@@ -1,6 +1,8 @@
 import Mapper from "../../../core/common/Mapper"
 import { ClipEntity } from "../../../entity/course/clip/Clip.entity"
 import ClipDetail from "../../../model/clip/ClipDetail"
+import { TutorEntityToPublicProfileMapper } from "../tutor/TutorEntityToPublicProfile.mapper"
+import { OnlineCourseToCourseCardMapper } from "../course/online/OnlineCourseToCourseCard.mapper"
 
 export class ClipEntityToClipDetailMapper implements Mapper<ClipEntity, ClipDetail> {
     map(from: ClipEntity): ClipDetail {
@@ -10,6 +12,8 @@ export class ClipEntityToClipDetailMapper implements Mapper<ClipEntity, ClipDeta
         detail.description = from.description
         detail.cost = from.cost
         detail.clipUrl = from.url
+        detail.owner = from.owner ? TutorEntityToPublicProfileMapper.getTutorNameCard(from.owner) : undefined
+        detail.course = from.onlineCourse ? new OnlineCourseToCourseCardMapper().map(from.onlineCourse) : undefined
         return detail
     }
 
