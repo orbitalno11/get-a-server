@@ -200,4 +200,47 @@ export class CoinController {
             return SuccessResponse.create(detail)
         })
     }
+
+    /**
+     * Cancel redeem request
+     * @param redeemId
+     * @param currentUser
+     */
+    @Get("redeem/:id/cancel")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiForbiddenResponse({ description: "Do not have a permission" })
+    @ApiInternalServerErrorResponse({ description: "Can not cancel" })
+    @ApiInternalServerErrorResponse({ description: "Can not cancel redeem request" })
+    cancelRedeemRequest(@Param("id") redeemId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!redeemId?.isSafeNotBlank() || !redeemId?.isNumber()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.cancelRedeemRequestById(redeemId.toNumber(), currentUser)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    @Get("redeem/:id/denied")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiForbiddenResponse({ description: "Coin rate is invalid" })
+    @ApiInternalServerErrorResponse({ description: "Can not denied request" })
+    @ApiInternalServerErrorResponse({ description: "Can not denied redeem request" })
+    deniedRedeemRequest(@Param("id") redeemId: string, @Query("user") userId: string): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!redeemId?.isSafeNotBlank() || !redeemId?.isNumber() || !userId?.isSafeNotBlank()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.deniedRedeemRequestById(redeemId.toNumber(), userId)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
 }

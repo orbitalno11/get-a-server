@@ -13,4 +13,6 @@ export enum CoinError {
     INVALID_AMOUNT = "invalid-amount",
     CAN_NOT_FOUND_BANK = "can-not-found-bank",
     CAN_NOT_GET_BANK = "can-not-get-bank",
+    CAN_NOT_CANCEL_REDEEM_REQUEST = "can-not-cancel-redeem-request",
+    CAN_NOT_DENIED_REDEEM_REQUEST = "can-not-denied-redeem-request"
 }

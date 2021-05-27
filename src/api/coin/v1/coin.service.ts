@@ -201,10 +201,56 @@ export class CoinService {
      * Get redeem detail list
      * @param status
      */
-    getRedeemCoinList(status: number =  CoinTransactionType.REQUEST_REDEEM): Promise<Array<RedeemDetail>> {
+    getRedeemCoinList(status: number =  CoinTransactionType.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
         return launch(async () => {
             const redeemList = await this.repository.getRedeemCoinList(status)
             return isNotEmpty(redeemList) ? new RedeemTransactionToRedeemDetailMapper().mapList(redeemList) : Array()
+        })
+    }
+
+    /**
+     * Cancel redeem request
+     * @param redeemId
+     * @param user
+     */
+    cancelRedeemRequestById(redeemId: number, user: User) {
+        return launch(async () => {
+            const detail = await this.repository.getRedeemCoinById(redeemId)
+
+            if (user.id !== detail.member?.id) {
+                throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
+            }
+
+            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+                throw ErrorExceptions.create("Can not cancel", CoinError.CAN_NOT_CANCEL_REDEEM_REQUEST)
+            }
+
+            const userBalance = await this.userUtil.getCoinBalance(user.id)
+
+            await this.repository.cancelRedeemCoinById(detail, userBalance)
+        })
+    }
+
+    /**
+     * Denied redeem request
+     * @param redeemId
+     * @param userId
+     */
+    deniedRedeemRequestById(redeemId: number, userId: string) {
+        return launch(async () => {
+            const detail = await this.repository.getRedeemCoinById(redeemId)
+
+            if (userId !== detail.member?.id) {
+                throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST)
+            }
+
+            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+                throw ErrorExceptions.create("Can not denied request", CoinError.CAN_NOT_DENIED_REDEEM_REQUEST)
+            }
+
+            const userBalance = await this.userUtil.getCoinBalance(userId)
+
+            await this.repository.deniedRedeemCoinById(detail, userBalance)
         })
     }
 }

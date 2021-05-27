@@ -154,9 +154,10 @@ class CoinRepository {
             redeem.amount = data.amount
             redeem.amountCoin = data.numberOfCoin
             redeem.requestDate = new Date()
-            redeem.requestStatus = CoinTransactionType.REQUEST_REDEEM
+            redeem.requestStatus = CoinTransactionType.REQUEST_REDEEM_SENT
 
             balance.amount = balance.amount - data.numberOfCoin
+            balance.updated = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
@@ -203,6 +204,10 @@ class CoinRepository {
         }
     }
 
+    /**
+     * Get redeem coin list
+     * @param status
+     */
     async getRedeemCoinList(status: number): Promise<Array<RedeemTransactionEntity>> {
         try {
             return await this.connection.createQueryBuilder(RedeemTransactionEntity, "transaction")
@@ -215,6 +220,57 @@ class CoinRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get redeem detail", CoinError.CAN_NOT_GET_REDEEM)
+        }
+    }
+
+    /**
+     * Cancel redeem request
+     * @param detail
+     * @param userBalance
+     */
+    async cancelRedeemCoinById(detail: RedeemTransactionEntity, userBalance: CoinEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            userBalance.amount = userBalance.amount + detail.amountCoin
+
+            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_CANCELED
+            detail.transferDate = new Date()
+            detail.approveDate = new Date()
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(detail)
+            await queryRunner.manager.save(userBalance)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not cancel redeem request", CoinError.CAN_NOT_CANCEL_REDEEM_REQUEST)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async deniedRedeemCoinById(detail: RedeemTransactionEntity, userBalance: CoinEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            userBalance.amount = userBalance.amount + detail.amountCoin
+
+            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_DENIED
+            detail.transferDate = new Date()
+            detail.approveDate = new Date()
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(detail)
+            await queryRunner.manager.save(userBalance)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not denied redeem request", CoinError.CAN_NOT_DENIED_REDEEM_REQUEST)
+        } finally {
+            await queryRunner.release()
         }
     }
 }

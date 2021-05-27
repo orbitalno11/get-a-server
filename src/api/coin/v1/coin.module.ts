@@ -25,18 +25,19 @@ export class CoinModule implements NestModule {
             .exclude(
                 { path: "v1/coin/rates", method: RequestMethod.GET },
                 { path: "v1/coin/redeem", method: RequestMethod.POST },
-                { path: "v1/coin/redeem/:id", method: RequestMethod.GET }
+                { path: "v1/coin/redeem/:id", method: RequestMethod.GET },
+                { path: "v1/coin/redeem/:id/cancel", method: RequestMethod.GET }
             )
             .forRoutes(CoinController)
+            .apply(TutorAuthenticated)
+            .forRoutes(
+                { path: "v1/coin/redeem", method: RequestMethod.POST },
+                { path: "v1/coin/redeem/:id/cancel", method: RequestMethod.GET }
+            )
             .apply(AuthenticatedRequest)
             .forRoutes(
                 { path: "v1/coin/rates", method: RequestMethod.GET },
-                { path: "v1/coin/redeem", method: RequestMethod.POST },
                 { path: "v1/coin/redeem/:id", method: RequestMethod.GET }
-            )
-            .apply(TutorAuthenticated)
-            .forRoutes(
-                { path: "v1/coin/redeem", method: RequestMethod.POST }
             )
     }
 }
