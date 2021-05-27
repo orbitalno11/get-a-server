@@ -58,6 +58,31 @@ export class CoinController {
     }
 
     /**
+     * Buy coin
+     * @param currentUserId
+     * @param coinRateId
+     */
+    @Post()
+    @ApiBearerAuth()
+    @ApiBody({
+        schema: {
+            type: "object",
+            properties: {
+                rate: {
+                    type: "number"
+                }
+            }
+        }
+    })
+    @ApiCreatedResponse({ description: "transaction no." })
+    buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
+        return launch(async () => {
+            const result = await this.service.buyCoin(currentUserId, coinRateId)
+            return SuccessResponse.create(result)
+        })
+    }
+
+    /**
      * Create exchange rate
      * @param body
      */
@@ -93,31 +118,6 @@ export class CoinController {
         return launch(async () => {
             const role = Number(userRole).isSafeNumber() ? Number(userRole) : UserRole.VISITOR
             const result = await this.service.getCoinRateList(role, currentUser)
-            return SuccessResponse.create(result)
-        })
-    }
-
-    /**
-     * Buy coin
-     * @param currentUserId
-     * @param coinRateId
-     */
-    @Post()
-    @ApiBearerAuth()
-    @ApiBody({
-        schema: {
-            type: "object",
-            properties: {
-                rate: {
-                    type: "number"
-                }
-            }
-        }
-    })
-    @ApiCreatedResponse({ description: "transaction no." })
-    buyCoin(@CurrentUser("id") currentUserId: string, @Body("rate") coinRateId: number): Promise<IResponse<string>> {
-        return launch(async () => {
-            const result = await this.service.buyCoin(currentUserId, coinRateId)
             return SuccessResponse.create(result)
         })
     }
@@ -202,6 +202,29 @@ export class CoinController {
     }
 
     /**
+     * Approved redeem request
+     * @param redeemId
+     */
+    @Get("redeem/:id/approved")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not found redeem" })
+    @ApiInternalServerErrorResponse({ description: "Can not approved" })
+    @ApiInternalServerErrorResponse({ description: "Can not approved redeem request" })
+    approvedRedeemRequest(@Param("id") redeemId: string): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!redeemId?.isSafeNotBlank() || !redeemId?.isNumber()) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.approvedRedeemRequest(redeemId.toNumber())
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
      * Cancel redeem request
      * @param redeemId
      * @param currentUser
@@ -211,6 +234,7 @@ export class CoinController {
     @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "Invalid request data" })
     @ApiForbiddenResponse({ description: "Do not have a permission" })
+    @ApiInternalServerErrorResponse({ description: "Can not found redeem" })
     @ApiInternalServerErrorResponse({ description: "Can not cancel" })
     @ApiInternalServerErrorResponse({ description: "Can not cancel redeem request" })
     cancelRedeemRequest(@Param("id") redeemId: string, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
@@ -235,6 +259,7 @@ export class CoinController {
     @ApiOkResponse({ description: "Successful" })
     @ApiBadRequestResponse({ description: "Invalid request data" })
     @ApiForbiddenResponse({ description: "Coin rate is invalid" })
+    @ApiInternalServerErrorResponse({ description: "Can not found redeem" })
     @ApiInternalServerErrorResponse({ description: "Can not denied request" })
     @ApiInternalServerErrorResponse({ description: "Can not denied redeem request" })
     deniedRedeemRequest(@Param("id") redeemId: string, @Query("user") userId: string): Promise<IResponse<string>> {

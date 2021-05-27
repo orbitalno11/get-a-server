@@ -217,6 +217,10 @@ export class CoinService {
         return launch(async () => {
             const detail = await this.repository.getRedeemCoinById(redeemId)
 
+            if (isEmpty(detail)) {
+                throw ErrorExceptions.create("Can not found redeem", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
+            }
+
             if (user.id !== detail.member?.id) {
                 throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
             }
@@ -240,6 +244,10 @@ export class CoinService {
         return launch(async () => {
             const detail = await this.repository.getRedeemCoinById(redeemId)
 
+            if (isEmpty(detail)) {
+                throw ErrorExceptions.create("Can not found redeem", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
+            }
+
             if (userId !== detail.member?.id) {
                 throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST)
             }
@@ -251,6 +259,26 @@ export class CoinService {
             const userBalance = await this.userUtil.getCoinBalance(userId)
 
             await this.repository.deniedRedeemCoinById(detail, userBalance)
+        })
+    }
+
+    /**
+     * Approved redeem request
+     * @param redeemId
+     */
+    approvedRedeemRequest(redeemId: number) {
+        return launch(async () => {
+            const detail = await this.repository.getRedeemCoinById(redeemId)
+
+            if (isEmpty(detail)) {
+                throw ErrorExceptions.create("Can not found redeem", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
+            }
+
+            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+                throw ErrorExceptions.create("Can not approved", CoinError.CAN_NOT_APPROVED_REDEEM_REQUEST)
+            }
+
+            await this.repository.approvedRedeemCoinById(detail)
         })
     }
 }

@@ -278,6 +278,31 @@ class CoinRepository {
             await queryRunner.release()
         }
     }
+
+    /**
+     * Approved redeem request
+     * @param detail
+     */
+    async approvedRedeemCoinById(detail: RedeemTransactionEntity) {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_APPROVED
+            detail.transferDate = new Date()
+            detail.approveDate = new Date()
+
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.save(detail)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not approved redeem request", CoinError.CAN_NOT_APPROVED_REDEEM_REQUEST)
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
 }
 
 export default CoinRepository
