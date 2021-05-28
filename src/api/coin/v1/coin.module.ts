@@ -24,6 +24,7 @@ export class CoinModule implements NestModule {
             .apply(AdminAuthenticated)
             .exclude(
                 { path: "v1/coin/rates", method: RequestMethod.GET },
+                { path: "v1/coin/rate/:id", method: RequestMethod.GET },
                 { path: "v1/coin/redeem", method: RequestMethod.POST },
                 { path: "v1/coin/redeem/:id", method: RequestMethod.GET },
                 { path: "v1/coin/redeem/:id/cancel", method: RequestMethod.GET }

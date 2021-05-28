@@ -43,7 +43,6 @@ import RedeemFormValidator from "../../../utils/validator/coin/RedeemFormValidat
 import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
-import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
 
 /**
  * Class for coin api controller
@@ -103,6 +102,26 @@ export class CoinController {
             await this.service.createCoinRate(data)
 
             return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Get coin rate by rate id
+     * @param rateId
+     */
+    @Get("rate/:id")
+    @ApiOkResponse({ description: "coin rate", type: CoinRate })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not get coin rate" })
+    getCoinRate(@Param("id") rateId: string): Promise<IResponse<CoinRate>> {
+        return launch(async () => {
+            if (!rateId?.isSafeNotBlank() || (rateId?.isSafeNotBlank() && !rateId?.isNumber())) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const rate = await this.service.getCoinRateById(rateId.toNumber())
+
+            return SuccessResponse.create(rate)
         })
     }
 

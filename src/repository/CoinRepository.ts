@@ -18,7 +18,7 @@ import RedeemForm from "../model/coin/RedeemForm"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import User from "../model/User"
 import { BankEntity } from "../entity/common/Bank.entity"
-import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
+import { CoinRedeemStatus, CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 
 /**
  * Repository for "v1/coin"
@@ -42,6 +42,19 @@ class CoinRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not create exchange rate", CoinError.CAN_NOT_CREATE_EXCHANGE_RATE)
+        }
+    }
+
+    /**
+     * Get coin rate by rate id
+     * @param rateId
+     */
+    async getCoinRateById(rateId: number): Promise<ExchangeRateEntity> {
+        try {
+            return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get coin rate", CoinError.CAN_NOT_GET_RATE)
         }
     }
 
@@ -154,7 +167,7 @@ class CoinRepository {
             redeem.amount = data.amount
             redeem.amountCoin = data.numberOfCoin
             redeem.requestDate = new Date()
-            redeem.requestStatus = CoinTransactionType.REQUEST_REDEEM_SENT
+            redeem.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_SENT
 
             balance.amount = balance.amount - data.numberOfCoin
             balance.updated = new Date()
@@ -233,7 +246,7 @@ class CoinRepository {
         try {
             userBalance.amount = userBalance.amount + detail.amountCoin
 
-            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_CANCELED
+            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_CANCELED
             detail.transferDate = new Date()
             detail.approveDate = new Date()
 
@@ -261,7 +274,7 @@ class CoinRepository {
         try {
             userBalance.amount = userBalance.amount + detail.amountCoin
 
-            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_DENIED
+            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_DENIED
             detail.transferDate = new Date()
             detail.approveDate = new Date()
 
@@ -286,7 +299,7 @@ class CoinRepository {
     async approvedRedeemCoinById(detail: RedeemTransactionEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            detail.requestStatus = CoinTransactionType.REQUEST_REDEEM_APPROVED
+            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_APPROVED
             detail.transferDate = new Date()
             detail.approveDate = new Date()
 

@@ -22,7 +22,7 @@ import { CoinRateType } from "../../../model/coin/data/CoinRateType"
 import FailureResponse from "../../../core/response/FailureResponse"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
 import { RedeemTransactionToRedeemDetailMapper } from "../../../utils/mapper/coin/RedeemTransactionToRedeemDetail.mapper"
-import { CoinTransactionType } from "../../../model/coin/data/CoinTransaction.enum"
+import { CoinRedeemStatus } from "../../../model/coin/data/CoinTransaction.enum"
 
 /**
  * Class for coin api service
@@ -42,9 +42,20 @@ export class CoinService {
      * Create an exchange coin rate data
      * @param form
      */
-    async createCoinRate(form: CoinRate) {
+    createCoinRate(form: CoinRate) {
         return launch(async () => {
             await this.repository.createCoinRate(form)
+        })
+    }
+
+    /**
+     * Get coin rate by rate id
+     * @param rateId
+     */
+    getCoinRateById(rateId: number): Promise<CoinRate> {
+        return launch(async () => {
+            const rate = await this.repository.getCoinRateById(rateId)
+            return ExchangeRateEntityToCoinRateMapper(rate)
         })
     }
 
@@ -53,7 +64,7 @@ export class CoinService {
      * @param userRole
      * @param user
      */
-    async getCoinRateList(userRole: UserRole, user?: User): Promise<CoinRate[]> {
+    getCoinRateList(userRole: UserRole, user?: User): Promise<CoinRate[]> {
         return launch(async () => {
             if (userRole === UserRole.ADMIN && user?.role !== UserRole.ADMIN) {
                 throw ErrorExceptions.create("Do not have permission", UserError.DO_NOT_HAVE_PERMISSION)
@@ -69,7 +80,7 @@ export class CoinService {
      * @param userId
      * @param rateId
      */
-    async buyCoin(userId: string, rateId: number): Promise<string> {
+    buyCoin(userId: string, rateId: number): Promise<string> {
         return launch(async () => {
             const transactionId = "GET-A" + uuidV4()
             const rateDetail = await this.repository.getCoinRate(rateId)
@@ -201,7 +212,7 @@ export class CoinService {
      * Get redeem detail list
      * @param status
      */
-    getRedeemCoinList(status: number =  CoinTransactionType.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
+    getRedeemCoinList(status: number =  CoinRedeemStatus.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
         return launch(async () => {
             const redeemList = await this.repository.getRedeemCoinList(status)
             return isNotEmpty(redeemList) ? new RedeemTransactionToRedeemDetailMapper().mapList(redeemList) : Array()
@@ -225,7 +236,7 @@ export class CoinService {
                 throw FailureResponse.create(UserError.DO_NOT_HAVE_PERMISSION, HttpStatus.FORBIDDEN)
             }
 
-            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+            if (detail.requestStatus !== CoinRedeemStatus.REQUEST_REDEEM_SENT) {
                 throw ErrorExceptions.create("Can not cancel", CoinError.CAN_NOT_CANCEL_REDEEM_REQUEST)
             }
 
@@ -252,7 +263,7 @@ export class CoinService {
                 throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST)
             }
 
-            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+            if (detail.requestStatus !== CoinRedeemStatus.REQUEST_REDEEM_SENT) {
                 throw ErrorExceptions.create("Can not denied request", CoinError.CAN_NOT_DENIED_REDEEM_REQUEST)
             }
 
@@ -274,7 +285,7 @@ export class CoinService {
                 throw ErrorExceptions.create("Can not found redeem", CoinError.CAN_NOT_FOUND_COIN_REDEEM_TRANSACTION)
             }
 
-            if (detail.requestStatus !== CoinTransactionType.REQUEST_REDEEM_SENT) {
+            if (detail.requestStatus !== CoinRedeemStatus.REQUEST_REDEEM_SENT) {
                 throw ErrorExceptions.create("Can not approved", CoinError.CAN_NOT_APPROVED_REDEEM_REQUEST)
             }
 
