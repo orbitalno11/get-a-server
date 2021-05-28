@@ -8,6 +8,7 @@ import { PaymentModule } from "../../../payment/payment.module"
 import AdminAuthenticated from "../../../middleware/auth/AdminAuthenticated.middleware"
 import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
+import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
 
 /**
  * Class for "v1/coin" module
@@ -23,6 +24,7 @@ export class CoinModule implements NestModule {
         consumer
             .apply(AdminAuthenticated)
             .exclude(
+                { path: "v1/coin/buy", method: RequestMethod.POST },
                 { path: "v1/coin/rates", method: RequestMethod.GET },
                 { path: "v1/coin/rate/:id", method: RequestMethod.GET },
                 { path: "v1/coin/redeem", method: RequestMethod.POST },
@@ -34,6 +36,10 @@ export class CoinModule implements NestModule {
             .forRoutes(
                 { path: "v1/coin/redeem", method: RequestMethod.POST },
                 { path: "v1/coin/redeem/:id/cancel", method: RequestMethod.GET }
+            )
+            .apply(LearnerAuthenticated)
+            .forRoutes(
+                { path: "v1/coin/buy", method: RequestMethod.POST }
             )
             .apply(AuthenticatedRequest)
             .forRoutes(

@@ -23,6 +23,7 @@ import FailureResponse from "../../../core/response/FailureResponse"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
 import { RedeemTransactionToRedeemDetailMapper } from "../../../utils/mapper/coin/RedeemTransactionToRedeemDetail.mapper"
 import { CoinRedeemStatus } from "../../../model/coin/data/CoinTransaction.enum"
+import { ExchangeRateEntity } from "../../../entity/coins/exchangeRate.entity"
 
 /**
  * Class for coin api service
@@ -76,6 +77,57 @@ export class CoinService {
     }
 
     /**
+     * Edit coin rate
+     * @param rateId
+     * @param data
+     */
+    editCoinRate(rateId: number, data: CoinRate) {
+        return launch(async () => {
+            const rate = await this.editableRate(rateId)
+            await this.repository.editCoinRate(rate, data)
+        })
+    }
+
+    /**
+     * Delete coin rate
+     * @param rateId
+     */
+    deleteCoinRate(rateId: number) {
+        return launch(async () => {
+            const rate = await this.editableRate(rateId)
+            await this.repository.deleteCoinRate(rate)
+        })
+    }
+
+    /**
+     * Get editable coin rate
+     * @param rateId
+     * @private
+     */
+    private async editableRate(rateId: number): Promise<ExchangeRateEntity> {
+        return launch(async () => {
+            const rate = await this.repository.getCoinRateById(rateId)
+
+            if (isEmpty(rate)) {
+                throw ErrorExceptions.create("Can not found rate detail", CoinError.CAN_NOT_FOUND_COIN_RATE)
+            }
+
+            let alreadyUsed
+            if (rate.type === CoinRateType.TRANSFER) {
+                alreadyUsed = await this.repository.checkUsedTransferRate(rateId)
+            } else {
+                alreadyUsed = await this.repository.checkUsedSellRate(rateId)
+            }
+
+            if (!alreadyUsed) {
+                return rate
+            } else {
+                throw ErrorExceptions.create("Coin rate already used can not delete", CoinError.ALREADY_USED)
+            }
+        })
+    }
+
+    /**
      * Buy coin from exchange rate id
      * @param userId
      * @param rateId
@@ -83,7 +135,7 @@ export class CoinService {
     buyCoin(userId: string, rateId: number): Promise<string> {
         return launch(async () => {
             const transactionId = "GET-A" + uuidV4()
-            const rateDetail = await this.repository.getCoinRate(rateId)
+            const rateDetail = await this.repository.getCoinRateById(rateId)
 
             if (isNotEmpty(rateDetail)) {
                 const orderDetail = new CoinPayment()
@@ -142,7 +194,7 @@ export class CoinService {
                 throw ErrorExceptions.create("Your account is not verified", UserError.NOT_VERIFIED)
             }
 
-            const rate = await this.repository.getCoinRate(data.rateId)
+            const rate = await this.repository.getCoinRateById(data.rateId)
             if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER) {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
             }

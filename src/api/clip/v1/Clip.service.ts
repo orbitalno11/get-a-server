@@ -163,7 +163,7 @@ export class ClipService {
             const bought = await this.userUtil.isBoughtClip(user.id, clipId)
 
             if (bought) {
-                throw ErrorExceptions.create("Your already buy this clip", CoinError.ALREADY_BUY)
+                throw ErrorExceptions.create("Your already buy this clip", ClipError.ALREADY_BUY)
             }
 
             const clip = await this.repository.getClipById(clipId)

@@ -1,10 +1,10 @@
 import {
     Body,
-    Controller,
+    Controller, Delete,
     Get,
     HttpStatus,
     Param,
-    Post,
+    Post, Put,
     Query,
     UploadedFile,
     UseFilters,
@@ -61,7 +61,7 @@ export class CoinController {
      * @param currentUserId
      * @param coinRateId
      */
-    @Post()
+    @Post("buy")
     @ApiBearerAuth()
     @ApiBody({
         schema: {
@@ -122,6 +122,65 @@ export class CoinController {
             const rate = await this.service.getCoinRateById(rateId.toNumber())
 
             return SuccessResponse.create(rate)
+        })
+    }
+
+    /**
+     * Edit coin rate
+     * @param rateId
+     * @param body
+     */
+    @Put("rate/:id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiBadRequestResponse({ description: "Invalid coin rate form" })
+    @ApiInternalServerErrorResponse({ description: "Can not found rate detail" })
+    @ApiInternalServerErrorResponse({ description: "Coin rate already used can not edit" })
+    @ApiInternalServerErrorResponse({ description: "Can not check coin rate" })
+    @ApiInternalServerErrorResponse({ description: "Can not edit exchange rate"})
+    editCoinRate(@Param("id") rateId: string, @Body() body: CoinRate): Promise<IResponse<string>>{
+        return launch(async () => {
+            if (!rateId?.isSafeNotBlank() || (rateId?.isSafeNotBlank() && !rateId?.isNumber())) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            const data = CoinRate.createFormBody(body)
+            const validator = new CreateCoinRateFormValidator(data)
+            const validate = validator.validate()
+
+            if (!validate.valid) {
+                logger.error("Coin rate data is invalid")
+                throw FailureResponse.create(CoinError.INVALID, HttpStatus.BAD_REQUEST, validate.error)
+            }
+
+            await this.service.editCoinRate(rateId.toNumber(), data)
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
+     * Delete coin rate by rate id
+     * @param rateId
+     */
+    @Delete("rate/:id")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not found rate detail" })
+    @ApiInternalServerErrorResponse({ description: "Coin rate already used can not delete" })
+    @ApiInternalServerErrorResponse({ description: "Can not check coin rate" })
+    @ApiInternalServerErrorResponse({ description: "Can not delete exchange rate"})
+    deleteCoinRate(@Param("id") rateId: string): Promise<IResponse<string>>{
+        return launch(async () => {
+            if (!rateId?.isSafeNotBlank() || (rateId?.isSafeNotBlank() && !rateId?.isNumber())) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.deleteCoinRate(rateId.toNumber())
+
+            return SuccessResponse.create("Successful")
         })
     }
 

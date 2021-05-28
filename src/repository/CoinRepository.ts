@@ -18,7 +18,8 @@ import RedeemForm from "../model/coin/RedeemForm"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import User from "../model/User"
 import { BankEntity } from "../entity/common/Bank.entity"
-import { CoinRedeemStatus, CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
+import { CoinRedeemStatus } from "../model/coin/data/CoinTransaction.enum"
+import { isNotEmpty } from "../core/extension/CommonExtension"
 
 /**
  * Repository for "v1/coin"
@@ -93,15 +94,73 @@ class CoinRepository {
     }
 
     /**
-     * Get coin rate from rate id
-     * @param rateId
+     * Edit coin rate
+     * @param rate
+     * @param data
      */
-    async getCoinRate(rateId: number): Promise<ExchangeRateEntity> {
+    async editCoinRate(rate: ExchangeRateEntity, data: CoinRate) {
         try {
-            return await this.connection.getRepository(ExchangeRateEntity).findOne(rateId)
+            rate.title = data.title
+            rate.baht = data.baht
+            rate.coin = data.coin
+            rate.type = data.type
+            rate.startDate = data.startDate
+            rate.endDate = data.endDate
+            rate.updated = new Date()
+            await this.connection.getRepository(ExchangeRateEntity).save(rate)
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get exchange rate", CoinError.CAN_NOT_GET_RATE)
+            throw ErrorExceptions.create("Can not edit exchange rate", CoinError.CAN_NOT_EDIT_RATE)
+        }
+    }
+
+    /**
+     * Delete coin rate
+     * @param rate
+     */
+    async deleteCoinRate(rate: ExchangeRateEntity) {
+        try {
+            await this.connection.getRepository(ExchangeRateEntity).remove(rate)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not edit exchange rate", CoinError.CAN_NOT_DELETE_RATE)
+        }
+    }
+
+    /**
+     * Check sell rate already use
+     * sell rate: std, promo, deal
+     * @param rateId
+     */
+    async checkUsedSellRate(rateId: number): Promise<boolean> {
+        try {
+            const usage = await this.connection.getRepository(PaymentTransactionEntity).findOne({
+                where: {
+                    exchangeRate: rateId
+                }
+            })
+            return isNotEmpty(usage)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not check coin rate", CoinError.CAN_NOT_CHECK_RATE)
+        }
+    }
+
+    /**
+     * Check redeem transfer rate already use
+     * @param rateId
+     */
+    async checkUsedTransferRate(rateId: number): Promise<boolean> {
+        try {
+            const usage = await this.connection.getRepository(RedeemTransactionEntity).findOne({
+                where: {
+                    exchangeRate: rateId
+                }
+            })
+            return isNotEmpty(usage)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not check coin rate", CoinError.CAN_NOT_CHECK_RATE)
         }
     }
 
