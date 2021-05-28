@@ -182,25 +182,6 @@ class ReviewRepository {
     }
 
     /**
-     * Get offline course review from learner id
-     * @param courseId
-     * @param learnerId
-     */
-    async getOfflineCourseReviewByUser(courseId: string, learnerId: string): Promise<OfflineCourseRatingTransactionEntity> {
-        try {
-            return await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
-                .leftJoinAndSelect("review.learner", "learner")
-                .leftJoinAndSelect("learner.member", "member")
-                .where("review.courseId like :courseId", { courseId: courseId })
-                .andWhere("review.learnerId like :learnerId", { learnerId: learnerId })
-                .getOne()
-        } catch (error) {
-            logger.error(error)
-            throw ErrorExceptions.create("Can not get user review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
-        }
-    }
-
-    /**
      * Get Offline course review by id
      * @param reviewId
      */
