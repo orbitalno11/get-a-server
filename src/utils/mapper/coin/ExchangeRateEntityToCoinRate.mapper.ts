@@ -17,5 +17,6 @@ export const ExchangeRateEntityToCoinRateMapper = (from: ExchangeRateEntity): Co
     out.startDate = from.startDate
     out.endDate = from.endDate
     out.updateDate = from.updated
+    out.active = from.active
     return out
 }

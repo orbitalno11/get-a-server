@@ -28,6 +28,9 @@ export class ExchangeRateEntity {
     @Column({ default: new Date() })
     updated: Date
 
+    @Column()
+    active: boolean
+
     // entity relation
     @OneToMany(
         () => RedeemTransactionEntity,

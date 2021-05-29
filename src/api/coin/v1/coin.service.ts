@@ -195,7 +195,7 @@ export class CoinService {
             }
 
             const rate = await this.repository.getCoinRateById(data.rateId)
-            if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER) {
+            if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER || !rate?.active) {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
             }
 
@@ -342,6 +342,24 @@ export class CoinService {
             }
 
             await this.repository.approvedRedeemCoinById(detail)
+        })
+    }
+
+    /**
+     * Activate or deactivate coin rate
+     * @param rateId
+     */
+    activateCoinRate(rateId: number) {
+        return launch(async () => {
+            const rate = await this.repository.getCoinRateById(rateId)
+
+            if (isEmpty(rate)) {
+                throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
+            }
+
+            rate.active = !rate.active
+
+            await this.repository.activateCoinRate(rate)
         })
     }
 }
