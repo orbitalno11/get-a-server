@@ -22,7 +22,6 @@ import SuccessResponse from "../../../core/response/SuccessResponse"
 import { CurrentUser } from "../../../decorator/CurrentUser.decorator"
 import OfflineCourse from "../../../model/course/OfflineCourse"
 import { OfflineCourseEntityToOfflineCourseMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToOfflineCourseMapper"
-import { EnrollListMapper } from "../../../utils/mapper/course/offline/EnrollListMapper"
 import IResponse from "../../../core/response/IResponse"
 import { launch } from "../../../core/common/launch"
 import CommonError from "../../../core/exceptions/constants/common-error.enum"
@@ -30,12 +29,14 @@ import { CourseError } from "../../../core/exceptions/constants/course-error.enu
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import User from "../../../model/User"
 import OfflineCourseEnroll from "../../../model/course/OfflineCourseEnroll"
+import { ApiTags } from "@nestjs/swagger"
 
 // TODO Refactor this class to use repository
 /**
  * Controller for offline course
  * @author oribitalno11 2021 A.D.
  */
+@ApiTags("offline-course")
 @Controller("v1/offline-course")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

@@ -10,6 +10,16 @@ import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.enti
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { CoinEntity } from "../entity/coins/coin.entity"
+import { CoinError } from "../core/exceptions/constants/coin.error"
+import { isEmpty } from "../core/extension/CommonExtension"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
+import { ClipError } from "../core/exceptions/constants/clip-error.enum"
+import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
+import { ReviewError } from "../core/exceptions/constants/review-error.enum"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { CourseError } from "../core/exceptions/constants/course-error.enum"
 
 /**
  * Repository for user utility
@@ -70,7 +80,7 @@ class UserRepository {
      * @param courseId
      * @param isOfflineCourse
      */
-    async getOwnCourseById(tutorId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | null> {
+    async getOwnCourseById(tutorId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | OnlineCourseEntity | null> {
         try {
             if (isOfflineCourse) {
                 return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
@@ -78,8 +88,10 @@ class UserRepository {
                     .andWhere("offlineCourse.owner like :tutorId", { tutorId: tutorId })
                     .getOne()
             } else {
-                // todo query online course -> waiting for online course task
-                return null
+                return await this.connection.createQueryBuilder(OnlineCourseEntity, "onlineCourse")
+                    .where("onlineCourse.id like :courseId", { courseId: courseId })
+                    .andWhere("onlineCourse.owner like :tutorId", { tutorId: tutorId })
+                    .getOne()
             }
         } catch (error) {
             logger.error(error)
@@ -94,7 +106,7 @@ class UserRepository {
      * @param courseId
      * @param isOfflineCourse
      */
-    async getEnrolledCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | null> {
+    async getEnrolledCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseEntity | OnlineCourseEntity> {
         try {
             if (isOfflineCourse) {
                 return await this.connection.createQueryBuilder(OfflineCourseEntity, "offlineCourse")
@@ -105,12 +117,35 @@ class UserRepository {
                     .andWhere("requestList.status = :enrollStatus", { enrollStatus: EnrollStatus.APPROVE })
                     .getOne()
             } else {
-                // todo query online course -> waiting for online course task
-                return null
+                return await this.connection.createQueryBuilder(OnlineCourseEntity, "onlineCourse")
+                    .leftJoinAndSelect("onlineCourse.clips", "clip")
+                    .leftJoinAndSelect("onlineCourse.owner", "owner")
+                    .leftJoinAndSelect("clip.transaction", "transaction")
+                    .where("onlineCourse.id like :courseId", {courseId: courseId})
+                    .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
+                    .getOne()
             }
         } catch (error) {
             logger.error(error)
-            throw error
+            throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)
+        }
+    }
+
+    /**
+     * Get subscribe clip detail by learner id and clip id
+     * @param learnerId
+     * @param clipId
+     */
+    async getSubscribeClipById(learnerId: string, clipId: string): Promise<ClipEntity> {
+        try {
+            return await this.connection.createQueryBuilder(ClipEntity, "clip")
+                .leftJoinAndSelect("clip.transaction", "transaction")
+                .where("clip.id like :clipId", { clipId: clipId })
+                .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
+                .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
         }
     }
 
@@ -118,22 +153,36 @@ class UserRepository {
      * Get course review by learner id and course id
      * @param learnerId
      * @param courseId
-     * @param isOfflineCourse
      */
-    async getReviewCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<OfflineCourseRatingTransactionEntity | null> {
+    async getReviewCourseById(learnerId: string, courseId: string): Promise<OfflineCourseRatingTransactionEntity> {
         try {
-            if (isOfflineCourse) {
-                return await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
-                    .where("review.learner like :learnerId", { learnerId: learnerId })
-                    .andWhere("review.course like :courseId", { courseId: courseId })
-                    .getOne()
-            } else {
-                // todo query online course -> waiting for online course task
-                return null
-            }
+            return await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
+                .where("review.learner like :learnerId", { learnerId: learnerId })
+                .andWhere("review.course like :courseId", { courseId: courseId })
+                .getOne()
         } catch (error) {
             logger.error(error)
-            throw error
+            throw ErrorExceptions.create("Can not get course review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
+        }
+    }
+
+    /**
+     * Get Clip review by learner id and clip id
+     * @param learnerId
+     * @param clipId
+     */
+    async getReviewClipById(learnerId: string, clipId: string): Promise<ClipRatingTransactionEntity> {
+        try {
+            return await this.connection.getRepository(ClipRatingTransactionEntity)
+                .findOne({
+                    where: {
+                        learner: learnerId,
+                        clip: clipId
+                    }
+                })
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip review", ReviewError.CAN_NOT_GET_CLIP_REVIEW)
         }
     }
 
@@ -151,6 +200,56 @@ class UserRepository {
         } catch (error) {
             logger.error(error)
             throw error
+        }
+    }
+
+    /**
+     * Get coin balance
+     * @param userId
+     */
+    async getCoinBalance(userId: string): Promise<CoinEntity> {
+        try {
+            let balance = await this.connection.getRepository(CoinEntity)
+                .findOne({
+                    where: {
+                        member: userId
+                    }
+                })
+
+            if (isEmpty(balance)) {
+                const member = await this.getUserWithRole(userId)
+                balance = new CoinEntity()
+                balance.member = member
+                balance.amount = 0
+                balance.updated = new Date()
+                await this.connection.getRepository(CoinEntity).save(balance)
+            }
+            
+            return balance
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not found coin balance", CoinError.CAN_NOT_FOUND_COIN_BALANCE)
+        }
+    }
+
+    /**
+     * Get bought clip transaction entity by learner and clip id
+     * @param learnerId
+     * @param clipId
+     */
+    async getBoughtClip(learnerId: string, clipId: string): Promise<ClipTransactionEntity> {
+        try {
+            const clip =  await this.connection.getRepository(ClipTransactionEntity)
+                .findOne({
+                    where: {
+                        learner: learnerId,
+                        clip: clipId
+                    }
+                })
+            return clip
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can get clip transaction", ClipError.CAN_NOT_FOUND_CLIP)
         }
     }
 }

@@ -37,11 +37,13 @@ import { UserRole } from "../../../core/constant/UserRole"
 import { UploadFileUtils } from "../../../utils/multer/UploadFileUtils"
 import FileError from "../../../core/exceptions/constants/file-error.enum"
 import IdentityVerification from "../../../model/verify/IdentityVerification"
+import { ApiTags } from "@nestjs/swagger"
 
 /**
  * Class for "v1/me" controller
  * @author orbitalno11 2021 A.D.
  */
+@ApiTags("me")
 @Controller("v1/me")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)

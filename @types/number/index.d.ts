@@ -7,6 +7,5 @@ interface Number {
     isNegativeValue(): boolean
     isZeroValue(): boolean
     isNaN(): boolean
-
     isBetween(min: number, max: number): boolean
 }

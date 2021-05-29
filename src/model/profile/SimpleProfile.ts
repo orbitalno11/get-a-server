@@ -6,6 +6,7 @@ class SimpleProfile {
     firstName: string
     lastName: string
     fullName: string
+    picture: string
     gender: Gender
     contact: Contact
 }

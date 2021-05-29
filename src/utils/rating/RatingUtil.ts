@@ -66,12 +66,8 @@ class RatingUtil {
     ) {
         const offline = offlineCourseRating * numberOfOfflineReview
         const online = onlineCourseRating * numberOfOnlineReview
-        const q = numberOfOfflineReview + numberOfOnlineReview
-        let p = (offline + online) / q
-        if (numberOfOfflineReview === 0 && numberOfOnlineReview === 0 && isNaN(p)) {
-            p = 0
-        }
-        return this.avgRateScoring(p * 2, q) / 2
+        const numberOfReview = numberOfOfflineReview + numberOfOnlineReview
+        return (offline + online) / numberOfReview
     }
 
     /**

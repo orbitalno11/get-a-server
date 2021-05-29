@@ -74,6 +74,7 @@ class FavoriteRepository {
                 .getMany()
         } catch (error) {
             logger.error(error)
+            throw ErrorExceptions.create("Can not get favorite list", FavoriteError.CAN_NOT_GET_FAVORITE_LIST)
         }
     }
 }

@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
-import { ExchangeTransactionEntity } from "./exchangeTransaction.entity"
+import { RedeemTransactionEntity } from "./RedeemTransaction.entity"
 import { PaymentTransactionEntity } from "../payment/PaymentTransaction.entity"
 
 @Entity("exchange_rate")
@@ -30,10 +30,10 @@ export class ExchangeRateEntity {
 
     // entity relation
     @OneToMany(
-        () => ExchangeTransactionEntity,
+        () => RedeemTransactionEntity,
         (transaction) => transaction.exchangeRate
     )
-    exchangeTransaction: ExchangeTransactionEntity[]
+    exchangeTransaction: RedeemTransactionEntity[]
 
     @OneToMany(
         () => PaymentTransactionEntity,

@@ -33,6 +33,7 @@ import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFr
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 import { GradeEntity } from "../entity/common/grade.entity"
 import Document from "../model/common/Document"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 
 /**
  * Repository for "v1/tutor"
@@ -429,7 +430,7 @@ class TutorRepository {
                 .getMany()
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_OFFLINE_COURSE)
+            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_COURSE)
         }
     }
 
@@ -450,7 +451,27 @@ class TutorRepository {
                 .getMany()
         } catch (error) {
             logger.error(error)
-            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_OFFLINE_COURSE)
+            throw ErrorExceptions.create("Can not get offline course", TutorError.CAN_NOT_GET_TUTOR_COURSE)
+        }
+    }
+
+    /**
+     * Get tutor online course
+     * @param tutorId
+     */
+    async getOnlineCourse(tutorId: string): Promise<OnlineCourseEntity[]> {
+        try {
+            return await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
+                .leftJoinAndSelect("course.subject", "subject")
+                .leftJoinAndSelect("course.grade", "grade")
+                .leftJoinAndSelect("course.owner", "tutor")
+                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("tutor.contact", "contact")
+                .where("course.owner like :tutorId", { tutorId: tutorId })
+                .getMany()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get online course", TutorError.CAN_NOT_GET_TUTOR_COURSE)
         }
     }
 

@@ -232,21 +232,34 @@ create table coin_transaction(
     member_id varchar(255) not null,
     transaction_type smallint UNSIGNED not null,
     number_of_coin float(10,3) not null,
+    transaction_date timestamp,
     PRIMARY KEY (transaction_id),
     CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(member_id) REFERENCES member (id)
 );
 
-create table exchange_transaction(
+create table bank (
+    id varchar(50) not null,
+    title varchar(50) not null,
+    PRIMARY KEY (id)
+);
+
+create table redeem_transaction(
     id int not null AUTO_INCREMENT,
-    memberId varchar(255) not null,
-    exchangeRateId int not null,
-    requestDate timestamp not null,
-    approveDate timestamp,
-    transferDate timestamp,
+    member_id varchar(255) not null,
+    rate_id int not null,
+    bank_id varchar(50) not null,
+    account_no varchar(50) not null,
+    account_name varchar(255) not null,
+    account_pic varchar(255) not null,
+    amount float(10,3) not null,
+    request_date timestamp not null,
+    approve_date timestamp,
+    transfer_date timestamp,
     request_status smallint UNSIGNED not null,
     PRIMARY KEY(id),
-    CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(memberId) REFERENCES member (id),
-    CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
+    CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(member_id) REFERENCES member (id),
+    CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(rate_id) REFERENCES exchange_rate (id),
+    CONSTRAINT `FK_MEMBER_EXCHANGE_BANK` FOREIGN KEY(bank_id) REFERENCES bank (id)
 );
 
 create table payment_transaction(
@@ -333,6 +346,7 @@ create table online_course(
     subjectCode varchar(50) not null,
     gradeId smallint UNSIGNED not null,
     courseName varchar(255) not null,
+    courseCoverUrl varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_ONLINE_COURSE_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_ONLINE_COURSE_SUBJECT` FOREIGN KEY(subjectCode) REFERENCES subject (code),
@@ -345,8 +359,11 @@ create table clip(
     onlineCourseId varchar(255) not null,
     name varchar(255) not null,
     description text not null,
+    cost float(10,3) not null,
     url varchar(255),
+    urlCloudPath varchar(255),
     coverUrl varchar(255),
+    coverUrlCloudPath varchar(255),
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_OWNER` FOREIGN KEY(ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_CLIP_COURSE` FOREIGN KEY(onlineCourseId) REFERENCES online_course (id)
@@ -396,11 +413,11 @@ create table clip_transaction(
     id int not null AUTO_INCREMENT,
     learnerId varchar(255) not null,
     clipId varchar(255) not null,
-    amount float(10,3) not null,
-    paidDate timestamp not null default current_timestamp,
+    transactionId varchar(255) not null,
     PRIMARY KEY(id),
     CONSTRAINT `FK_CLIP_LEARNER` FOREIGN KEY(learnerId) REFERENCES learner_profile (id),
-    CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id)
+    CONSTRAINT `FK_CLIP_CLIP` FOREIGN KEY(clipId) REFERENCES clip (id),
+    CONSTRAINT `FK_CLIP_COIN_TRANSACTION` FOREIGN KEY(transactionId) REFERENCES coin_transaction (transaction_id)
 );
 
 -- analytic data

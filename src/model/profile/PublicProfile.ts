@@ -2,20 +2,21 @@ import Address from "../location/Address"
 import { Gender } from "../common/data/Gender"
 import Subject from "../common/Subject"
 import Contact from "../Contact"
+import { ApiProperty } from "@nestjs/swagger"
 
 class PublicProfile {
-    id: string
-    firstname: string
-    lastname: string
-    fullNameText: string
-    gender: Gender
-    picture: string
-    introduction: string
-    address: Address
-    contact: Contact
-    numberOfLearner: number
-    rating: number
-    interestedSubject: Subject[]
+    @ApiProperty() id: string
+    @ApiProperty() firstname: string
+    @ApiProperty() lastname: string
+    @ApiProperty() fullNameText: string
+    @ApiProperty() gender: Gender
+    @ApiProperty() picture: string
+    @ApiProperty() introduction: string
+    @ApiProperty() address: Address
+    @ApiProperty() contact: Contact
+    @ApiProperty() numberOfLearner: number
+    @ApiProperty() rating: number
+    @ApiProperty() interestedSubject: Subject[]
 }
 
 export default PublicProfile

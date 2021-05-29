@@ -12,7 +12,7 @@ import { MemberRoleEntity } from "./memberRole.entitiy"
 import { TutorEntity } from "../profile/tutor.entity"
 import { MemberAddressEntity } from "./memberAddress.entity"
 import { CoinEntity } from "../coins/coin.entity"
-import { ExchangeTransactionEntity } from "../coins/exchangeTransaction.entity"
+import { RedeemTransactionEntity } from "../coins/RedeemTransaction.entity"
 import { LearnerEntity } from "../profile/learner.entity"
 import { PaymentTransactionEntity } from "../payment/PaymentTransaction.entity"
 import { CoinTransactionEntity } from "../coins/CoinTransaction.entity"
@@ -101,9 +101,9 @@ export class MemberEntity {
     coinTransaction: CoinTransactionEntity[]
 
     @OneToMany(
-        () => ExchangeTransactionEntity,
+        () => RedeemTransactionEntity,
         (transaction) => transaction.member)
-    exchangeTransaction: ExchangeTransactionEntity[]
+    exchangeTransaction: RedeemTransactionEntity[]
 
     @OneToMany(
         () => PaymentTransactionEntity,

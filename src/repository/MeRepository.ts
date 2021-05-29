@@ -24,7 +24,7 @@ import { GradeEntity } from "../entity/common/grade.entity"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
 import { CoinError } from "../core/exceptions/constants/coin.error"
-import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
+import { RedeemTransactionEntity } from "../entity/coins/RedeemTransaction.entity"
 import { UserVerifyEntity } from "../entity/UserVerify.entity"
 import { UserVerify } from "../model/common/data/UserVerify.enum"
 import { VerificationError } from "../core/exceptions/constants/verification-error.enum"
@@ -321,24 +321,6 @@ class MeRepository {
     }
 
     /**
-     * Get user coin balance
-     * @param user
-     */
-    async getUserCoinBalance(user: User): Promise<CoinEntity> {
-        try {
-            return await this.connection.getRepository(CoinEntity)
-                .findOne({
-                    where: {
-                        member: user.id
-                    }
-                })
-        } catch (error) {
-            logger.error(error)
-            throw ErrorExceptions.create("Can not found coin balance", CoinError.CAN_NOT_FOUND_COIN_BALANCE)
-        }
-    }
-
-    /**
      * Get user coin transaction
      * @param user
      */
@@ -363,9 +345,9 @@ class MeRepository {
      * Get user (tutor) redeem transaction
      * @param user
      */
-    async getUserCoinRedeemTransaction(user: User): Promise<ExchangeTransactionEntity[]> {
+    async getUserCoinRedeemTransaction(user: User): Promise<RedeemTransactionEntity[]> {
         try {
-            return await this.connection.getRepository(ExchangeTransactionEntity)
+            return await this.connection.getRepository(RedeemTransactionEntity)
                 .find({
                     where: {
                         member: user.id

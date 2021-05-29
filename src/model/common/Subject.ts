@@ -1,9 +1,10 @@
 import { InterestedSubjectEntity } from "../../entity/member/interestedSubject.entity"
 import { isNotEmpty } from "../../core/extension/CommonExtension"
+import { ApiProperty } from "@nestjs/swagger"
 
 class Subject {
-    id: string
-    title: string
+    @ApiProperty() id: string
+    @ApiProperty() title: string
 
     public static create(id: string, value: string): Subject {
         const subject = new Subject()

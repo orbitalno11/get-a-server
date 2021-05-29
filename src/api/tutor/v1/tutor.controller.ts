@@ -40,7 +40,10 @@ import TestingVerification from "../../../model/education/TestingVerification"
 import PublicProfile from "../../../model/profile/PublicProfile"
 import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
 import Document from "../../../model/common/Document"
+import OnlineCourse from "../../../model/course/OnlineCourse"
+import { ApiTags } from "@nestjs/swagger"
 
+@ApiTags("tutor")
 @Controller("v1/tutor")
 @UseFilters(FailureResponseExceptionFilter, ErrorExceptionFilter)
 @UseInterceptors(TransformSuccessResponse)
@@ -111,6 +114,23 @@ export class TutorController {
 
             const courses = await this.tutorService.getOfflineCourse(userId, currentUser)
 
+            return SuccessResponse.create(courses)
+        })
+    }
+
+    /**
+     * Get tutor online course
+     * @param userId
+     * @param currentUser
+     */
+    @Get(":id/online-course")
+    getOnlineCourse(@Param("id") userId: string, @CurrentUser() currentUser: User): Promise<IResponse<OnlineCourse[]>> {
+        return launch(async () => {
+            if (!userId?.isSafeNotBlank()) {
+                logger.error("Invalid data")
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+            const courses = await this.tutorService.getOnlineCourse(userId, currentUser)
             return SuccessResponse.create(courses)
         })
     }

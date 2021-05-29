@@ -27,7 +27,7 @@ import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { EducationHistoryEntity } from "../entity/education/educationHistory.entity"
 import { ExchangeRateEntity } from "../entity/coins/exchangeRate.entity"
 import { CoinEntity } from "../entity/coins/coin.entity"
-import { ExchangeTransactionEntity } from "../entity/coins/exchangeTransaction.entity"
+import { RedeemTransactionEntity } from "../entity/coins/RedeemTransaction.entity"
 import { CourseTypeEntity } from "../entity/course/courseType.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
@@ -40,6 +40,13 @@ import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
 import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRecency.entity"
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
+import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
+import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
+import { BankEntity } from "../entity/common/Bank.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -74,7 +81,7 @@ const ormConfig: TypeOrmModuleOptions = {
         CoinEntity,
         PaymentTransactionEntity,
         CoinTransactionEntity,
-        ExchangeTransactionEntity,
+        RedeemTransactionEntity,
         CourseTypeEntity,
         OfflineCourseEntity,
         OfflineCourseRatingEntity,
@@ -84,7 +91,14 @@ const ormConfig: TypeOrmModuleOptions = {
         TutorStatisticEntity,
         TutorAnalyticRecencyEntity,
         TutorAnalyticFrequencyEntity,
-        TutorAnalyticMonetaryEntity
+        TutorAnalyticMonetaryEntity,
+        OnlineCourseEntity,
+        OnlineCourseRatingEntity,
+        ClipEntity,
+        ClipRatingEntity,
+        ClipRatingTransactionEntity,
+        ClipTransactionEntity,
+        BankEntity
     ]
 }
 
