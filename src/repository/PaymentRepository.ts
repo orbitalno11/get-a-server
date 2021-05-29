@@ -9,8 +9,8 @@ import { PaymentError } from "../core/exceptions/constants/payment-error.enum"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import { MemberEntity } from "../entity/member/member.entitiy"
 import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
-import { CoinTransactionType } from "../model/coin/data/CoinTransactionType.enum"
 import { ExchangeRateEntity } from "../entity/coins/exchangeRate.entity"
+import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 
 /**
  * Repository for "v1/payment"

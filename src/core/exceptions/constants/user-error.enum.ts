@@ -8,7 +8,8 @@ enum UserError {
     CAN_NOT_UPDATE = "can-not-update-user-profile",
     CAN_NOT_REQUEST_VERIFY = "can-not-request-verify",
     DO_NOT_HAVE_PERMISSION = "do-not-have-permission",
-    EMAIL_ALREADY_EXITS = "email-already-exits"
+    EMAIL_ALREADY_EXITS = "email-already-exits",
+    NOT_VERIFIED = "account-is-not-verified"
 }
 
 export default UserError

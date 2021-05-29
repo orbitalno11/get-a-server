@@ -237,17 +237,29 @@ create table coin_transaction(
     CONSTRAINT `FK_MEMBER_COIN_TRANSACTION` FOREIGN KEY(member_id) REFERENCES member (id)
 );
 
-create table exchange_transaction(
+create table bank (
+    id varchar(50) not null,
+    title varchar(50) not null,
+    PRIMARY KEY (id)
+);
+
+create table redeem_transaction(
     id int not null AUTO_INCREMENT,
-    memberId varchar(255) not null,
-    exchangeRateId int not null,
-    requestDate timestamp not null,
-    approveDate timestamp,
-    transferDate timestamp,
+    member_id varchar(255) not null,
+    rate_id int not null,
+    bank_id varchar(50) not null,
+    account_no varchar(50) not null,
+    account_name varchar(255) not null,
+    account_pic varchar(255) not null,
+    amount float(10,3) not null,
+    request_date timestamp not null,
+    approve_date timestamp,
+    transfer_date timestamp,
     request_status smallint UNSIGNED not null,
     PRIMARY KEY(id),
-    CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(memberId) REFERENCES member (id),
-    CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(exchangeRateId) REFERENCES exchange_rate (id)
+    CONSTRAINT `FK_MEMBER_EXCHANGE` FOREIGN KEY(member_id) REFERENCES member (id),
+    CONSTRAINT `FK_MEMBER_EXCHANGE_RATE` FOREIGN KEY(rate_id) REFERENCES exchange_rate (id),
+    CONSTRAINT `FK_MEMBER_EXCHANGE_BANK` FOREIGN KEY(bank_id) REFERENCES bank (id)
 );
 
 create table payment_transaction(
