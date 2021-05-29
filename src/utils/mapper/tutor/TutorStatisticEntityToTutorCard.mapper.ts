@@ -12,7 +12,7 @@ export class TutorStatisticEntityToTutorCardMapper implements Mapper<TutorStatis
         tutorCard.pictureUrl = from.tutor?.member?.profileUrl
         tutorCard.address = new Address().getConvenienceAddress(from.tutor?.member?.memberAddress)
         tutorCard.subject = new Subject().getFirstSubject(from.tutor?.member?.interestedSubject)
-        tutorCard.rating = from.offlineRating
+        tutorCard.rating = from.rating
         return tutorCard
     }
 }
