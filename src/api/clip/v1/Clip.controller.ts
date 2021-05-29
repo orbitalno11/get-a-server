@@ -89,19 +89,20 @@ export class ClipController {
     /**
      * Get clip detail by clip id
      * @param clipId
+     * @param currentUser
      */
     @Get(":id")
     @ApiResponse({ status: HttpStatus.OK, description: "clip detail", type: ClipDetail })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid request data" })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Can not get clip" })
-    getClip(@Param("id") clipId: string) {
+    getClip(@Param("id") clipId: string, @CurrentUser() currentUser: User) {
         return launch(async () => {
             if (!clipId?.isSafeNotBlank()) {
                 logger.error("Invalid clip id")
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
             }
 
-            const clip = await this.service.getClipById(clipId)
+            const clip = await this.service.getClipById(clipId, currentUser)
             return SuccessResponse.create(clip)
         })
     }

@@ -18,6 +18,7 @@ import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEnt
 import ClipDetail from "../../../model/clip/ClipDetail"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
 import TutorProfile from "../../../model/profile/TutorProfile"
+import { UserRole } from "../../../core/constant/UserRole"
 
 /**
  * Service class for "v1/clip" controller
@@ -82,11 +83,23 @@ export class ClipService {
     /**
      * Get clip detail by clip id
      * @param clipId
+     * @param user
      */
-    getClipById(clipId: string): Promise<ClipDetail> {
+    getClipById(clipId: string, user?: User): Promise<ClipDetail> {
         return launch(async () => {
             const clip = await this.repository.getClipById(clipId)
-            return isNotEmpty(clip) ? new ClipEntityToClipDetailMapper().map(clip) : null
+
+            if (isEmpty(clip)) {
+                throw ErrorExceptions.create("Can not found clip", ClipError.CAN_NOT_FOUND_CLIP)
+            }
+
+            const clipDetail = new ClipEntityToClipDetailMapper().map(clip)
+
+            if (user?.role === UserRole.LEARNER) {
+                clipDetail.bought = await this.userUtil.isBoughtClip(user.id, clipId)
+            }
+
+            return clipDetail
         })
     }
 
