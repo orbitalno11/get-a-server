@@ -3,8 +3,9 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 dotenv.config({ path: env })
 
 import { HttpAdapterHost, NestFactory } from "@nestjs/core"
-import { SERVER_PORT } from "./configs/EnvironmentConfig"
+import * as cookieParser from "cookie-parser"
 import * as helmet from "helmet"
+import { SERVER_PORT } from "./configs/EnvironmentConfig"
 import { AppModule } from "./app.module"
 import { UnexpectedExceptionFilter } from "./core/exceptions/filters/UnexpectedException.filter"
 import { logger } from "./core/logging/Logger"
@@ -21,7 +22,7 @@ async function bootstrap() {
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     })
-    app.use(helmet())
+    app.use(helmet(), cookieParser())
     app.useGlobalFilters(new UnexpectedExceptionFilter(httpAdapter), new ErrorExceptionFilter(), new FailureResponseExceptionFilter())
 
     const config = new DocumentBuilder()
