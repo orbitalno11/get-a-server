@@ -7,6 +7,7 @@ import { ClipService } from "./Clip.service"
 import TutorAuthenticated from "../../../middleware/auth/TutorAuthenticated.middleware"
 import LearnerAuthenticated from "../../../middleware/auth/LearnerAuthenticated.middleware"
 import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.middleware"
+import { GatewayModule } from "../../../gateway/gateway.module"
 
 /**
  * Module class for "v1/clip" controller
@@ -14,7 +15,7 @@ import AuthenticatedRequest from "../../../middleware/auth/AuthenticatedRequest.
  * @author orbitalno11 2021 A.D.
  */
 @Module({
-    imports: [CoreModule, UtilityModule, RepositoryModule],
+    imports: [CoreModule, UtilityModule, RepositoryModule, GatewayModule],
     controllers: [ClipController],
     providers: [ClipService]
 })
