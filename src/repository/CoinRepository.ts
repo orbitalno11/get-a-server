@@ -72,18 +72,14 @@ class CoinRepository {
                 case UserRole.TUTOR: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
                         .where("exchangeRate.endDate >= CURDATE()")
-                        .getMany()
-                }
-                case UserRole.LEARNER: {
-                    return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
-                        .where("exchangeRate.type not like :type", { type: CoinRateType.TRANSFER })
-                        .andWhere("exchangeRate.endDate >= CURDATE()")
+                        .andWhere("exchangeRate.active = :status", { status: true })
                         .getMany()
                 }
                 default: {
                     return await this.connection.createQueryBuilder(ExchangeRateEntity, "exchangeRate")
                         .where("exchangeRate.type not like :type", { type: CoinRateType.TRANSFER })
                         .andWhere("exchangeRate.endDate >= CURDATE()")
+                        .andWhere("exchangeRate.active = :status", { status: true })
                         .getMany()
                 }
             }
@@ -375,6 +371,18 @@ class CoinRepository {
         }
     }
 
+    /**
+     * Activate or deactivate coin rate
+     * @param rate
+     */
+    async activateCoinRate(rate: ExchangeRateEntity) {
+        try {
+            await this.connection.getRepository(ExchangeRateEntity).save(rate)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not edit coin rate", CoinError.CAN_NOT_EDIT_RATE)
+        }
+    }
 }
 
 export default CoinRepository

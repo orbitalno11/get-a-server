@@ -19,6 +19,7 @@ import ClipDetail from "../../../model/clip/ClipDetail"
 import { CoinError } from "../../../core/exceptions/constants/coin.error"
 import TutorProfile from "../../../model/profile/TutorProfile"
 import { UserRole } from "../../../core/constant/UserRole"
+import { AppGateway } from "../../../gateway/app.gateway"
 
 /**
  * Service class for "v1/clip" controller
@@ -30,7 +31,8 @@ export class ClipService {
     constructor(
         private readonly repository: ClipRepository,
         private readonly userUtil: UserUtil,
-        private readonly fileStorageUtil: FileStorageUtils
+        private readonly fileStorageUtil: FileStorageUtils,
+        private readonly appGateway: AppGateway
     ) {
     }
 
@@ -39,8 +41,9 @@ export class ClipService {
      * @param data
      * @param file
      * @param user
+     * @param socketId
      */
-    async createClip(data: ClipForm, file: Express.Multer.File, user: User) {
+    async createClip(data: ClipForm, file: Express.Multer.File, user: User, socketId: string) {
         let uploadedFile: UploadedFileProperty
         try {
             const course = await this.userUtil.getCourseOwn(user.id, data.courseId, false)
@@ -56,7 +59,13 @@ export class ClipService {
             uploadedFile = await this.fileStorageUtil.uploadVideoFromLocalStorageTo(
                 file,
                 user.id,
-                `online-course/${course.id}`
+                `online-course/${course.id}`,
+                (loaded, total) => {
+                    if (socketId?.isSafeNotBlank()) {
+                        const progress = ((loaded / total) * 100) / 2
+                        this.appGateway.sendUploadProgressToClient(progress, socketId)
+                    }
+                }
             )
 
             await this.repository.createClip(clipId, course, tutor, data, uploadedFile)
@@ -108,9 +117,10 @@ export class ClipService {
      * @param clipId
      * @param data
      * @param user
+     * @param socketId
      * @param file
      */
-    async updateClip(clipId: string, data: ClipForm, user: User, file?: Express.Multer.File) {
+    async updateClip(clipId: string, data: ClipForm, user: User, socketId: string, file?: Express.Multer.File) {
         let uploadedFile: UploadedFileProperty
         let oldUploadedFile: UploadedFileProperty
         try {
@@ -132,7 +142,13 @@ export class ClipService {
                 uploadedFile = await this.fileStorageUtil.uploadVideoFromLocalStorageTo(
                     file,
                     user.id,
-                    `online-course/${course.id}`
+                    `online-course/${course.id}`,
+                    (loaded, total) => {
+                        if (socketId?.isSafeNotBlank()) {
+                            const progress = ((loaded / total) * 100) / 2
+                            this.appGateway.sendUploadProgressToClient(progress, socketId)
+                        }
+                    }
                 )
                 oldUploadedFile = {
                     path: clip.urlCloudPath,

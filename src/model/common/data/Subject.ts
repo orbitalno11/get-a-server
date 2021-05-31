@@ -6,5 +6,6 @@ export enum Subject {
   CHM = "CHM", // chemistry
   BIO = "BIO", // biology
   SOC = "SOC", // social study
-  ENG = "ENG" // english language
+  ENG = "ENG", // english language
+  NOT_SPECIFIC = "NOT_SPECIFIC"
 }

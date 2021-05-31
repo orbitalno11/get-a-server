@@ -36,17 +36,19 @@ export class FileStorageUtils {
      * @param folderName
      * @param width
      * @param height
+     * @param onProgress
      */
     async uploadImageTo(
         file: Express.Multer.File,
         identityName: string,
         folderName: string,
         width: number | null = 200,
-        height: number | null = 200
+        height: number | null = 200,
+        onProgress?: (loaded: number, total: number) => void
     ): Promise<string> {
         const property = this.getFileProperty(file, identityName, folderName, FileExtension.WEBP)
         const imageBuffer = await ImageUtils.convertImageToWebP(file, width, height)
-        const uploadedFile = await this.uploadFile(imageBuffer, property.filePath, property.contentType)
+        const uploadedFile = await this.uploadFile(imageBuffer, property.filePath, property.contentType, onProgress)
         return uploadedFile.url
     }
 
@@ -56,10 +58,17 @@ export class FileStorageUtils {
      * @param identityName
      * @param folderName
      * @param fileType
+     * @param onProgress
      */
-    async uploadFileTo(file: Express.Multer.File, identityName: string, folderName: string, fileType?: string): Promise<string> {
+    async uploadFileTo(
+        file: Express.Multer.File,
+        identityName: string,
+        folderName: string,
+        fileType?: string,
+        onProgress?: (loaded: number, total: number) => void
+    ): Promise<string> {
         const property = this.getFileProperty(file, identityName, folderName, fileType)
-        const uploadedFile = await this.uploadFile(file.buffer, property.filePath, property.contentType)
+        const uploadedFile = await this.uploadFile(file.buffer, property.filePath, property.contentType, onProgress)
         return uploadedFile.url
     }
 
@@ -68,14 +77,16 @@ export class FileStorageUtils {
      * @param file
      * @param identityName
      * @param folderName
+     * @param onProgress
      */
     async uploadVideoFromLocalStorageTo(
         file: Express.Multer.File,
         identityName: string,
-        folderName: string
+        folderName: string,
+        onProgress?: (loaded: number, total: number) => void
     ): Promise<UploadedFileProperty> {
         const property = this.getFileProperty(file, identityName, folderName, FileExtension.MP4)
-        return await this.uploadFileFromLocalStorage(file.path, property.filePath, property.contentType)
+        return await this.uploadFileFromLocalStorage(file.path, property.filePath, property.contentType, onProgress)
     }
 
     /**
@@ -83,15 +94,17 @@ export class FileStorageUtils {
      * @param localPath
      * @param cloudPath
      * @param contentType
+     * @param onProgress
      */
     private async uploadFileFromLocalStorage(
         localPath: string,
         cloudPath: string,
-        contentType: string
+        contentType: string,
+        onProgress?: (loaded: number, total: number) => void
     ): Promise<UploadedFileProperty> {
         try {
             const fileBuffer = fs.readFileSync(localPath)
-            const uploadedFile = await this.uploadFile(fileBuffer, cloudPath, contentType)
+            const uploadedFile = await this.uploadFile(fileBuffer, cloudPath, contentType, onProgress)
             fs.unlinkSync(localPath)
             return uploadedFile
         } catch (error) {
@@ -105,9 +118,10 @@ export class FileStorageUtils {
      * @param file
      * @param filePath
      * @param contentType
+     * @param onProgress
      * @private
      */
-    private async uploadFile(file: Buffer, filePath: string, contentType: string): Promise<UploadedFileProperty> {
+    private async uploadFile(file: Buffer, filePath: string, contentType: string, onProgress?: (loaded: number, total: number) => void): Promise<UploadedFileProperty> {
         try {
             const uploadedFile = await this.s3.upload({
                 Bucket: AWS_BUCKET_NAME,
@@ -115,6 +129,8 @@ export class FileStorageUtils {
                 ACL: "public-read",
                 ContentType: contentType,
                 Body: file
+            }).on("httpUploadProgress", (progress) => {
+                onProgress(progress?.loaded, progress?.total)
             }).promise()
             return {
                 url: uploadedFile.Location,

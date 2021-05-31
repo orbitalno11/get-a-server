@@ -185,6 +185,28 @@ export class CoinController {
     }
 
     /**
+     * Activate or deactivate coin rate
+     * @param rateId
+     */
+    @Get("rate/:id/activate")
+    @ApiBearerAuth()
+    @ApiOkResponse({ description: "Successful" })
+    @ApiBadRequestResponse({ description: "Invalid request data" })
+    @ApiInternalServerErrorResponse({ description: "Can not found rate detail" })
+    @ApiInternalServerErrorResponse({ description: "Can not edit exchange rate"})
+    activateCoinRate(@Param("id") rateId: string): Promise<IResponse<string>> {
+        return launch(async () => {
+            if (!rateId?.isSafeNotBlank() || (rateId?.isSafeNotBlank() && !rateId?.isNumber())) {
+                throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST)
+            }
+
+            await this.service.activateCoinRate(rateId.toNumber())
+
+            return SuccessResponse.create("Successful")
+        })
+    }
+
+    /**
      * Get coin rate depend on user role and view page
      * @param userRole
      * @param currentUser

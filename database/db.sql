@@ -215,6 +215,7 @@ create table exchange_rate(
     startDate timestamp not null DEFAULT CURRENT_TIMESTAMP,
     endDate timestamp,
     updated timestamp DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) not null default 1,
     PRIMARY KEY(id) 
 );
 
