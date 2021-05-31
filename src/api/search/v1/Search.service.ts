@@ -50,6 +50,25 @@ export class SearchService {
                 searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(result)
             } else {
                 // all course type search
+                const offline = await this.repository.searchOfflineCourse(
+                    query.grade,
+                    query.subject,
+                    query.gender,
+                    query.location,
+                    query.page,
+                    query.pageSize
+                )
+
+                const online = await this.repository.searchOnlineCourse(
+                    query.grade,
+                    query.subject,
+                    query.gender,
+                    query.location,
+                    query.page,
+                    query.pageSize
+                )
+                searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(offline)
+                searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(online)
             }
             return searchResult
         })
