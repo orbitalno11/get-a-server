@@ -102,7 +102,6 @@ export class LearnerController {
 
     /**
      * Get learner online course
-     * TODO recheck this when vdo clip finish
      * @param currentUser
      */
     @Get("online-course")

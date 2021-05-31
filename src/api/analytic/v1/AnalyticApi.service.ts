@@ -51,4 +51,14 @@ export class AnalyticApiService {
             await this.analytic.trackImpressCourse(courseId, courseType)
         })
     }
+
+    /**
+     * Track impress clip
+     * @param clipId
+     */
+    trackImpressClip(clipId: string) {
+        launchAnalytic(async () => {
+            await this.analytic.trackImpressClip(clipId)
+        })
+    }
 }

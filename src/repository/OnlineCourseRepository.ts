@@ -31,6 +31,8 @@ class OnlineCourseRepository {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
+            onlineCourse.courseView = 0
+            onlineCourse.numberOfClip = 0
 
             const courseRating = new OnlineCourseRatingEntity()
             courseRating.onlineCourse = onlineCourse

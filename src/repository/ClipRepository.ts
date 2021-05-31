@@ -37,6 +37,8 @@ class ClipRepository {
     async createClip(clipId: string, course: OnlineCourseEntity, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            course.numberOfClip += 1
+
             const clip = new ClipEntity()
             clip.id = clipId
             clip.owner = tutor
@@ -46,6 +48,7 @@ class ClipRepository {
             clip.cost = data.cost
             clip.url = clipUrl.url
             clip.urlCloudPath = clipUrl.path
+            clip.clipView = 0
 
             const rating = new ClipRatingEntity()
             rating.clip = clip
@@ -54,6 +57,7 @@ class ClipRepository {
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
+            await queryRunner.manager.save(course)
             await queryRunner.manager.save(clip)
             await queryRunner.manager.save(rating)
             await queryRunner.commitTransaction()
@@ -197,6 +201,12 @@ class ClipRepository {
                     where: {
                         id: clipId,
                         owner: tutorId
+                    },
+                    join: {
+                        alias: "clip",
+                        leftJoinAndSelect: {
+                            onlineCourse: "clip.onlineCourse"
+                        }
                     }
                 })
         } catch (error) {
@@ -241,6 +251,15 @@ class ClipRepository {
                 }
             )
 
+            const course = await queryRunner.manager.getRepository(OnlineCourseEntity).findOne({
+                where: {
+                    id: clip.onlineCourse.id
+                }
+            })
+
+            course.numberOfClip -= 1
+
+            await queryRunner.manager.save(course)
             await queryRunner.manager.remove(clipRating)
             await queryRunner.manager.remove(clip)
             await queryRunner.commitTransaction()

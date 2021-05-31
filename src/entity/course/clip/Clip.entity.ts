@@ -31,6 +31,9 @@ export class ClipEntity {
     @Column()
     coverUrlCloudPath: string
 
+    @Column({ name: "clip_view" })
+    clipView: number
+
     // entity relation
     @ManyToOne(
         () => OnlineCourseEntity,
