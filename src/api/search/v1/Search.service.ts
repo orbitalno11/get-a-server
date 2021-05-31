@@ -4,7 +4,6 @@ import SearchQuery from "../../../model/search/SearchQuery"
 import { launch } from "../../../core/common/launch"
 import { CourseType } from "../../../model/course/data/CourseType"
 import SearchResultPage from "../../../model/search/SearchResultPage"
-import { OfflineCourseEntityToSimpleCourseListMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToSimpleCourse.mapper"
 import { OfflineCourseEntityToCardMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToCard.mapper"
 
 /**
@@ -17,6 +16,10 @@ export class SearchService {
     constructor(private readonly repository: SearchRepository) {
     }
 
+    /**
+     * Search
+     * @param query
+     */
     search(query: SearchQuery): Promise<SearchResultPage> {
         return launch(async () => {
             const searchResult = new SearchResultPage()

@@ -14,6 +14,15 @@ class SearchRepository {
     constructor(private readonly connection: Connection) {
     }
 
+    /**
+     * Search offline course
+     * @param grade
+     * @param subject
+     * @param gender
+     * @param location
+     * @param page
+     * @param pageSize
+     */
     async searchOfflineCourse(grade: Grade, subject: string, gender: Gender, location: string, page: number, pageSize: number): Promise<Array<OfflineCourseEntity>> {
         try {
             const query = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")

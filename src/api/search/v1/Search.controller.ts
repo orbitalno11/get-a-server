@@ -20,6 +20,10 @@ export class SearchController {
     constructor(private readonly service: SearchService) {
     }
 
+    /**
+     * Search API
+     * @param searchQuery
+     */
     @Get()
     search(@Query() searchQuery: SearchQuery): Promise<IResponse<SearchResultPage>> {
         return launch(async () => {
