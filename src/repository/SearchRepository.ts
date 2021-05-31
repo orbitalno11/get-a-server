@@ -4,6 +4,8 @@ import { logger } from "../core/logging/Logger"
 import { Grade } from "../model/common/data/Grade"
 import { Gender } from "../model/common/data/Gender"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
+import ErrorExceptions from "../core/exceptions/ErrorExceptions"
+import { CourseError } from "../core/exceptions/constants/course-error.enum"
 
 /**
  * Repository class for search
@@ -51,6 +53,7 @@ class SearchRepository {
                 .getMany()
         } catch (error) {
             logger.error(error)
+            throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)
         }
     }
 }
