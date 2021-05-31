@@ -40,6 +40,8 @@ import {
 import ClipDetail from "../../../model/clip/ClipDetail"
 import IResponse from "../../../core/response/IResponse"
 import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
+import { Cookies } from "../../../decorator/Cookie.decorator"
+import { AllowTimeoutInterceptor } from "../../../interceptors/allow-timeout.interceptor"
 
 /**
  * Controller class for "v1/clip" API
@@ -58,9 +60,10 @@ export class ClipController {
      * @param body
      * @param file
      * @param currentUser
+     * @param socketId
      */
     @Post("create")
-    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(2700))
     @ApiBearerAuth()
     @ApiConsumes("multipart/form-data")
     @ApiImplicitFile({ name: "video", required: true })
@@ -70,7 +73,8 @@ export class ClipController {
     createClip(
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
-        @CurrentUser() currentUser: User
+        @CurrentUser() currentUser: User,
+        @Cookies("io") socketId: string
     ): Promise<IResponse<string>> {
         return launch(async () => {
             const data = ClipForm.createFormBody(body)
@@ -87,7 +91,7 @@ export class ClipController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, "Video is not found")
             }
 
-            const clipId = await this.service.createClip(data, file, currentUser)
+            const clipId = await this.service.createClip(data, file, currentUser, socketId)
 
             return SuccessResponse.create(clipId)
         })
@@ -120,9 +124,10 @@ export class ClipController {
      * @param body
      * @param file
      * @param currentUser
+     * @param socketId
      */
     @Put(":id")
-    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()))
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(2700))
     @ApiBearerAuth()
     @ApiConsumes("multipart/form-data")
     @ApiImplicitFile({ name: "video" })
@@ -134,7 +139,8 @@ export class ClipController {
         @Param("id") clipId: string,
         @Body() body: ClipForm,
         @UploadedFile() file: Express.Multer.File,
-        @CurrentUser() currentUser: User
+        @CurrentUser() currentUser: User,
+        @Cookies("io") socketId: string,
     ): Promise<IResponse<string>> {
         return launch(async () => {
             if (!clipId?.isSafeNotBlank()) {
@@ -151,7 +157,7 @@ export class ClipController {
                 throw FailureResponse.create(CommonError.INVALID_REQUEST_DATA, HttpStatus.BAD_REQUEST, error)
             }
 
-            const result = await this.service.updateClip(clipId, data, currentUser, file)
+            const result = await this.service.updateClip(clipId, data, currentUser, socketId, file)
 
             return SuccessResponse.create(result)
         })
