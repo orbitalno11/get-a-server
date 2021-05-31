@@ -1,4 +1,4 @@
-import { Controller, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, UseFilters, UseInterceptors } from "@nestjs/common"
 import { SearchService } from "./Search.service"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
@@ -13,5 +13,10 @@ import { TransformSuccessResponse } from "../../../interceptors/TransformSuccess
 @UseInterceptors(TransformSuccessResponse)
 export class SearchController {
     constructor(private readonly service: SearchService) {
+    }
+
+    @Get()
+    search() {
+
     }
 }
