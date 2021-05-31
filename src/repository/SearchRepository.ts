@@ -7,6 +7,7 @@ import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.enti
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { Subject } from "../model/common/data/Subject"
 
 /**
  * Repository class for search
@@ -35,8 +36,14 @@ class SearchRepository {
                 .leftJoinAndSelect("member.memberAddress", "address")
                 .leftJoinAndSelect("address.province", "province")
                 .leftJoinAndSelect("address.district", "district")
-                .andWhere("course.grade = :grade", { grade: grade })
-                .andWhere("course.subject like :subject", { subject: subject })
+
+            if (grade !== Grade.NOT_SPECIFIC) {
+                query.andWhere("course.grade = :grade", { grade: grade })
+            }
+
+            if (subject !== Subject.NOT_SPECIFIC) {
+                query.andWhere("course.subject like :subject", { subject: subject })
+            }
 
             if (gender !== Gender.NOT_SPECIFIC) {
                 query.andWhere("member.gender = :gender", { gender: gender })
@@ -73,8 +80,14 @@ class SearchRepository {
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.rating", "rating")
                 .leftJoinAndSelect("owner.member", "member")
-                .andWhere("course.grade = :grade", { grade: grade })
-                .andWhere("course.subject like :subject", { subject: subject })
+
+            if (grade !== Grade.NOT_SPECIFIC) {
+                query.andWhere("course.grade = :grade", { grade: grade })
+            }
+
+            if (subject !== Subject.NOT_SPECIFIC) {
+                query.andWhere("course.subject like :subject", { subject: subject })
+            }
 
             if (gender !== Gender.NOT_SPECIFIC) {
                 query.andWhere("member.gender = :gender", { gender: gender })
