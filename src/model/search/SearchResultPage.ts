@@ -1,14 +1,14 @@
 import MyCourse from "../course/MyCourse"
 import OnlineCourseCard from "../course/OnlineCourseCard"
-import TutorCard from "../profile/TutorCard"
+import { ApiProperty } from "@nestjs/swagger"
+import OfflineCourseCard from "../course/OfflineCourseCard"
 
 class SearchResultPage {
-    currentPage: number
-    nextPage: number | null
-    pageSize: number
-    offlineCourse: Array<TutorCard>
-    onlineCourse: Array<OnlineCourseCard>
-    nearby: Array<MyCourse>
+    @ApiProperty() currentPage: number
+    @ApiProperty() pageSize: number
+    @ApiProperty() offlineCourse: Array<OfflineCourseCard>
+    @ApiProperty() onlineCourse: Array<OnlineCourseCard>
+    @ApiProperty() nearby: Array<MyCourse>
 }
 
 export default SearchResultPage

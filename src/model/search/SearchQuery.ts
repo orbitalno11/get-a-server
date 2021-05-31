@@ -1,16 +1,45 @@
-import { Grade } from "../common/data/Grade"
-import { Subject } from "../common/data/Subject"
 import { Gender } from "../common/data/Gender"
-import { CourseType } from "../course/data/CourseType"
 
 class SearchQuery {
-    grade: Grade
-    subject: Subject
-    gender: Gender
-    type: CourseType
-    location: number | null
-    page: number | null
-    pageSize: number = 20
+    grade?: number
+    subject?: string
+    gender?: number
+    type?: number
+    location?: string
+    page?: number
+    pageSize?: number
+
+    public static createFromQuery(data: SearchQuery): SearchQuery {
+        const query = new SearchQuery()
+        if (data.grade?.toString()?.isNumber() && Number(data.grade)?.isSafeNumber()) {
+            query.grade = Number(data.grade)
+        }
+        if (data.subject?.isSafeNotBlank()) {
+            query.subject = data.subject
+        }
+        if (data.gender?.toString()?.isNumber() && Number(data.gender)?.isSafeNumber()) {
+            query.gender = Number(data.gender)
+        } else {
+            query.gender = Gender.NOT_SPECIFIC
+        }
+        if (data.type?.toString()?.isNumber() && Number(data.type)?.isSafeNumber()) {
+            query.type = Number(data.type)
+        }
+        if (data.location?.isSafeNotBlank()) {
+            query.location = data.location
+        }
+        if (data.page?.toString()?.isNumber() && Number(data.page)?.isSafeNumber()) {
+            query.page = Number(data.page)
+        } else {
+            query.page = 1
+        }
+        if (data.pageSize?.toString()?.isNumber() && Number(data.pageSize)?.isSafeNumber()) {
+            query.pageSize = Number(data.pageSize)
+        } else {
+            query.pageSize = 20
+        }
+        return query
+    }
 }
 
 export default SearchQuery
