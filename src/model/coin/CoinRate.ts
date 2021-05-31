@@ -13,6 +13,7 @@ class CoinRate {
     @ApiProperty() startDate: Date
     @ApiProperty() endDate: Date
     @ApiProperty() updateDate: Date
+    @ApiProperty() active: boolean
 
     public static createFormBody(body: CoinRate): CoinRate {
         const out = new CoinRate()
