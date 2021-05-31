@@ -5,6 +5,7 @@ import { launch } from "../../../core/common/launch"
 import { CourseType } from "../../../model/course/data/CourseType"
 import SearchResultPage from "../../../model/search/SearchResultPage"
 import { OfflineCourseEntityToCardMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToCard.mapper"
+import { OnlineCourseToCourseCardMapper } from "../../../utils/mapper/course/online/OnlineCourseToCourseCard.mapper"
 
 /**
  * Service class for search controller
@@ -38,10 +39,17 @@ export class SearchService {
                 searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(result)
             } else if (query.type === CourseType.ONLINE) {
                 // online course search
-                return undefined
+                const result = await this.repository.searchOnlineCourse(
+                    query.grade,
+                    query.subject,
+                    query.gender,
+                    query.location,
+                    query.page,
+                    query.pageSize
+                )
+                searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(result)
             } else {
                 // all course type search
-                return undefined
             }
             return searchResult
         })
