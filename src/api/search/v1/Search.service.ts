@@ -32,11 +32,22 @@ export class SearchService {
                     query.grade,
                     query.subject,
                     query.gender,
-                    query.location,
                     query.page,
                     query.pageSize
                 )
                 searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(result)
+
+                if (query.location) {
+                    const nearby = await this.repository.searchOfflineCourse(
+                        query.grade,
+                        query.subject,
+                        query.gender,
+                        query.page,
+                        query.pageSize,
+                        query.location
+                    )
+                    searchResult.nearby = new OfflineCourseEntityToCardMapper().mapList(nearby)
+                }
             } else if (query.type === CourseType.ONLINE) {
                 // online course search
                 const result = await this.repository.searchOnlineCourse(
@@ -54,7 +65,6 @@ export class SearchService {
                     query.grade,
                     query.subject,
                     query.gender,
-                    query.location,
                     query.page,
                     query.pageSize
                 )
@@ -69,6 +79,18 @@ export class SearchService {
                 )
                 searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(offline)
                 searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(online)
+
+                if (query.location) {
+                    const nearby = await this.repository.searchOfflineCourse(
+                        query.grade,
+                        query.subject,
+                        query.gender,
+                        query.page,
+                        query.pageSize,
+                        query.location
+                    )
+                    searchResult.nearby = new OfflineCourseEntityToCardMapper().mapList(nearby)
+                }
             }
             return searchResult
         })
