@@ -10,6 +10,9 @@ import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFr
 import { CourseType } from "../model/course/data/CourseType"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { isNotEmpty } from "../core/extension/CommonExtension"
+import OnlineCourse from "../model/course/OnlineCourse"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
 
 /**
  * Repository for analytic manager
@@ -217,8 +220,25 @@ class AnalyticRepository {
                 if (isNotEmpty(offlineCourse)) {
                     tutorId = offlineCourse.owner.id
                 }
-            } else {
-                // todo online course
+            } else if (courseType === CourseType.ONLINE) {
+                const onlineCourse = await queryRunner.manager.getRepository(OnlineCourseEntity)
+                    .findOne({
+                        where: {
+                            id: courseId
+                        },
+                        join: {
+                            alias: "onlineCourse",
+                            leftJoinAndSelect: {
+                                owner: "onlineCourse.owner"
+                            }
+                        }
+                    })
+
+                if (isNotEmpty(onlineCourse)) {
+                    tutorId = onlineCourse.owner.id
+                    onlineCourse.courseView += 1
+                    await queryRunner.manager.save(onlineCourse)
+                }
             }
 
             if (tutorId.isSafeNotBlank()) {
@@ -445,6 +465,20 @@ class AnalyticRepository {
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Track impress clip view
+     * @param clipId
+     */
+    async trackImpressClip(clipId: string) {
+        try {
+            const clip = await this.connection.getRepository(ClipEntity).findOne(clipId)
+            clip.clipView += 1
+            await this.connection.getRepository(ClipEntity).save(clip)
+        } catch (error) {
+            logger.error(error)
         }
     }
 

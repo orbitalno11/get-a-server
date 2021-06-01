@@ -276,6 +276,16 @@ class AnalyticManager {
             }
         })
     }
+
+    /**
+     * Track impress clip
+     * @param clipId
+     */
+    trackImpressClip(clipId: string) {
+        return launch(async () => {
+            await this.repository.trackImpressClip(clipId)
+        })
+    }
 }
 
 export default AnalyticManager

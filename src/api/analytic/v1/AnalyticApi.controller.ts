@@ -61,6 +61,18 @@ export class AnalyticApiController {
         }
     }
 
+    /**
+     * Track impress clip
+     * @param clipId
+     */
+    @Get("clip")
+    @HttpCode(204)
+    trackImpressClip(@Query("clipId") clipId: string) {
+        if (clipId?.isSafeNotBlank()) {
+            this.service.trackImpressClip(clipId)
+        }
+    }
+
     private checkCourseType(type: string): boolean {
         return type.toNumber() in CourseType
     }
