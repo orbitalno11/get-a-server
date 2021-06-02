@@ -14,9 +14,9 @@ export class OnlineCourseToCourseCardMapper implements Mapper<OnlineCourseEntity
         card.subject = isNotEmpty(from.subject) ? Subject.create(from.subject?.code, from.subject?.title) : undefined
         card.grade = isNotEmpty(from.grade) ? new Grade(from.grade?.grade, from.grade?.title) : undefined
         card.coverUrl = from.coverUrl
-        card.rating = from.rating ? from.rating?.rating : 0
+        card.rating = from.statistic?.rating ? from.statistic?.rating : 0
         card.owner = from.owner ?TutorEntityToPublicProfileMapper.getTutorNameCard(from.owner) : undefined
-        card.numberOfVideo = from.numberOfClip
+        card.numberOfVideo = from.statistic?.numberOfClip
         return card
     }
 

@@ -33,43 +33,16 @@ export class FavoriteService {
         return launch(async () => {
             const liked = await this.userUtils.isLiked(learnerUserId, tutorUserId)
 
+            const learnerId = LearnerProfile.getLearnerId(learnerUserId)
+            const tutorId = TutorProfile.getTutorId(tutorUserId)
+
             if (liked) {
-                await this.unLikeTutor(tutorUserId, learnerUserId)
+                await this.repository.unLikeTutor(tutorId, learnerId)
+                await this.analytic.decreaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
             } else {
-                await this.likeTutor(tutorUserId, learnerUserId)
+                await this.repository.likeTutor(tutorId, learnerId)
+                await this.analytic.increaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
             }
-        })
-    }
-
-    /**
-     * Like tutor by tutor id
-     * @param tutorUserId
-     * @param learnerUserId
-     */
-    private likeTutor(tutorUserId: string, learnerUserId: string) {
-        return launch(async () => {
-            const tutor = await this.userUtils.getTutor(tutorUserId)
-            const learner = await this.userUtils.getLearner(learnerUserId)
-
-            await this.repository.likeTutor(tutor, learner)
-
-            await this.analytic.increaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
-        })
-    }
-
-    /**
-     * Unlike tutor by tutor id
-     * @param tutorUserId
-     * @param learnerUserId
-     */
-    private unLikeTutor(tutorUserId: string, learnerUserId: string) {
-        return launch(async () => {
-            const tutor = await this.userUtils.getTutor(tutorUserId)
-            const learner = await this.userUtils.getLearner(learnerUserId)
-
-            await this.repository.unLikeTutor(tutor, learner)
-
-            await this.analytic.decreaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
         })
     }
 

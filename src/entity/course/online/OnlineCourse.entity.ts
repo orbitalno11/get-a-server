@@ -2,8 +2,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColu
 import { TutorEntity } from "../../profile/tutor.entity"
 import { SubjectEntity } from "../../common/subject.entity"
 import { GradeEntity } from "../../common/grade.entity"
-import { OnlineCourseRatingEntity } from "./OnlineCourseRating.entity"
 import { ClipEntity } from "../clip/Clip.entity"
+import { OnlineCourseStatisticEntity } from "./OnlineCourseStatistic.entity"
 
 @Entity("online_course")
 export class OnlineCourseEntity {
@@ -15,12 +15,6 @@ export class OnlineCourseEntity {
 
     @Column({ name: "courseCoverUrl" })
     coverUrl: string
-
-    @Column({ name: "course_view" })
-    courseView: number
-
-    @Column({ name: "number_of_clip" })
-    numberOfClip: number
 
     // entity relation
     @ManyToOne(
@@ -45,10 +39,11 @@ export class OnlineCourseEntity {
     grade: GradeEntity
 
     @OneToOne(
-        () => OnlineCourseRatingEntity,
-        (course) => course.onlineCourse
+        () => OnlineCourseStatisticEntity,
+        (statistic) => statistic.onlineCourse,
+        { cascade: ["insert"] }
     )
-    rating: OnlineCourseRatingEntity
+    statistic: OnlineCourseStatisticEntity
 
     @OneToMany(
         () => ClipEntity,

@@ -5,15 +5,15 @@ import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/o
 import ReviewForm from "../model/review/ReviewForm"
 import { LearnerEntity } from "../entity/profile/learner.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
-import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { ReviewError } from "../core/exceptions/constants/review-error.enum"
-import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
-import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
-import { Clip } from "aws-sdk/clients/elastictranscoder"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
+import LearnerProfile from "../model/profile/LearnerProfile"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
 
 /**
  * Repository for review
@@ -27,20 +27,24 @@ class ReviewRepository {
     /**
      * Create offline course rating
      * @param data
-     * @param learner
-     * @param course
-     * @param updatedRating
-     * @param updatedReviewNumber
+     * @param userId
+     * @param courseId
+     * @param statistic
      */
     async createOfflineCourseReview(
         data: ReviewForm,
-        learner: LearnerEntity,
-        course: OfflineCourseEntity,
-        updatedRating: number,
-        updatedReviewNumber: number
+        userId: string,
+        courseId: string,
+        statistic: OfflineCourseStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            const learner = new LearnerEntity()
+            learner.id = LearnerProfile.getLearnerId(userId)
+
+            const course = new OfflineCourseEntity()
+            course.id = courseId
+
             const review = new OfflineCourseRatingTransactionEntity()
             review.learner = learner
             review.course = course
@@ -50,12 +54,7 @@ class ReviewRepository {
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(review)
-            await queryRunner.manager.update(OfflineCourseRatingEntity,
-                { course: course },
-                {
-                    reviewNumber: updatedReviewNumber,
-                    rating: updatedRating
-                })
+            await queryRunner.manager.save(statistic)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -70,14 +69,12 @@ class ReviewRepository {
      * Get offline course average rating
      * @param courseId
      */
-    async getOfflineCourseRating(courseId: string): Promise<OfflineCourseRatingEntity> {
+    async getOfflineCourseStatistic(courseId: string): Promise<OfflineCourseStatisticEntity> {
         try {
-            return await this.connection.getRepository(OfflineCourseRatingEntity)
-                .findOne({
-                    where: {
-                        course: courseId
-                    }
-                })
+            return await this.connection.createQueryBuilder(OfflineCourseStatisticEntity, "statistic")
+                .innerJoinAndSelect("statistic.course", "course")
+                .where("statistic.course like :courseId", { courseId: courseId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not course rating", ReviewError.CAN_NOT_GET_COURSE_RATING)
@@ -88,14 +85,14 @@ class ReviewRepository {
      * Get offline course rating from user
      * @param reviewId
      */
-    async getOfflineCourseRatingByUser(reviewId: number): Promise<OfflineCourseRatingTransactionEntity> {
+    async getOfflineCourseRatingByUser(reviewId: number): Promise<number> {
         try {
-            return await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
-                .findOne({
-                    where: {
-                        id: reviewId
-                    }
-                })
+            const { rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
+                .createQueryBuilder("rating")
+                .select("rating.rating")
+                .where("rating.id = :reviewId", { reviewId: reviewId })
+                .getRawOne()
+            return rating_rating
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
@@ -105,16 +102,11 @@ class ReviewRepository {
     /**
      * Update offline course review
      * @param data
-     * @param learner
-     * @param course
-     * @param updatedRating
-     * @param updatedReviewNumber
+     * @param statistic
      */
     async updateOfflineCourseReview(
         data: ReviewForm,
-        course: OfflineCourseEntity,
-        updatedRating: number,
-        updatedReviewNumber: number
+        statistic: OfflineCourseStatisticEntity
     ) {
         const queryRunner = await this.connection.createQueryRunner()
         try {
@@ -128,12 +120,7 @@ class ReviewRepository {
                     review: data.comment,
                     reviewDate: new Date()
                 })
-            await queryRunner.manager.update(OfflineCourseRatingEntity,
-                { course: course },
-                {
-                    reviewNumber: updatedReviewNumber,
-                    rating: updatedRating
-                })
+            await queryRunner.manager.save(statistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -147,29 +134,20 @@ class ReviewRepository {
 
     /**
      * Delete offline course review
-     * @param course
-     * @param userReview
-     * @param updatedRating
-     * @param updatedReviewNumber
+     * @param reviewId
+     * @param statistic
      */
     async deleteOfflineReview(
-        course: OfflineCourseEntity,
-        userReview: OfflineCourseRatingTransactionEntity,
-        updatedRating: number,
-        updatedReviewNumber: number
+        reviewId: number,
+        statistic: OfflineCourseStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.remove(userReview)
-            await queryRunner.manager.update(OfflineCourseRatingEntity,
-                { course: course },
-                {
-                    reviewNumber: updatedReviewNumber,
-                    rating: updatedRating
-                })
+            await queryRunner.manager.delete(OfflineCourseRatingTransactionEntity, reviewId)
+            await queryRunner.manager.save(statistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -220,26 +198,28 @@ class ReviewRepository {
     /**
      * Create online course review
      * @param data
-     * @param learner
-     * @param course
-     * @param clip
-     * @param updatedCourseRating
-     * @param updatedCourseReviewNumber
-     * @param updatedClipRating
-     * @param updatedClipReviewNumber
+     * @param userId
+     * @param courseId
+     * @param clipId
+     * @param courseStatistic
+     * @param clipStatistic
      */
     async createOnlineCourseReview(
         data: ReviewForm,
-        learner: LearnerEntity,
-        course: OnlineCourseEntity,
-        clip: ClipEntity,
-        updatedCourseRating: number,
-        updatedCourseReviewNumber: number,
-        updatedClipRating: number,
-        updatedClipReviewNumber: number
+        userId: string,
+        courseId: string,
+        clipId: string,
+        courseStatistic: OnlineCourseStatisticEntity,
+        clipStatistic: ClipStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            const learner = new LearnerEntity()
+            learner.id = LearnerProfile.getLearnerId(userId)
+
+            const clip = new ClipEntity()
+            clip.id = clipId
+
             const review = new ClipRatingTransactionEntity()
             review.learner = learner
             review.clip = clip
@@ -249,18 +229,8 @@ class ReviewRepository {
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(review)
-            await queryRunner.manager.update(OnlineCourseRatingEntity,
-                { onlineCourse: course },
-                {
-                    reviewNumber: updatedCourseReviewNumber,
-                    rating: updatedCourseRating
-                })
-            await queryRunner.manager.update(ClipRatingEntity,
-                { clip: clip },
-                {
-                    reviewNumber: updatedClipReviewNumber,
-                    rating: updatedClipRating
-                })
+            await queryRunner.manager.save(clipStatistic)
+            await queryRunner.manager.save(courseStatistic)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -275,14 +245,12 @@ class ReviewRepository {
      * Get online course rating
      * @param courseId
      */
-    async getOnlineCourseRating(courseId: string): Promise<OnlineCourseRatingEntity> {
+    async getOnlineCourseStatistic(courseId: string): Promise<OnlineCourseStatisticEntity> {
         try {
-            return await this.connection.getRepository(OnlineCourseRatingEntity)
-                .findOne({
-                    where: {
-                        onlineCourse: courseId
-                    }
-                })
+            return await this.connection.createQueryBuilder(OnlineCourseStatisticEntity, "statistic")
+                .innerJoinAndSelect("statistic.onlineCourse", "course")
+                .where("statistic.onlineCourse like :courseId", { courseId: courseId})
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get course rating", ReviewError.CAN_NOT_GET_COURSE_RATING)
@@ -293,14 +261,12 @@ class ReviewRepository {
      * Get clip rating
      * @param clipId
      */
-    async getClipRating(clipId: string): Promise<ClipRatingEntity> {
+    async getClipStatistic(clipId: string): Promise<ClipStatisticEntity> {
         try {
-            return await this.connection.getRepository(ClipRatingEntity)
-                .findOne({
-                    where: {
-                        clip: clipId
-                    }
-                })
+            return await this.connection.createQueryBuilder(ClipStatisticEntity, "statistic")
+                .innerJoinAndSelect("statistic.clip", "clip")
+                .where("statistic.clip like :clipId", { clipId: clipId})
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get clip rating", ReviewError.CAN_NOT_GET_CLIP_RATING)
@@ -311,14 +277,13 @@ class ReviewRepository {
      * Get clip rating by user
      * @param reviewId
      */
-    async getClipRatingByUser(reviewId: number): Promise<ClipRatingTransactionEntity> {
+    async getClipRatingByUser(reviewId: number): Promise<number> {
         try {
-            return await this.connection.getRepository(ClipRatingTransactionEntity)
-                .findOne({
-                    where: {
-                        id: reviewId
-                    }
-                })
+            const { rating_rating } = await this.connection.createQueryBuilder(ClipRatingTransactionEntity, "rating")
+                .select("rating.rating")
+                .where("rating.id = :reviewId", { reviewId: reviewId })
+                .getRawOne()
+            return rating_rating
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
@@ -328,21 +293,13 @@ class ReviewRepository {
     /**
      * Update Clip review
      * @param data
-     * @param course
-     * @param clip
-     * @param updatedCourseRating
-     * @param updatedCourseReviewNumber
-     * @param updatedClipRating
-     * @param updatedClipReviewNumber
+     * @param courseStatistic
+     * @param clipStatistic
      */
     async updateOnlineCourseReview(
         data: ReviewForm,
-        course: OnlineCourseEntity,
-        clip: ClipEntity,
-        updatedCourseRating: number,
-        updatedCourseReviewNumber: number,
-        updatedClipRating: number,
-        updatedClipReviewNumber: number
+        courseStatistic: OnlineCourseStatisticEntity,
+        clipStatistic: ClipStatisticEntity
     ) {
         const queryRunner = await this.connection.createQueryRunner()
         try {
@@ -356,18 +313,8 @@ class ReviewRepository {
                     review: data.comment,
                     reviewDate: new Date()
                 })
-            await queryRunner.manager.update(ClipRatingEntity,
-                { clip: clip },
-                {
-                    reviewNumber: updatedClipReviewNumber,
-                    rating: updatedClipRating
-                })
-            await queryRunner.manager.update(OnlineCourseRatingEntity,
-                { onlineCourse: course },
-                {
-                    reviewNumber: updatedCourseReviewNumber,
-                    rating: updatedCourseRating
-                })
+            await queryRunner.manager.save(clipStatistic)
+            await queryRunner.manager.save(courseStatistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -437,33 +384,25 @@ class ReviewRepository {
         }
     }
 
+    /**
+     * Delete clip review
+     * @param reviewId
+     * @param courseStatistic
+     * @param clipStatistic
+     */
     async deleteClipReview(
-        course: OnlineCourseEntity,
-        clip: ClipEntity,
-        userReview: ClipRatingTransactionEntity,
-        updatedCourseRating: number,
-        updatedCourseReviewNumber: number,
-        updatedClipRating: number,
-        updatedClipReviewNumber: number
+        reviewId: number,
+        courseStatistic: OnlineCourseStatisticEntity,
+        clipStatistic: ClipStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.remove(userReview)
-            await queryRunner.manager.update(ClipRatingEntity,
-                { clip: clip },
-                {
-                    reviewNumber: updatedClipReviewNumber,
-                    rating: updatedClipRating
-                })
-            await queryRunner.manager.update(OnlineCourseRatingEntity,
-                { onlineCourse: course },
-                {
-                    reviewNumber: updatedCourseReviewNumber,
-                    rating: updatedCourseRating
-                })
+            await queryRunner.manager.delete(ClipRatingTransactionEntity, reviewId)
+            await queryRunner.manager.save(clipStatistic)
+            await queryRunner.manager.save(courseStatistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -472,6 +411,31 @@ class ReviewRepository {
             throw ErrorExceptions.create("Can not delete review", ReviewError.CAN_NOT_DELETE_REVIEW)
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    /**
+     * Get course owner id by course id
+     * @param courseId
+     * @param offline
+     */
+    async getCourseOwnerById(courseId: string, offline: boolean): Promise<string> {
+        try {
+            if (offline) {
+                const { ownerId } = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
+                    .select("course.ownerId")
+                    .where("course.id like :courseId", { courseId: courseId })
+                    .getRawOne()
+                return ownerId
+            } else {
+                const { ownerId } = await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
+                    .select("course.ownerId")
+                    .where("course.id like :courseId", { courseId: courseId })
+                    .getRawOne()
+                return ownerId
+            }
+        } catch (error) {
+            logger.error(error)
         }
     }
 }

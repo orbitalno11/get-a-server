@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm"
 import { OnlineCourseEntity } from "../online/OnlineCourse.entity"
 import { TutorEntity } from "../../profile/tutor.entity"
-import { ClipRatingEntity } from "./ClipRating.entity"
 import { ClipRatingTransactionEntity } from "./ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "./ClipTransaction.entity"
+import { ClipStatisticEntity } from "./ClipStatistic.entity"
 
 @Entity("clip")
 export class ClipEntity {
@@ -31,9 +31,6 @@ export class ClipEntity {
     @Column()
     coverUrlCloudPath: string
 
-    @Column({ name: "clip_view" })
-    clipView: number
-
     // entity relation
     @ManyToOne(
         () => OnlineCourseEntity,
@@ -50,10 +47,11 @@ export class ClipEntity {
     owner: TutorEntity
 
     @OneToOne(
-        () => ClipRatingEntity,
-        (rating) => rating.clip
+        () => ClipStatisticEntity,
+        (statistic) => statistic.clip,
+        { cascade: ["insert"] }
     )
-    rating: ClipRatingEntity
+    statistic: ClipStatisticEntity
 
     @OneToMany(
         () => ClipRatingTransactionEntity,
