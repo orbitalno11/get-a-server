@@ -10,7 +10,7 @@ class SearchQuery {
     @ApiProperty({ required: false }) type?: number
     @ApiProperty({ required: false }) location?: string
     @ApiProperty({ required: false }) page?: number
-    @ApiProperty({ required: false }) pageSize?: number
+    @ApiProperty({ required: false }) limit?: number
 
     public static createFromQuery(data: SearchQuery): SearchQuery {
         const query = new SearchQuery()
@@ -40,10 +40,10 @@ class SearchQuery {
         } else {
             query.page = 1
         }
-        if (data.pageSize?.toString()?.isNumber() && Number(data.pageSize)?.isSafeNumber()) {
-            query.pageSize = Number(data.pageSize)
+        if (data.limit?.toString()?.isNumber() && Number(data.limit)?.isSafeNumber()) {
+            query.limit = Number(data.limit)
         } else {
-            query.pageSize = 20
+            query.limit = 20
         }
         return query
     }
