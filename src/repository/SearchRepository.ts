@@ -8,6 +8,7 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { Subject } from "../model/common/data/Subject"
+import { IPaginationOptions, paginate, Pagination } from "nestjs-typeorm-paginate"
 
 /**
  * Repository class for search
@@ -23,15 +24,16 @@ class SearchRepository {
      * @param grade
      * @param subject
      * @param gender
+     * @param paginationOption
      * @param location
-     * @param page
-     * @param pageSize
      */
-    async searchOfflineCourse(grade: Grade, subject: string, gender: Gender, page: number, pageSize: number, location?: string): Promise<Array<OfflineCourseEntity>> {
+    async searchOfflineCourse(grade: Grade, subject: string, gender: Gender, paginationOption: IPaginationOptions, location?: string): Promise<Pagination<OfflineCourseEntity>> {
         try {
             const query = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.subject", "subject")
+                .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("owner.member", "member")
                 .leftJoinAndSelect("member.memberAddress", "address")
                 .leftJoinAndSelect("address.province", "province")
@@ -53,12 +55,10 @@ class SearchRepository {
                 query.andWhere("district.id like :location", { location: location })
             }
 
-            return await query
-                .skip(pageSize * (page - 1))
-                .limit(pageSize)
-                .distinct(true)
+            query.distinct(true)
                 .orderBy("rating.rating", "DESC")
-                .getMany()
+
+            return paginate<OfflineCourseEntity>(query, paginationOption)
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)
@@ -70,15 +70,15 @@ class SearchRepository {
      * @param grade
      * @param subject
      * @param gender
-     * @param location
-     * @param page
-     * @param pageSize
+     * @param paginationOption
      */
-    async searchOnlineCourse(grade: Grade, subject: string, gender: Gender, location: string, page: number, pageSize: number): Promise<Array<OnlineCourseEntity>> {
+    async searchOnlineCourse(grade: Grade, subject: string, gender: Gender, paginationOption: IPaginationOptions): Promise<Pagination<OnlineCourseEntity>> {
         try {
             const query = await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.grade", "grade")
+                .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("owner.member", "member")
 
             if (grade !== Grade.NOT_SPECIFIC) {
@@ -93,12 +93,10 @@ class SearchRepository {
                 query.andWhere("member.gender = :gender", { gender: gender })
             }
 
-            return await query
-                .skip(pageSize * (page - 1))
-                .limit(pageSize)
-                .distinct(true)
+            query.distinct(true)
                 .orderBy("rating.rating", "DESC")
-                .getMany()
+
+            return paginate<OnlineCourseEntity>(query, paginationOption)
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)

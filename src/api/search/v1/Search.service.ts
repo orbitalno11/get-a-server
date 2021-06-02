@@ -6,6 +6,13 @@ import { CourseType } from "../../../model/course/data/CourseType"
 import SearchResultPage from "../../../model/search/SearchResultPage"
 import { OfflineCourseEntityToCardMapper } from "../../../utils/mapper/course/offline/OfflineCourseEntityToCard.mapper"
 import { OnlineCourseToCourseCardMapper } from "../../../utils/mapper/course/online/OnlineCourseToCourseCard.mapper"
+import { IPaginationOptions, Pagination } from "nestjs-typeorm-paginate"
+import { Grade } from "../../../model/common/data/Grade"
+import { Subject } from "../../../model/common/data/Subject"
+import SearchResult from "../../../model/search/SearchResult"
+import OfflineCourseCard from "../../../model/course/OfflineCourseCard"
+import { Gender } from "../../../model/common/data/Gender"
+import OnlineCourseCard from "../../../model/course/OnlineCourseCard"
 
 /**
  * Service class for search controller
@@ -24,75 +31,137 @@ export class SearchService {
     search(query: SearchQuery): Promise<SearchResultPage> {
         return launch(async () => {
             const searchResult = new SearchResultPage()
-            searchResult.currentPage = query.page
-            searchResult.pageSize = query.pageSize
             if (query.type === CourseType.OFFLINE_GROUP || query.type === CourseType.OFFLINE_SINGLE) {
                 // offline course search
-                const result = await this.repository.searchOfflineCourse(
-                    query.grade,
-                    query.subject,
-                    query.gender,
-                    query.page,
-                    query.pageSize
-                )
-                searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(result)
+                searchResult.offlineCourse = await this.searchOfflineCourse(query)
 
                 if (query.location) {
-                    const nearby = await this.repository.searchOfflineCourse(
-                        query.grade,
-                        query.subject,
-                        query.gender,
-                        query.page,
-                        query.pageSize,
-                        query.location
-                    )
-                    searchResult.nearby = new OfflineCourseEntityToCardMapper().mapList(nearby)
+                    searchResult.nearby = await this.searchOfflineCourse(query)
                 }
             } else if (query.type === CourseType.ONLINE) {
                 // online course search
-                const result = await this.repository.searchOnlineCourse(
-                    query.grade,
-                    query.subject,
-                    query.gender,
-                    query.location,
-                    query.page,
-                    query.pageSize
-                )
-                searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(result)
+                searchResult.onlineCourse = await this.searchOnlineCourse(query)
             } else {
                 // all course type search
-                const offline = await this.repository.searchOfflineCourse(
-                    query.grade,
-                    query.subject,
-                    query.gender,
-                    query.page,
-                    query.pageSize
-                )
-
-                const online = await this.repository.searchOnlineCourse(
-                    query.grade,
-                    query.subject,
-                    query.gender,
-                    query.location,
-                    query.page,
-                    query.pageSize
-                )
-                searchResult.offlineCourse = new OfflineCourseEntityToCardMapper().mapList(offline)
-                searchResult.onlineCourse = new OnlineCourseToCourseCardMapper().mapList(online)
+                searchResult.offlineCourse = await this.searchOfflineCourse(query)
 
                 if (query.location) {
-                    const nearby = await this.repository.searchOfflineCourse(
-                        query.grade,
-                        query.subject,
-                        query.gender,
-                        query.page,
-                        query.pageSize,
-                        query.location
-                    )
-                    searchResult.nearby = new OfflineCourseEntityToCardMapper().mapList(nearby)
+                    searchResult.nearby = await this.searchOfflineCourse(query)
                 }
+
+                searchResult.onlineCourse = await this.searchOnlineCourse(query)
             }
             return searchResult
         })
+    }
+
+    /**
+     * Search offline course
+     * @param query
+     * @private
+     */
+    private searchOfflineCourse(query: SearchQuery): Promise<SearchResult<OfflineCourseCard>> {
+        return launch(async () => {
+            const paginationOptions = this.createPaginationOption(query)
+
+            let result
+            if (!query.location) {
+                result = await this.repository.searchOfflineCourse(
+                    query.grade,
+                    query.subject,
+                    query.gender,
+                    paginationOptions
+                )
+            } else {
+                result = await this.repository.searchOfflineCourse(
+                    query.grade,
+                    query.subject,
+                    query.gender,
+                    paginationOptions,
+                    query.location
+                )
+            }
+
+            const offlineCourse = this.createSearchResult<OfflineCourseCard>(result)
+            offlineCourse.item = new OfflineCourseEntityToCardMapper().mapList(result.items)
+
+            return offlineCourse
+        })
+    }
+
+    /**
+     * Search online course
+     * @param query
+     * @private
+     */
+    private searchOnlineCourse(query: SearchQuery): Promise<SearchResult<OnlineCourseCard>> {
+        return launch(async () => {
+            const paginationOptions = this.createPaginationOption(query)
+
+            const result = await this.repository.searchOnlineCourse(
+                query.grade,
+                query.subject,
+                query.gender,
+                paginationOptions
+            )
+
+            const onlineCourse = this.createSearchResult<OnlineCourseCard>(result)
+            onlineCourse.item = new OnlineCourseToCourseCardMapper().mapList(result.items)
+
+            return onlineCourse
+        })
+    }
+
+    /**
+     * Create query parameter
+     * @param url
+     * @param query
+     * @private
+     */
+    private queryBuilder(url: string, query: SearchQuery): string {
+        let queryString = ""
+        for (const key of Object.keys(query)) {
+            if (key === "page" || key === "limit") {
+                continue
+            }
+            if (key === "grade" && query[key] === Grade.NOT_SPECIFIC) {
+                continue
+            }
+            if (key === "subject" && query[key] === Subject.NOT_SPECIFIC) {
+                continue
+            }
+            if (key === "gender" && query[key] === Gender.NOT_SPECIFIC) {
+                continue
+            }
+            queryString = queryString.concat(key)
+            queryString = queryString.concat(`=${query[key]}&`)
+        }
+        queryString = queryString.slice(0,-1)
+        return `${url}?${queryString}`
+    }
+
+    /**
+     * Create pagination option
+     * @param query
+     * @private
+     */
+    private createPaginationOption(query: SearchQuery): IPaginationOptions {
+        return {
+            page: query.page,
+            limit: query.limit,
+            route: this.queryBuilder("search", query)
+        }
+    }
+
+    /**
+     * Create search result
+     * @param pagination
+     * @private
+     */
+    private createSearchResult<T>(pagination: Pagination<any>): SearchResult<T> {
+        const searchResult = new SearchResult<T>()
+        searchResult.links = pagination.links
+        searchResult.meta = pagination.meta
+        return searchResult
     }
 }
