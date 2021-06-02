@@ -49,32 +49,57 @@ export class OfflineCourseEntity {
     studentNumber: number
 
     // entity relation attribute
-    @ManyToOne(() => TutorEntity, (tutor) => tutor.offlineCourse)
+    @ManyToOne(
+        () => TutorEntity,
+        (tutor) => tutor.offlineCourse
+    )
     @JoinColumn({name: "ownerId"})
     owner: TutorEntity
 
-    @ManyToOne(() => CourseTypeEntity, (type) => type.offlineCourse)
+    @ManyToOne(
+        () => CourseTypeEntity,
+        (type) => type.offlineCourse
+    )
     @JoinColumn({name: "courseTypeId"})
     courseType: CourseTypeEntity
 
-    @ManyToOne(() => SubjectEntity, (subject) => subject.offlineCourse)
+    @ManyToOne(
+        () => SubjectEntity,
+        (subject) => subject.offlineCourse
+    )
     @JoinColumn({name: "subjectCode"})
     subject: SubjectEntity
 
-    @ManyToOne(() => GradeEntity, (grade) => grade.offlineCourse)
+    @ManyToOne(
+        () => GradeEntity,
+        (grade) => grade.offlineCourse
+    )
     @JoinColumn({name: "gradeId"})
     grade: GradeEntity
 
     // entity relation
-    @OneToOne(() => OfflineCourseRatingEntity, (rating) => rating.course)
+    @OneToOne(
+        () => OfflineCourseRatingEntity,
+        (rating) => rating.course
+    )
     rating: OfflineCourseRatingEntity
 
-    @OneToOne(() => OfflineCourseStatisticEntity, (statistic) => statistic.course)
+    @OneToOne(
+        () => OfflineCourseStatisticEntity,
+        (statistic) => statistic.course,
+        { cascade: ["insert"] }
+    )
     statistic: OfflineCourseStatisticEntity
 
-    @OneToMany(() => OfflineCourseRatingTransactionEntity, (rating) => rating.course)
+    @OneToMany(
+        () => OfflineCourseRatingTransactionEntity,
+        (rating) => rating.course
+    )
     courseReview: OfflineCourseRatingTransactionEntity[]
 
-    @OneToMany(() => OfflineCourseLeanerRequestEntity, (request) => request.course)
+    @OneToMany(
+        () => OfflineCourseLeanerRequestEntity,
+        (request) => request.course
+    )
     requestList: OfflineCourseLeanerRequestEntity[]
 }

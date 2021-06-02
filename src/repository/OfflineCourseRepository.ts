@@ -13,6 +13,7 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
 
 /**
  * Repository for offline course
@@ -32,6 +33,17 @@ class OfflineCourseRepository {
     async createCourse(courseId: string, data: OfflineCourseForm, tutor: TutorEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            const statistic = new OfflineCourseStatisticEntity()
+            statistic.courseRank = 0
+            statistic.rating = 0
+            statistic.numberOfView = 0
+            statistic.numberOfReview = 0
+            statistic.oneStar = 0
+            statistic.twoStar = 0
+            statistic.threeStar = 0
+            statistic.fourStar = 0
+            statistic.fiveStar = 0
+
             const offlineCourse = new OfflineCourseEntity()
             offlineCourse.id = courseId
             offlineCourse.name = data.name
@@ -46,16 +58,11 @@ class OfflineCourseRepository {
             offlineCourse.subject = SubjectEntity.createFromCode(data.subject)
             offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
             offlineCourse.owner = tutor
-
-            const courseRating = new OfflineCourseRatingEntity()
-            courseRating.course = offlineCourse
-            courseRating.reviewNumber = 0
-            courseRating.rating = 0
+            offlineCourse.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(offlineCourse)
-            await queryRunner.manager.save(courseRating)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

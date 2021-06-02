@@ -303,25 +303,17 @@ class AnalyticRepository {
      * @param tutorId
      */
     async trackTutorCreateOfflineCourse(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
         try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
-
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    offlineCourseNumber: statistic.offlineCourseNumber + 1
+            await this.connection.createQueryBuilder()
+                .update(TutorStatisticEntity)
+                .set({
+                    offlineCourseNumber: () => "number_of_offline_course + 1"
                 })
-
-            await queryRunner.commitTransaction()
+                .where("tutor like :tutorId", { tutorId: tutorId })
+                .execute()
         } catch (error) {
             logger.error(error)
-            await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
         }
     }
 
