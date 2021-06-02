@@ -473,3 +473,52 @@ create table tutor_analytic_monetary_data(
     PRIMARY KEY (tutor_id),
     CONSTRAINT `FK_ANA_MONETARY_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
 );
+
+create table offline_course_rating (
+    id int not null AUTO_INCREMENT,
+    course_id varchar(255) not null,
+    course_rating float(2,1) not null default 0,
+    number_of_one_star UNSIGNED int not null default 0,
+    number_of_two_star UNSIGNED int not null default 0,
+    number_of_three_star UNSIGNED int not null default 0,
+    number_of_four_star UNSIGNED int not null default 0,
+    number_of_five_star UNSIGNED int not null default 0,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_ANA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id)
+);
+
+create table offline_course_statistic (
+    course_id varchar(255) not null,
+    course_rating int not null,
+    course_rank UNSIGNED float(10,3) not null default 0,
+    number_of_review UNSIGNED int not null default 0,
+    number_of_view UNSIGNED int not null default 0,
+    PRIMARY KEY (course_id),
+    CONSTRAINT `FK_STA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id),
+    CONSTRAINT `FK_STA_OFFLINE_COURSE_RATING` FOREIGN KEY (course_rating) REFERENCES offline_course_rating (id)
+);
+
+create table online_course_rating (
+    id int not null AUTO_INCREMENT,
+    course_id varchar(255) not null,
+    course_rating float(2,1) not null default 0,
+    number_of_one_star UNSIGNED int not null default 0,
+    number_of_two_star UNSIGNED int not null default 0,
+    number_of_three_star UNSIGNED int not null default 0,
+    number_of_four_star UNSIGNED int not null default 0,
+    number_of_five_star UNSIGNED int not null default 0,
+    PRIMARY KEY (id),
+    CONSTRAINT `FK_ANA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id)
+);
+
+create table online_course_statistic (
+    course_id varchar(255) not null,
+    course_rating int not null,
+    course_rank UNSIGNED int not null default 0,
+    number_of_clip UNSIGNED int not null default 0,
+    number_of_review UNSIGNED int not null default 0,
+    number_of_clip_view UNSIGNED int not null default 0,
+    PRIMARY KEY (course_id),
+    CONSTRAINT `FK_STA_ONLINE_COURSE` FOREIGN KEY (course_id) REFERENCES online_course (id),
+    CONSTRAINT `FK_STA_ONLINE_COURSE_RATING` FOREIGN KEY (course_rating) REFERENCES online_course_rating (id)
+);
