@@ -20,6 +20,7 @@ import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTra
 import { ReviewError } from "../core/exceptions/constants/review-error.enum"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
+import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
 
 /**
  * Repository for user utility
@@ -132,6 +133,37 @@ class UserRepository {
     }
 
     /**
+     * Check user is enrolled course
+     * @param learnerId
+     * @param courseId
+     * @param isOfflineCourse
+     */
+    async isEnrolledCourseById(learnerId: string, courseId: string, isOfflineCourse: boolean): Promise<boolean> {
+        try {
+            if (isOfflineCourse) {
+                const count = await this.connection.createQueryBuilder(OfflineCourseLeanerRequestEntity, "request")
+                    .where("request.course like :courseId", { courseId: courseId })
+                    .andWhere("request.learner like :learnerId", { learnerId: learnerId })
+                    .andWhere("request.status = :enrollStatus", { enrollStatus: EnrollStatus.APPROVE })
+                    .getCount()
+                return count === 1
+            } else {
+                const count = await this.connection.createQueryBuilder(OnlineCourseEntity, "onlineCourse")
+                    .leftJoinAndSelect("onlineCourse.clips", "clip")
+                    .leftJoinAndSelect("onlineCourse.owner", "owner")
+                    .leftJoinAndSelect("clip.transaction", "transaction")
+                    .where("onlineCourse.id like :courseId", {courseId: courseId})
+                    .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
+                    .getCount()
+                return count === 1
+            }
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)
+        }
+    }
+
+    /**
      * Get subscribe clip detail by learner id and clip id
      * @param learnerId
      * @param clipId
@@ -160,6 +192,24 @@ class UserRepository {
                 .where("review.learner like :learnerId", { learnerId: learnerId })
                 .andWhere("review.course like :courseId", { courseId: courseId })
                 .getOne()
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get course review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)
+        }
+    }
+
+    /**
+     * Check already review course
+     * @param learnerId
+     * @param courseId
+     */
+    async isReviewCourseById(learnerId: string, courseId: string): Promise<boolean> {
+        try {
+            const count = await this.connection.createQueryBuilder(OfflineCourseRatingTransactionEntity, "review")
+                .where("review.learner like :learnerId", { learnerId: learnerId })
+                .andWhere("review.course like :courseId", { courseId: courseId })
+                .getCount()
+            return count === 1
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get course review", ReviewError.CAN_NOT_GET_COURSE_REVIEW)

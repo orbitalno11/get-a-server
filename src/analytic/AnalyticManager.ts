@@ -102,77 +102,54 @@ class AnalyticManager {
 
             if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
                 const deleteReview = rating === 0.0
-                let updateStatisticTutorRating: number
-                let updateStatisticRating: number
-                let updateStatisticReviewNumber: number
-                let updateMonetaryTutorRating: number
-                let updateMonetaryRating: number
-                let updateMonetaryReviewNumber: number
 
                 if (firstTime) {
-                    updateStatisticRating = RatingUtil.calculateIncreaseRatingAvg(
+                    statistic.offlineRating = RatingUtil.calculateIncreaseRatingAvg(
                         statistic.offlineRating,
                         rating,
                         statistic.numberOfOfflineReview
                     )
-                    updateStatisticReviewNumber = statistic.numberOfOfflineReview + 1
+                    statistic.numberOfOfflineReview += 1
 
-                    updateMonetaryRating = RatingUtil.calculateIncreaseRatingAvg(
+                    monetary.offlineRating = RatingUtil.calculateIncreaseRatingAvg(
                         monetary.offlineRating,
                         rating,
                         monetary.numberOfOfflineReview
                     )
-                    updateMonetaryReviewNumber = monetary.numberOfOfflineReview + 1
+                    monetary.numberOfOfflineReview += 1
                 } else {
-                    updateStatisticRating = RatingUtil.calculateUpdateRatingAvg(
+                    statistic.offlineRating = RatingUtil.calculateUpdateRatingAvg(
                         statistic.offlineRating,
                         rating,
                         oldRating,
                         statistic.numberOfOfflineReview
                     )
-                    updateStatisticReviewNumber = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
+                    statistic.numberOfOfflineReview = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
 
-                    updateMonetaryRating = RatingUtil.calculateUpdateRatingAvg(
+                    monetary.offlineRating = RatingUtil.calculateUpdateRatingAvg(
                         monetary.offlineRating,
                         rating,
                         oldRating,
                         monetary.numberOfOfflineReview
                     )
-                    updateMonetaryReviewNumber = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
+                    monetary.numberOfOfflineReview = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
                 }
 
-                updateStatisticTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateStatisticRating,
+                statistic.rating = RatingUtil.calculateTutorRatingAvg(
+                    statistic.offlineRating,
                     statistic.onlineRating,
-                    updateStatisticReviewNumber,
+                    statistic.numberOfOfflineReview,
                     statistic.numberOfOnlineReview
                 )
 
-                updateMonetaryTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateMonetaryRating,
+                monetary.rating = RatingUtil.calculateTutorRatingAvg(
+                    monetary.offlineRating,
                     monetary.onlineRating,
-                    updateMonetaryReviewNumber,
+                    monetary.numberOfOfflineReview,
                     monetary.numberOfOnlineReview
                 )
 
-                if (updateStatisticTutorRating?.isSafeNumber() &&
-                    updateStatisticRating?.isSafeNumber() &&
-                    updateStatisticReviewNumber?.isSafeNumber() &&
-                    updateMonetaryTutorRating?.isSafeNumber() &&
-                    updateMonetaryRating?.isSafeNumber() &&
-                    updateMonetaryReviewNumber?.isSafeNumber()
-                ) {
-                    await this.repository.trackLearnerReviewOfflineCourse(
-                        tutorId,
-                        updateStatisticTutorRating,
-                        updateStatisticRating,
-                        updateStatisticReviewNumber,
-                        updateMonetaryTutorRating,
-                        updateMonetaryRating,
-                        updateMonetaryReviewNumber,
-                        deleteReview
-                    )
-                }
+                await this.repository.trackLearnerReviewOfflineCourse(tutorId, statistic, monetary, deleteReview)
             }
         })
     }

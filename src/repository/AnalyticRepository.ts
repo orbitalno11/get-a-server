@@ -321,22 +321,14 @@ class AnalyticRepository {
      * Track learner review offline course
      * TODO Refactor review tracking
      * @param tutorId
-     * @param updatedStatisticTutorRating
-     * @param updatedStatisticRating
-     * @param updatedStatisticReviewNumber
-     * @param updatedMonetaryTutorRating
-     * @param updatedMonetaryRating
-     * @param updatedMonetaryReviewNumber
+     * @param statistic
+     * @param monetary
      * @param deleteReview
      */
     async trackLearnerReviewOfflineCourse(
         tutorId: string,
-        updatedStatisticTutorRating: number,
-        updatedStatisticRating: number,
-        updatedStatisticReviewNumber: number,
-        updatedMonetaryTutorRating: number,
-        updatedMonetaryRating: number,
-        updatedMonetaryReviewNumber: number,
+        statistic: TutorStatisticEntity,
+        monetary: TutorAnalyticMonetaryEntity,
         deleteReview: boolean
     ) {
         const queryRunner = this.connection.createQueryRunner()
@@ -344,20 +336,8 @@ class AnalyticRepository {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedStatisticTutorRating,
-                    offlineRating: updatedStatisticRating,
-                    numberOfOfflineReview: updatedStatisticReviewNumber
-                })
-            await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedMonetaryTutorRating,
-                    offlineRating: updatedMonetaryRating,
-                    numberOfOfflineReview: updatedMonetaryReviewNumber
-                })
+            await queryRunner.manager.save(statistic)
+            await queryRunner.manager.save(monetary)
             if (!deleteReview) {
                 await queryRunner.manager.update(TutorAnalyticRecencyEntity,
                     { tutor: tutorId },
@@ -481,21 +461,10 @@ class AnalyticRepository {
      */
     async getTutorStatistic(tutorId: string): Promise<TutorStatisticEntity> {
         try {
-            return await this.connection.getRepository(TutorStatisticEntity).findOne(tutorId)
-        } catch (error) {
-            logger.error(error)
-            throw ErrorExceptions.create("Can not get tutor recency analytic", AnalyticError.CAN_NOT_GET_TUTOR_RECENCY)
-        }
-    }
-
-    /**
-     * Get tutor recency entity
-     * @param tutorId
-     * @private
-     */
-    async getTutorRecency(tutorId: string): Promise<TutorAnalyticRecencyEntity> {
-        try {
-            return await this.connection.getRepository(TutorAnalyticRecencyEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorStatisticEntity).createQueryBuilder("statistic")
+                .innerJoinAndSelect("statistic.tutor", "tutor")
+                .where("statistic.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor recency analytic", AnalyticError.CAN_NOT_GET_TUTOR_RECENCY)
@@ -509,7 +478,10 @@ class AnalyticRepository {
      */
     async getTutorFrequency(tutorId: string): Promise<TutorAnalyticFrequencyEntity> {
         try {
-            return await this.connection.getRepository(TutorAnalyticFrequencyEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorAnalyticFrequencyEntity).createQueryBuilder("frequency")
+                .innerJoinAndSelect("frequency.tutor", "tutor")
+                .where("frequency.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor frequency analytic", AnalyticError.CAN_NOT_GET_TUTOR_FREQ)
@@ -523,7 +495,10 @@ class AnalyticRepository {
      */
     async getTutorMonetary(tutorId: string): Promise<TutorAnalyticMonetaryEntity> {
         try {
-            return await this.connection.getRepository(TutorAnalyticMonetaryEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorAnalyticMonetaryEntity).createQueryBuilder("monetary")
+                .innerJoinAndSelect("monetary.tutor", "tutor")
+                .where("monetary.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor monetary analytic", AnalyticError.CAN_NOT_GET_TUTOR_MONETARY)

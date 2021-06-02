@@ -221,8 +221,7 @@ class UserUtil {
     isEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
-                return isNotEmpty(course)
+                return await this.userRepository.isEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -284,8 +283,7 @@ class UserUtil {
     isReviewCourse(userId: string, courseId: string): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const review = await this.getCourseReview(userId, courseId)
-                return isNotEmpty(review)
+                return await this.userRepository.isReviewCourseById(LearnerProfile.getLearnerId(userId), courseId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
