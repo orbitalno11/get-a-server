@@ -47,6 +47,9 @@ import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
 import { BankEntity } from "../entity/common/Bank.entity"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
 
 const ormConfig: TypeOrmModuleOptions = {
     type: "mysql",
@@ -98,7 +101,10 @@ const ormConfig: TypeOrmModuleOptions = {
         ClipRatingEntity,
         ClipRatingTransactionEntity,
         ClipTransactionEntity,
-        BankEntity
+        BankEntity,
+        OfflineCourseStatisticEntity,
+        OnlineCourseStatisticEntity,
+        ClipStatisticEntity
     ]
 }
 

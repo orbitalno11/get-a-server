@@ -14,6 +14,7 @@ import {CourseTypeEntity} from "../courseType.entity"
 import {OfflineCourseLeanerRequestEntity} from "./offlineCourseLearnerRequest.entity"
 import {OfflineCourseRatingEntity} from "./offlineCourseRating.entity"
 import {OfflineCourseRatingTransactionEntity} from "./offlineCourseRatingTransaction.entity"
+import { OfflineCourseStatisticEntity } from "./OfflineCourseStatistic.entity"
 
 @Entity("course")
 export class OfflineCourseEntity {
@@ -67,6 +68,9 @@ export class OfflineCourseEntity {
     // entity relation
     @OneToOne(() => OfflineCourseRatingEntity, (rating) => rating.course)
     rating: OfflineCourseRatingEntity
+
+    @OneToOne(() => OfflineCourseStatisticEntity, (statistic) => statistic.course)
+    statistic: OfflineCourseStatisticEntity
 
     @OneToMany(() => OfflineCourseRatingTransactionEntity, (rating) => rating.course)
     courseReview: OfflineCourseRatingTransactionEntity[]

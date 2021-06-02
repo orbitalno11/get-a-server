@@ -4,6 +4,7 @@ import { SubjectEntity } from "../../common/subject.entity"
 import { GradeEntity } from "../../common/grade.entity"
 import { OnlineCourseRatingEntity } from "./OnlineCourseRating.entity"
 import { ClipEntity } from "../clip/Clip.entity"
+import { OnlineCourseStatisticEntity } from "./OnlineCourseStatistic.entity"
 
 @Entity("online_course")
 export class OnlineCourseEntity {
@@ -49,6 +50,12 @@ export class OnlineCourseEntity {
         (course) => course.onlineCourse
     )
     rating: OnlineCourseRatingEntity
+
+    @OneToOne(
+        () => OnlineCourseStatisticEntity,
+        (statistic) => statistic.onlineCourse
+    )
+    statistic: OnlineCourseStatisticEntity
 
     @OneToMany(
         () => ClipEntity,

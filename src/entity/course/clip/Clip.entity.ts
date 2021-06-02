@@ -4,6 +4,7 @@ import { TutorEntity } from "../../profile/tutor.entity"
 import { ClipRatingEntity } from "./ClipRating.entity"
 import { ClipRatingTransactionEntity } from "./ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "./ClipTransaction.entity"
+import { ClipStatisticEntity } from "./ClipStatistic.entity"
 
 @Entity("clip")
 export class ClipEntity {
@@ -54,6 +55,12 @@ export class ClipEntity {
         (rating) => rating.clip
     )
     rating: ClipRatingEntity
+
+    @OneToOne(
+        () => ClipStatisticEntity,
+        (statistic) => statistic.clip
+    )
+    statistic: ClipStatisticEntity
 
     @OneToMany(
         () => ClipRatingTransactionEntity,
