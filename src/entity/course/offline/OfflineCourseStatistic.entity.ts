@@ -14,14 +14,27 @@ export class OfflineCourseStatisticEntity {
     @Column({ name: "course_rank"})
     courseRank: number
 
+    @Column()
+    rating: number
+
     @Column({ name: "number_of_view" })
     numberOfView: number
 
-    // entity relation
-    @OneToOne(
-        () => OfflineCourseRatingEntity,
-        (rating) => rating.statistic
-    )
-    @JoinColumn({ name: "course_rating"})
-    rating: OfflineCourseEntity
+    @Column({ name: "number_of_review" })
+    numberOfReview: number
+
+    @Column({ name: "number_of_one_star" })
+    oneStar: number
+
+    @Column({ name: "number_of_two_star" })
+    twoStar: number
+
+    @Column({ name: "number_of_three_star" })
+    threeStar: number
+
+    @Column({ name: "number_of_four_star" })
+    fourStar: number
+
+    @Column({ name: "number_of_five_star" })
+    fiveStar: number
 }

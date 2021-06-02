@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "ty
 import { OnlineCourseEntity } from "./OnlineCourse.entity"
 import { OnlineCourseStatisticEntity } from "./OnlineCourseStatistic.entity"
 
+// TODO Remove this class and use OnlineCourseStatistic
 @Entity("online_course_rating")
 export class OnlineCourseRatingEntity {
     @PrimaryGeneratedColumn()
@@ -10,23 +11,8 @@ export class OnlineCourseRatingEntity {
     @Column()
     rating: number
 
-    @Column({ name: "number_of_review" })
+    @Column({ name: "reviewNumber" })
     reviewNumber: number
-
-    @Column({ name: "number_of_one_star" })
-    oneStar: number
-
-    @Column({ name: "number_of_two_star" })
-    twoStar: number
-
-    @Column({ name: "number_of_three_star" })
-    threeStar: number
-
-    @Column({ name: "number_of_four_star" })
-    fourStar: number
-
-    @Column({ name: "number_of_five_star" })
-    fiveStar: number
 
     //entity relation
     @OneToOne(
@@ -35,10 +21,4 @@ export class OnlineCourseRatingEntity {
     )
     @JoinColumn({ name: "onlineCourseId" })
     onlineCourse: OnlineCourseEntity
-
-    @OneToOne(
-        () => OnlineCourseStatisticEntity,
-        (statistic) => statistic.rating
-    )
-    statistic: OnlineCourseStatisticEntity
 }

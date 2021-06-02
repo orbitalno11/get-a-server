@@ -11,6 +11,9 @@ export class OnlineCourseStatisticEntity {
     @JoinColumn({ name: "course_id" })
     onlineCourse: OnlineCourseEntity
 
+    @Column()
+    rating: number
+
     @Column({ name: "course_rank"})
     courseRank: number
 
@@ -20,11 +23,6 @@ export class OnlineCourseStatisticEntity {
     @Column({ name: "number_of_clip_view" })
     numberOfClipView: number
 
-    // entity relation
-    @OneToOne(
-        () => OnlineCourseRatingEntity,
-        (rating) => rating.statistic
-    )
-    @JoinColumn({ name: "course_rating"})
-    rating: OnlineCourseRatingEntity
+    @Column({ name: "number_of_review" })
+    numberOfReview: number
 }

@@ -518,81 +518,46 @@ create table tutor_analytic_monetary_data
     CONSTRAINT `FK_ANA_MONETARY_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
 );
 
-create table offline_course_rating
-(
-    id                   int           not null AUTO_INCREMENT,
-    course_id            varchar(255)  not null,
-    rating               decimal(2, 1) not null default 0,
-    number_of_review    int UNSIGNED not null default 0,
-    number_of_one_star   int UNSIGNED not null default 0,
-    number_of_two_star   int UNSIGNED not null default 0,
-    number_of_three_star int UNSIGNED not null default 0,
-    number_of_four_star  int UNSIGNED not null default 0,
-    number_of_five_star  int UNSIGNED not null default 0,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_ANA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id)
-);
-
 create table offline_course_statistic
 (
-    course_id        varchar(255)   not null,
-    course_rating    int            not null,
-    course_rank      decimal(10, 3) not null default 0,
-    number_of_view   int UNSIGNED not null default 0,
-    PRIMARY KEY (course_id),
-    CONSTRAINT `FK_STA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id),
-    CONSTRAINT `FK_STA_OFFLINE_COURSE_RATING` FOREIGN KEY (course_rating) REFERENCES offline_course_rating (id)
-);
-
-create table online_course_rating
-(
-    id                   int           not null AUTO_INCREMENT,
-    course_id            varchar(255)  not null,
-    rating               decimal(2, 1) not null default 0,
+    course_id            varchar(255)   not null,
+    course_rank          decimal(10, 3) not null default 0,
+    rating               decimal(2, 1)  not null default 0,
     number_of_review     int UNSIGNED not null default 0,
     number_of_one_star   int UNSIGNED not null default 0,
     number_of_two_star   int UNSIGNED not null default 0,
     number_of_three_star int UNSIGNED not null default 0,
     number_of_four_star  int UNSIGNED not null default 0,
     number_of_five_star  int UNSIGNED not null default 0,
-    PRIMARY KEY (id),
+    number_of_view       int UNSIGNED not null default 0,
+    PRIMARY KEY (course_id),
     CONSTRAINT `FK_STA_OFFLINE_COURSE` FOREIGN KEY (course_id) REFERENCES course (id)
 );
 
 create table online_course_statistic
 (
     course_id           varchar(255)   not null,
-    course_rating       int            not null,
+    rating              decimal(2, 1)  not null default 0,
     course_rank         decimal(10, 3) not null default 0,
     number_of_clip      int UNSIGNED not null default 0,
     number_of_clip_view int UNSIGNED not null default 0,
+    number_of_review    int UNSIGNED not null default 0,
     PRIMARY KEY (course_id),
-    CONSTRAINT `FK_STA_ONLINE_COURSE` FOREIGN KEY (course_id) REFERENCES online_course (id),
-    CONSTRAINT `FK_STA_ONLINE_COURSE_RATING` FOREIGN KEY (course_rating) REFERENCES online_course_rating (id)
+    CONSTRAINT `FK_STA_ONLINE_COURSE` FOREIGN KEY (course_id) REFERENCES online_course (id)
 );
 
-create table clip_rating
+create table clip_statistic
 (
-    id                   int           not null AUTO_INCREMENT,
-    clip_id              varchar(255)  not null,
-    rating               decimal(2, 1) not null default 0,
-    number_of_review    int UNSIGNED not null default 0,
+    clip_id              varchar(255)   not null,
+    rating               decimal(2, 1)  not null default 0,
+    clip_rank            decimal(10, 3) not null default 0,
+    number_of_view       int UNSIGNED not null default 0,
+    number_of_review     int UNSIGNED not null default 0,
     number_of_one_star   int UNSIGNED not null default 0,
     number_of_two_star   int UNSIGNED not null default 0,
     number_of_three_star int UNSIGNED not null default 0,
     number_of_four_star  int UNSIGNED not null default 0,
     number_of_five_star  int UNSIGNED not null default 0,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_STA_CLIP` FOREIGN KEY (clip_id) REFERENCES clip (id)
-);
-
-create table clip_statistic
-(
-    clip_id          varchar(255)   not null,
-    clip_rating      int            not null,
-    clip_rank        decimal(10, 3) not null default 0,
-    number_of_view   int UNSIGNED not null default 0,
     PRIMARY KEY (clip_id),
-    CONSTRAINT `FK_STA_ONLINE_CLIP` FOREIGN KEY (clip_id) REFERENCES clip (id),
-    CONSTRAINT `FK_STA_CLIP_RATING` FOREIGN KEY (clip_rating) REFERENCES clip_rating (id)
+    CONSTRAINT `FK_STA_ONLINE_CLIP` FOREIGN KEY (clip_id) REFERENCES clip (id)
 );
