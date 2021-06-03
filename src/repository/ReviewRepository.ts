@@ -87,14 +87,16 @@ class ReviewRepository {
      * Get offline course rating from user
      * @param reviewId
      */
-    async getOfflineCourseRatingByUser(reviewId: number): Promise<OfflineCourseRatingTransactionEntity> {
+    async getOfflineCourseRatingByUser(reviewId: number): Promise<{ id: number, rating: number }> {
         try {
-            return await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
-                .findOne({
-                    where: {
-                        id: reviewId
-                    }
-                })
+            const { rating_id, rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
+                .createQueryBuilder("rating")
+                .select(["rating.id", "rating.rating"])
+                .getRawOne()
+            return {
+                id: rating_id,
+                rating: rating_rating
+            }
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
@@ -104,16 +106,11 @@ class ReviewRepository {
     /**
      * Update offline course review
      * @param data
-     * @param learner
-     * @param course
-     * @param updatedRating
-     * @param updatedReviewNumber
+     * @param statistic
      */
     async updateOfflineCourseReview(
         data: ReviewForm,
-        course: OfflineCourseEntity,
-        updatedRating: number,
-        updatedReviewNumber: number
+        statistic: OfflineCourseStatisticEntity
     ) {
         const queryRunner = await this.connection.createQueryRunner()
         try {
@@ -127,12 +124,7 @@ class ReviewRepository {
                     review: data.comment,
                     reviewDate: new Date()
                 })
-            await queryRunner.manager.update(OfflineCourseRatingEntity,
-                { course: course },
-                {
-                    reviewNumber: updatedReviewNumber,
-                    rating: updatedRating
-                })
+            await queryRunner.manager.save(statistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
