@@ -2,11 +2,10 @@ import { Injectable } from "@nestjs/common"
 import AnalyticRepository from "../repository/AnalyticRepository"
 import { launch } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
-import { isEmpty, isNotEmpty } from "../core/extension/CommonExtension"
+import { isEmpty } from "../core/extension/CommonExtension"
 import { CourseType } from "../model/course/data/CourseType"
 import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
-import { of } from "rxjs"
 
 /**
  * Analytic manager
@@ -120,8 +119,8 @@ class AnalyticManager {
      */
     trackLearnerReview(tutorId: string, rating: number, offline: boolean, firstTime: boolean = true, oldRating: number = 0) {
         return launch(async () => {
-            let statistic = await this.repository.getTutorStatistic(tutorId)
-            let monetary = await this.repository.getTutorMonetary(tutorId)
+            const statistic = await this.repository.getTutorStatistic(tutorId)
+            const monetary = await this.repository.getTutorMonetary(tutorId)
 
             if (isEmpty(statistic) || isEmpty(monetary)) {
                 return
@@ -129,9 +128,40 @@ class AnalyticManager {
 
             const deleteReview = rating === 0.0
 
-            const updatedData = this.calculateReview(rating, statistic, monetary, offline, firstTime, oldRating, deleteReview)
-            statistic = updatedData.statistic
-            monetary = updatedData.monetary
+            const ratingKey = offline ? "offlineRating" : "onlineRating"
+            const reviewNumberKey = offline ? "numberOfOfflineReview" : "numberOfOnlineReview"
+
+            if (firstTime) {
+                statistic[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
+                    statistic[ratingKey],
+                    rating,
+                    statistic[reviewNumberKey]
+                )
+                statistic[reviewNumberKey] += 1
+
+                monetary[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
+                    monetary[ratingKey],
+                    rating,
+                    monetary[reviewNumberKey]
+                )
+                monetary[reviewNumberKey] += 1
+            } else {
+                statistic[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
+                    statistic[ratingKey],
+                    rating,
+                    oldRating,
+                    statistic[reviewNumberKey]
+                )
+                statistic[reviewNumberKey] = !deleteReview ? statistic[reviewNumberKey] : statistic[reviewNumberKey] - 1
+
+                monetary[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
+                    monetary[ratingKey],
+                    rating,
+                    oldRating,
+                    monetary[reviewNumberKey]
+                )
+                monetary[reviewNumberKey] = !deleteReview ? monetary[reviewNumberKey] : monetary[reviewNumberKey] - 1
+            }
 
             statistic.rating = RatingUtil.calculateTutorRatingAvg(
                 statistic.offlineRating,
@@ -149,67 +179,6 @@ class AnalyticManager {
 
             await this.repository.trackLearnerReview(tutorId, statistic, monetary, deleteReview)
         })
-    }
-
-    /**
-     * Calculate review data
-     * @param rating
-     * @param statistic
-     * @param monetary
-     * @param offline
-     * @param firstTime
-     * @param oldRating
-     * @param deleteReview
-     * @private
-     */
-    private calculateReview(
-        rating: number,
-        statistic: TutorStatisticEntity,
-        monetary: TutorAnalyticMonetaryEntity,
-        offline: boolean,
-        firstTime: boolean,
-        oldRating: number,
-        deleteReview: boolean
-    ): { statistic: TutorStatisticEntity, monetary: TutorAnalyticMonetaryEntity } {
-        const ratingKey = offline ? "offlineRating" : "onlineRating"
-        const reviewNumberKey = offline ? "numberOfOfflineReview" : "numberOfOnlineReview"
-
-        if (firstTime) {
-            statistic[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
-                statistic[ratingKey],
-                rating,
-                statistic[reviewNumberKey]
-            )
-            statistic[reviewNumberKey] += 1
-
-            monetary[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
-                monetary[ratingKey],
-                rating,
-                monetary[reviewNumberKey]
-            )
-            monetary[reviewNumberKey] += 1
-        } else {
-            statistic[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
-                statistic[ratingKey],
-                rating,
-                oldRating,
-                statistic[reviewNumberKey]
-            )
-            statistic[reviewNumberKey] = !deleteReview ? statistic[reviewNumberKey] : statistic[reviewNumberKey] - 1
-
-            monetary[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
-                monetary[ratingKey],
-                rating,
-                oldRating,
-                monetary[reviewNumberKey]
-            )
-            monetary[reviewNumberKey] = !deleteReview ? monetary[reviewNumberKey] : monetary[reviewNumberKey] - 1
-        }
-
-        return {
-            statistic: statistic,
-            monetary: monetary
-        }
     }
 }
 
