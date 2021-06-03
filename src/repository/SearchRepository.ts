@@ -31,7 +31,7 @@ class SearchRepository {
         try {
             const query = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("owner.member", "member")
                 .leftJoinAndSelect("member.memberAddress", "address")
                 .leftJoinAndSelect("address.province", "province")
@@ -57,7 +57,7 @@ class SearchRepository {
                 .skip(pageSize * (page - 1))
                 .limit(pageSize)
                 .distinct(true)
-                .orderBy("rating.rating", "DESC")
+                .orderBy("statistic.rating", "DESC")
                 .getMany()
         } catch (error) {
             logger.error(error)
@@ -78,7 +78,7 @@ class SearchRepository {
         try {
             const query = await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("owner.member", "member")
 
             if (grade !== Grade.NOT_SPECIFIC) {
@@ -97,7 +97,7 @@ class SearchRepository {
                 .skip(pageSize * (page - 1))
                 .limit(pageSize)
                 .distinct(true)
-                .orderBy("rating.rating", "DESC")
+                .orderBy("statistic.rating", "DESC")
                 .getMany()
         } catch (error) {
             logger.error(error)

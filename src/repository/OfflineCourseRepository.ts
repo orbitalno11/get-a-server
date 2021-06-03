@@ -83,7 +83,7 @@ class OfflineCourseRepository {
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("owner.member", "member")
                 .leftJoinAndSelect("owner.contact", "contact")
                 .where("course.id like :id")

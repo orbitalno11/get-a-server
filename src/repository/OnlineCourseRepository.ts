@@ -62,7 +62,7 @@ class OnlineCourseRepository {
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "tutor")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.clips", "clips")
                 .leftJoinAndSelect("tutor.member", "member")
                 .leftJoinAndSelect("tutor.contact", "contact")
