@@ -235,8 +235,8 @@ class AnalyticRepository {
 
                 if (isNotEmpty(onlineCourse)) {
                     tutorId = onlineCourse.owner.id
-                    onlineCourse.courseView += 1
-                    await queryRunner.manager.save(onlineCourse)
+                    // onlineCourse.courseView += 1
+                    // await queryRunner.manager.save(onlineCourse)
                 }
             }
 
@@ -360,12 +360,11 @@ class AnalyticRepository {
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
 
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    onlineCourseNumber: statistic.onlineCourseNumber + 1
+                    onlineCourseNumber: () => "number_of_online_course + 1"
                 })
 
             await queryRunner.commitTransaction()

@@ -37,7 +37,7 @@ class ClipRepository {
     async createClip(clipId: string, course: OnlineCourseEntity, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            course.numberOfClip += 1
+            // course.numberOfClip += 1
 
             const clip = new ClipEntity()
             clip.id = clipId
@@ -257,7 +257,7 @@ class ClipRepository {
                 }
             })
 
-            course.numberOfClip -= 1
+            // course.numberOfClip -= 1
 
             await queryRunner.manager.save(course)
             await queryRunner.manager.remove(clipRating)

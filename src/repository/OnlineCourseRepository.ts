@@ -11,6 +11,7 @@ import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import OnlineCourseNameList from "../model/course/OnlineCourseNameList"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository for online course
@@ -30,19 +31,18 @@ class OnlineCourseRepository {
     async createOnlineCourse(courseId: string, data: OnlineCourseForm, tutor: TutorEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
-            onlineCourse.courseView = 0
-            onlineCourse.numberOfClip = 0
+            const statistic = new OnlineCourseStatisticEntity()
+            statistic.rating = 0
+            statistic.numberOfClip = 0
+            statistic.numberOfClipView = 0
+            statistic.numberOfReview = 0
 
-            const courseRating = new OnlineCourseRatingEntity()
-            courseRating.onlineCourse = onlineCourse
-            courseRating.rating = 0
-            courseRating.reviewNumber = 0
+            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
+            onlineCourse.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(onlineCourse)
-            await queryRunner.manager.save(courseRating)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

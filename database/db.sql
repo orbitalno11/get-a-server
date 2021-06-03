@@ -382,8 +382,6 @@ create table online_course
     gradeId        smallint UNSIGNED not null,
     courseName     varchar(255) not null,
     courseCoverUrl varchar(255) not null,
-    course_view    int          not null default 0,
-    number_of_clip int          not null default 0,
     PRIMARY KEY (id),
     CONSTRAINT `FK_ONLINE_COURSE_OWNER` FOREIGN KEY (ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_ONLINE_COURSE_SUBJECT` FOREIGN KEY (subjectCode) REFERENCES subject (code),

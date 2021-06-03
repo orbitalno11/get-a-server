@@ -11,7 +11,7 @@ export class OnlineCourseToCourseCardMapper implements Mapper<OnlineCourseEntity
         card.coverUrl = from.coverUrl
         card.rating = from.rating ? from.rating?.rating : 0
         card.owner = from.owner ?TutorEntityToPublicProfileMapper.getTutorNameCard(from.owner) : undefined
-        card.numberOfVideo = from.numberOfClip
+        // card.numberOfVideo = from.numberOfClip
         return card
     }
 

@@ -17,12 +17,6 @@ export class OnlineCourseEntity {
     @Column({ name: "courseCoverUrl" })
     coverUrl: string
 
-    @Column({ name: "course_view" })
-    courseView: number
-
-    @Column({ name: "number_of_clip" })
-    numberOfClip: number
-
     // entity relation
     @ManyToOne(
         () => TutorEntity,
@@ -53,7 +47,8 @@ export class OnlineCourseEntity {
 
     @OneToOne(
         () => OnlineCourseStatisticEntity,
-        (statistic) => statistic.onlineCourse
+        (statistic) => statistic.onlineCourse,
+        { cascade: ["insert"] }
     )
     statistic: OnlineCourseStatisticEntity
 
