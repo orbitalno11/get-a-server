@@ -30,7 +30,6 @@ import { CoinEntity } from "../entity/coins/coin.entity"
 import { RedeemTransactionEntity } from "../entity/coins/RedeemTransaction.entity"
 import { CourseTypeEntity } from "../entity/course/courseType.entity"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
-import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
 import { PaymentTransactionEntity } from "../entity/payment/PaymentTransaction.entity"
@@ -41,7 +40,6 @@ import { TutorAnalyticRecencyEntity } from "../entity/analytic/TutorAnalyticRece
 import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFrequency.entity"
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
-import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
@@ -87,7 +85,6 @@ const ormConfig: TypeOrmModuleOptions = {
         RedeemTransactionEntity,
         CourseTypeEntity,
         OfflineCourseEntity,
-        OfflineCourseRatingEntity,
         OfflineCourseRatingTransactionEntity,
         OfflineCourseLeanerRequestEntity,
         UserVerifyEntity,
@@ -96,7 +93,6 @@ const ormConfig: TypeOrmModuleOptions = {
         TutorAnalyticFrequencyEntity,
         TutorAnalyticMonetaryEntity,
         OnlineCourseEntity,
-        OnlineCourseRatingEntity,
         ClipEntity,
         ClipRatingEntity,
         ClipRatingTransactionEntity,

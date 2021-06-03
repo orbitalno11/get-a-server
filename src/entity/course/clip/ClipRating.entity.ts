@@ -12,12 +12,4 @@ export class ClipRatingEntity {
 
     @Column({ name: "reviewNumber" })
     reviewNumber: number
-
-    // entity relation
-    @OneToOne(
-        () => ClipEntity,
-        (clip) => clip.rating
-    )
-    @JoinColumn({ name: "clip_id" })
-    clip: ClipEntity
 }

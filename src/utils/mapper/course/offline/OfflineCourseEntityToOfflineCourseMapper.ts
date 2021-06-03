@@ -23,7 +23,7 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.type = from.courseType?.id
         course.status = from.status
         course.studentNumber = from.studentNumber ? from.studentNumber : 0
-        course.rating = from.rating?.rating ? from.rating?.rating : 0.0
+        course.rating = from.statistic?.rating ? from.statistic?.rating : 0.0
         course.owner = TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner)
         return course
     }

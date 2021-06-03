@@ -13,12 +13,4 @@ export class OnlineCourseRatingEntity {
 
     @Column({ name: "reviewNumber" })
     reviewNumber: number
-
-    //entity relation
-    @OneToOne(
-        () => OnlineCourseEntity,
-        (course) => course.rating
-    )
-    @JoinColumn({ name: "onlineCourseId" })
-    onlineCourse: OnlineCourseEntity
 }

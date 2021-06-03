@@ -12,7 +12,6 @@ import {SubjectEntity} from "../../common/subject.entity"
 import {TutorEntity} from "../../profile/tutor.entity"
 import {CourseTypeEntity} from "../courseType.entity"
 import {OfflineCourseLeanerRequestEntity} from "./offlineCourseLearnerRequest.entity"
-import {OfflineCourseRatingEntity} from "./offlineCourseRating.entity"
 import {OfflineCourseRatingTransactionEntity} from "./offlineCourseRatingTransaction.entity"
 import { OfflineCourseStatisticEntity } from "./OfflineCourseStatistic.entity"
 
@@ -78,12 +77,6 @@ export class OfflineCourseEntity {
     grade: GradeEntity
 
     // entity relation
-    @OneToOne(
-        () => OfflineCourseRatingEntity,
-        (rating) => rating.course
-    )
-    rating: OfflineCourseRatingEntity
-
     @OneToOne(
         () => OfflineCourseStatisticEntity,
         (statistic) => statistic.course,

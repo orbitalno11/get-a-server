@@ -48,12 +48,6 @@ export class ClipEntity {
     owner: TutorEntity
 
     @OneToOne(
-        () => ClipRatingEntity,
-        (rating) => rating.clip
-    )
-    rating: ClipRatingEntity
-
-    @OneToOne(
         () => ClipStatisticEntity,
         (statistic) => statistic.clip,
         { cascade: ["insert"] }

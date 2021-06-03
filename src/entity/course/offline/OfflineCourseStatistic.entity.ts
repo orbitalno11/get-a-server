@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { OfflineCourseEntity } from "./offlineCourse.entity"
-import { OfflineCourseRatingEntity } from "./offlineCourseRating.entity"
 
 @Entity("offline_course_statistic")
 export class OfflineCourseStatisticEntity {

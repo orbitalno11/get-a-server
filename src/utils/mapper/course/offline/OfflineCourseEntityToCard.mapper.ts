@@ -20,7 +20,7 @@ export class OfflineCourseEntityToCardMapper implements Mapper<OfflineCourseEnti
         card.startTime = from.startTime
         card.endTime = from.endTime
         card.timeText = `${getDayOfWeekTh(from.day)} ${from.startTime}น. - ${from.endTime}น.`
-        card.rating = from.rating?.rating
+        card.rating = from.statistic?.rating
         card.cost = from.cost
         card.costText = `${from.cost.toLocaleString()} บาท/ชั่วโมง`
         card.status = from.status as CourseStatus

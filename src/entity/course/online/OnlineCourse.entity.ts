@@ -2,7 +2,6 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColu
 import { TutorEntity } from "../../profile/tutor.entity"
 import { SubjectEntity } from "../../common/subject.entity"
 import { GradeEntity } from "../../common/grade.entity"
-import { OnlineCourseRatingEntity } from "./OnlineCourseRating.entity"
 import { ClipEntity } from "../clip/Clip.entity"
 import { OnlineCourseStatisticEntity } from "./OnlineCourseStatistic.entity"
 
@@ -38,12 +37,6 @@ export class OnlineCourseEntity {
     )
     @JoinColumn({ name: "gradeId" })
     grade: GradeEntity
-
-    @OneToOne(
-        () => OnlineCourseRatingEntity,
-        (course) => course.onlineCourse
-    )
-    rating: OnlineCourseRatingEntity
 
     @OneToOne(
         () => OnlineCourseStatisticEntity,
