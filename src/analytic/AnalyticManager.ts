@@ -4,8 +4,6 @@ import { launch } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
 import { isEmpty } from "../core/extension/CommonExtension"
 import { CourseType } from "../model/course/data/CourseType"
-import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
-import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 
 /**
  * Analytic manager
@@ -22,8 +20,7 @@ class AnalyticManager {
      */
     increaseNumberOfFavorite(tutorId: string) {
         return launch(async () => {
-            await this.repository.increaseStatisticNumberOfFavorite(tutorId)
-            await this.repository.increaseMonetaryNumberOfFavorite(tutorId)
+            await this.repository.increaseNumberOfFavorite(tutorId)
         })
     }
 
@@ -33,8 +30,7 @@ class AnalyticManager {
      */
     decreaseNumberOfFavorite(tutorId: string) {
         return launch(async () => {
-            await this.repository.decreaseStatisticNumberOfFavorite(tutorId)
-            await this.repository.decreaseMonetaryNumberOfFavorite(tutorId)
+            await this.repository.decreaseNumberOfFavorite(tutorId)
         })
     }
 

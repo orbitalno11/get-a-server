@@ -21,6 +21,7 @@ import { ReviewError } from "../core/exceptions/constants/review-error.enum"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
+import { FavoriteError } from "../core/exceptions/constants/favorite-error.enum"
 
 /**
  * Repository for user utility
@@ -255,19 +256,20 @@ class UserRepository {
     }
 
     /**
-     * Get favorite tutor
+     * Check learner already liked tutor
      * @param learnerId
      * @param tutorId
      */
-    async getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity | null> {
+    async isFavoriteTutor(learnerId: string, tutorId: string): Promise<boolean> {
         try {
-            return await this.connection.createQueryBuilder(FavoriteTutorEntity, "favorite")
+            const count = await this.connection.createQueryBuilder(FavoriteTutorEntity, "favorite")
                 .where("favorite.learner like :learnerId", { learnerId: learnerId })
                 .andWhere("favorite.tutor like :tutorId", { tutorId: tutorId })
-                .getOne()
+                .getCount()
+            return count > 0
         } catch (error) {
             logger.error(error)
-            throw error
+            throw ErrorExceptions.create("Can not get favorite tutor", FavoriteError.CAN_NOT_GET_FAVORITE)
         }
     }
 

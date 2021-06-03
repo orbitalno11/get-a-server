@@ -10,7 +10,6 @@ import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFr
 import { CourseType } from "../model/course/data/CourseType"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { isNotEmpty } from "../core/extension/CommonExtension"
-import OnlineCourse from "../model/course/OnlineCourse"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
@@ -28,44 +27,23 @@ class AnalyticRepository {
     }
 
     /**
-     * Increase number of learner favorite in tutor statistic
+     * Increase number of favorite
      * @param tutorId
      */
-    async increaseStatisticNumberOfFavorite(tutorId: string) {
+    async increaseNumberOfFavorite(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: statistic.numberOfFavorite + 1
+                    numberOfFavorite: () => "number_of_favorite + 1"
                 })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
-     * Increase number of learner favorite in tutor monetary analytic
-     * @param tutorId
-     */
-    async increaseMonetaryNumberOfFavorite(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: monetary.numberOfFavorite + 1
+                    numberOfFavorite: () => "number_of_favorite + 1"
                 })
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -77,45 +55,20 @@ class AnalyticRepository {
         }
     }
 
-    /**
-     * Decrease number of learner favorite in tutor statistic
-     * @param tutorId
-     */
-    async decreaseStatisticNumberOfFavorite(tutorId: string) {
+    async decreaseNumberOfFavorite(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: statistic.numberOfFavorite - 1
+                    numberOfFavorite: () => "number_of_favorite - 1"
                 })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
-     * Decrease number of learner favorite in tutor monetary analytic
-     * @param tutorId
-     */
-    async decreaseMonetaryNumberOfFavorite(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: monetary.numberOfFavorite - 1
+                    numberOfFavorite: () => "number_of_favorite - 1"
                 })
             await queryRunner.commitTransaction()
         } catch (error) {

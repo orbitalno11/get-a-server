@@ -339,16 +339,6 @@ create table course
     CONSTRAINT `FK_COURSE_GRADE` FOREIGN KEY (gradeId) REFERENCES grade (grade)
 );
 
-create table course_rating
-(
-    id           int           not null AUTO_INCREMENT,
-    courseId     varchar(255)  not null,
-    reviewNumber int UNSIGNED not null,
-    rating       decimal(3, 1) not null,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_COURSE_RATING_COURSE` FOREIGN KEY (courseId) REFERENCES course (id)
-);
-
 create table course_rating_transaction
 (
     id         int           not null AUTO_INCREMENT,
@@ -414,26 +404,6 @@ create table learner_clip
     PRIMARY KEY (id),
     CONSTRAINT `FK_LEARNER_CLIP_LEARNER` FOREIGN KEY (learnerId) REFERENCES learner_profile (id),
     CONSTRAINT `FK_LEARNER_CLIP_COURSE` FOREIGN KEY (clipId) REFERENCES clip (id)
-);
-
--- create table online_course_rating
--- (
---     id             int           not null AUTO_INCREMENT,
---     onlineCourseId varchar(255)  not null,
---     reviewNumber   int UNSIGNED not null,
---     rating         decimal(3, 1) not null,
---     PRIMARY KEY (id),
---     CONSTRAINT `FK_ONLINE_COURSE_RATING_COURSE` FOREIGN KEY (onlineCourseId) REFERENCES online_course (id)
--- );
-
-create table online_clip_rating
-(
-    id           int           not null AUTO_INCREMENT,
-    clipId       varchar(255)  not null,
-    reviewNumber int UNSIGNED not null,
-    rating       decimal(3, 1) not null,
-    PRIMARY KEY (id),
-    CONSTRAINT `FK_ONLINE_CLIP_RATING_CLIP` FOREIGN KEY (clipId) REFERENCES clip (id)
 );
 
 create table online_clip_rating_transaction

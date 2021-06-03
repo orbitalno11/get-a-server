@@ -343,23 +343,7 @@ class UserUtil {
     isLiked(learnerId: string, tutorId: string): Promise<boolean> {
         return launch(async () => {
             if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
-                const result = await this.getFavoriteTutor(learnerId, tutorId)
-                return isNotEmpty(result)
-            } else {
-                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
-            }
-        })
-    }
-
-    /**
-     * Get favorite tutor by learner id and tutor id
-     * @param learnerId
-     * @param tutorId
-     */
-    getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity> {
-        return launch(async () => {
-            if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
-                return await this.userRepository.getFavoriteTutor(
+                return await this.userRepository.isFavoriteTutor(
                     LearnerProfile.getLearnerId(learnerId),
                     TutorProfile.getTutorId(tutorId)
                 )
