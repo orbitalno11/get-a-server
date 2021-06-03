@@ -33,20 +33,20 @@ export class SearchService {
             const searchResult = new SearchResultPage()
             if (query.type === CourseType.OFFLINE_GROUP || query.type === CourseType.OFFLINE_SINGLE) {
                 // offline course search
-                searchResult.offlineCourse = await this.searchOfflineCourse(query)
+                searchResult.offlineCourse = await this.searchOfflineCourse(query, false)
 
                 if (query.location) {
-                    searchResult.nearby = await this.searchOfflineCourse(query)
+                    searchResult.nearby = await this.searchOfflineCourse(query, true)
                 }
             } else if (query.type === CourseType.ONLINE) {
                 // online course search
                 searchResult.onlineCourse = await this.searchOnlineCourse(query)
             } else {
                 // all course type search
-                searchResult.offlineCourse = await this.searchOfflineCourse(query)
+                searchResult.offlineCourse = await this.searchOfflineCourse(query, false)
 
                 if (query.location) {
-                    searchResult.nearby = await this.searchOfflineCourse(query)
+                    searchResult.nearby = await this.searchOfflineCourse(query, true)
                 }
 
                 searchResult.onlineCourse = await this.searchOnlineCourse(query)
@@ -58,14 +58,15 @@ export class SearchService {
     /**
      * Search offline course
      * @param query
+     * @param hasLocation
      * @private
      */
-    private searchOfflineCourse(query: SearchQuery): Promise<SearchResult<OfflineCourseCard>> {
+    private searchOfflineCourse(query: SearchQuery, hasLocation: boolean): Promise<SearchResult<OfflineCourseCard>> {
         return launch(async () => {
             const paginationOptions = this.createPaginationOption(query)
 
             let result
-            if (!query.location) {
+            if (!hasLocation) {
                 result = await this.repository.searchOfflineCourse(
                     query.grade,
                     query.subject,
