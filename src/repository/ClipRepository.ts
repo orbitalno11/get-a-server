@@ -247,33 +247,23 @@ class ClipRepository {
 
     /**
      * Delete clip
-     * @param clip
+     * @param clipId
+     * @param courseId
      */
-    async deleteClip(clip: ClipEntity) {
+    async deleteClip(clipId: string, courseId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            const clipRating = await queryRunner.manager.getRepository(ClipRatingEntity).findOne(
+            await queryRunner.manager.delete(ClipStatisticEntity, { clip: clipId })
+            await queryRunner.manager.delete(ClipEntity, clipId)
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: courseId },
                 {
-                    where: {
-                        clip: clip
-                    }
-                }
-            )
+                    numberOfClip: () => "number_of_clip - 1"
+                })
 
-            const course = await queryRunner.manager.getRepository(OnlineCourseEntity).findOne({
-                where: {
-                    id: clip.onlineCourse.id
-                }
-            })
-
-            // course.numberOfClip -= 1
-
-            await queryRunner.manager.save(course)
-            await queryRunner.manager.remove(clipRating)
-            await queryRunner.manager.remove(clip)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
