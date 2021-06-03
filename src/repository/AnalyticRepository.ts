@@ -267,13 +267,11 @@ class AnalyticRepository {
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
-            const statistic = await this.getTutorStatistic(tutorId)
 
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfLearner: monetary.numberOfLearner + 1
+                    numberOfLearner: () => "number_of_learner + 1"
                 })
             await queryRunner.manager.update(TutorAnalyticRecencyEntity,
                 { tutor: tutorId },
@@ -283,7 +281,7 @@ class AnalyticRepository {
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfLearner: statistic.numberOfLearner + 1
+                    numberOfLearner: () => "number_of_learner + 1"
                 })
 
             await queryRunner.commitTransaction()
