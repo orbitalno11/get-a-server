@@ -91,7 +91,7 @@ class ReviewRepository {
         try {
             const { rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
                 .createQueryBuilder("rating")
-                .select(["rating.id", "rating.rating"])
+                .select("rating.rating")
                 .where("rating.id = :reviewId", { reviewId: reviewId })
                 .getRawOne()
             return rating_rating
@@ -263,7 +263,7 @@ class ReviewRepository {
      * Get clip rating
      * @param clipId
      */
-    async getClipRating(clipId: string): Promise<ClipStatisticEntity> {
+    async getClipStatistic(clipId: string): Promise<ClipStatisticEntity> {
         try {
             return await this.connection.createQueryBuilder(ClipStatisticEntity, "statistic")
                 .innerJoinAndSelect("statistic.clip", "clip")
@@ -279,14 +279,13 @@ class ReviewRepository {
      * Get clip rating by user
      * @param reviewId
      */
-    async getClipRatingByUser(reviewId: number): Promise<ClipRatingTransactionEntity> {
+    async getClipRatingByUser(reviewId: number): Promise<number> {
         try {
-            return await this.connection.getRepository(ClipRatingTransactionEntity)
-                .findOne({
-                    where: {
-                        id: reviewId
-                    }
-                })
+            const { rating_rating } = await this.connection.createQueryBuilder(ClipRatingTransactionEntity, "rating")
+                .select("rating.rating")
+                .where("rating.id = :reviewId", { reviewId: reviewId })
+                .getRawOne()
+            return rating_rating
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
@@ -296,21 +295,13 @@ class ReviewRepository {
     /**
      * Update Clip review
      * @param data
-     * @param course
-     * @param clip
-     * @param updatedCourseRating
-     * @param updatedCourseReviewNumber
-     * @param updatedClipRating
-     * @param updatedClipReviewNumber
+     * @param courseStatistic
+     * @param clipStatistic
      */
     async updateOnlineCourseReview(
         data: ReviewForm,
-        course: OnlineCourseEntity,
-        clip: ClipEntity,
-        updatedCourseRating: number,
-        updatedCourseReviewNumber: number,
-        updatedClipRating: number,
-        updatedClipReviewNumber: number
+        courseStatistic: OnlineCourseStatisticEntity,
+        clipStatistic: ClipStatisticEntity
     ) {
         const queryRunner = await this.connection.createQueryRunner()
         try {
@@ -324,18 +315,8 @@ class ReviewRepository {
                     review: data.comment,
                     reviewDate: new Date()
                 })
-            await queryRunner.manager.update(ClipRatingEntity,
-                { clip: clip },
-                {
-                    reviewNumber: updatedClipReviewNumber,
-                    rating: updatedClipRating
-                })
-            await queryRunner.manager.update(OnlineCourseRatingEntity,
-                { onlineCourse: course },
-                {
-                    reviewNumber: updatedCourseReviewNumber,
-                    rating: updatedCourseRating
-                })
+            await queryRunner.manager.save(clipStatistic)
+            await queryRunner.manager.save(courseStatistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {

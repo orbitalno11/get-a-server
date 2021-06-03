@@ -76,7 +76,7 @@ export class ReviewService {
                 }
 
                 let courseStatistic = await this.repository.getOnlineCourseStatistic(data.courseId)
-                let clipStatistic = await this.repository.getClipRating(data.clipId)
+                let clipStatistic = await this.repository.getClipStatistic(data.clipId)
 
                 courseStatistic = this.updateStatisticStar(data.rating, courseStatistic, true)
                 courseStatistic.rating = RatingUtil.calculateIncreaseRatingAvg(courseStatistic.rating, data.rating, courseStatistic.numberOfReview)
@@ -106,7 +106,7 @@ export class ReviewService {
                 throw ErrorExceptions.create("Your are not enroll this course", CourseError.NOT_ENROLLED)
             }
 
-            const userRating = await this.repository.getOfflineCourseRatingByUser(data.reviewId)
+            const userRating = isOfflineCourse ? await this.repository.getOfflineCourseRatingByUser(data.reviewId) : await this.repository.getClipRatingByUser(data.reviewId)
 
             if (!userRating?.isSafeNumber()) {
                 throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
@@ -129,42 +129,38 @@ export class ReviewService {
                 )
 
                 await this.repository.updateOfflineCourseReview(data, courseStatistic)
-                await this.analytic.trackLearnerReview(tutorId, data.rating, true, false, userRating)
             } else {
                 // online course
-                // const subscribeClip = await this.userUtil.getSubscribeClip(user.id, data.clipId)
-                // if (isNotEmpty(subscribeClip)) {
-                //     const courseRating = await this.repository.getOnlineCourseRating(data.courseId)
-                //     const clipRating = await this.repository.getClipRating(data.clipId)
-                //
-                //     const updatedCourseRating = RatingUtil.calculateUpdateRatingAvg(
-                //         courseRating.rating,
-                //         data.rating,
-                //         userRating.rating,
-                //         courseRating.reviewNumber
-                //     )
-                //
-                //     const updateClipRating = RatingUtil.calculateUpdateRatingAvg(
-                //         clipRating.rating,
-                //         data.rating,
-                //         userRating.rating,
-                //         clipRating.reviewNumber
-                //     )
-                //
-                //     await this.repository.updateOnlineCourseReview(
-                //         data,
-                //         enrolledCourse,
-                //         subscribeClip,
-                //         updatedCourseRating,
-                //         courseRating.reviewNumber,
-                //         updateClipRating,
-                //         clipRating.reviewNumber
-                //     )
-                //     await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, data.rating, false, userRating.rating)
-                // } else {
-                //     throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
-                // }
+                const isSubscribe = await this.userUtil.isSubscribeClip(user.id, data.clipId)
+
+                if (!isSubscribe) {
+                    throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                }
+
+                let courseStatistic = await this.repository.getOnlineCourseStatistic(data.courseId)
+                let clipStatistic = await this.repository.getClipStatistic(data.clipId)
+
+                courseStatistic = this.updateStatisticStar(userRating, courseStatistic, false)
+                courseStatistic = this.updateStatisticStar(data.rating, courseStatistic, true)
+                courseStatistic.rating = RatingUtil.calculateUpdateRatingAvg(
+                    courseStatistic.rating,
+                    data.rating,
+                    userRating,
+                    courseStatistic.numberOfReview
+                )
+
+                clipStatistic = this.updateStatisticStar(userRating, clipStatistic, false)
+                clipStatistic = this.updateStatisticStar(data.rating, clipStatistic, true)
+                clipStatistic.rating = RatingUtil.calculateUpdateRatingAvg(
+                    clipStatistic.rating,
+                    data.rating,
+                    userRating,
+                    clipStatistic.numberOfReview
+                )
+
+                await this.repository.updateOnlineCourseReview(data, courseStatistic, clipStatistic)
             }
+            await this.analytic.trackLearnerReview(tutorId, data.rating, isOfflineCourse, false, userRating)
         })
     }
 
