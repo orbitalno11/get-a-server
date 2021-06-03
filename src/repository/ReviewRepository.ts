@@ -87,17 +87,14 @@ class ReviewRepository {
      * Get offline course rating from user
      * @param reviewId
      */
-    async getOfflineCourseRatingByUser(reviewId: number): Promise<{ id: number, rating: number }> {
+    async getOfflineCourseRatingByUser(reviewId: number): Promise<number> {
         try {
             const { rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
                 .createQueryBuilder("rating")
                 .select(["rating.id", "rating.rating"])
                 .where("rating.id = :reviewId", { reviewId: reviewId })
                 .getRawOne()
-            return {
-                id: undefined,
-                rating: rating_rating
-            }
+            return rating_rating
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get user rating to course", ReviewError.CAN_NOT_GET_COURSE_RATING_BY_LEARNER)
@@ -139,29 +136,20 @@ class ReviewRepository {
 
     /**
      * Delete offline course review
-     * @param course
-     * @param userReview
-     * @param updatedRating
-     * @param updatedReviewNumber
+     * @param reviewId
+     * @param statistic
      */
     async deleteOfflineReview(
-        course: OfflineCourseEntity,
-        userReview: OfflineCourseRatingTransactionEntity,
-        updatedRating: number,
-        updatedReviewNumber: number
+        reviewId: number,
+        statistic: OfflineCourseStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.remove(userReview)
-            await queryRunner.manager.update(OfflineCourseRatingEntity,
-                { course: course },
-                {
-                    reviewNumber: updatedReviewNumber,
-                    rating: updatedRating
-                })
+            await queryRunner.manager.delete(OfflineCourseRatingTransactionEntity, reviewId)
+            await queryRunner.manager.save(statistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {
