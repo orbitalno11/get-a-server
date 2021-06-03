@@ -1,6 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { ClipEntity } from "./Clip.entity"
-import { ClipRatingEntity } from "./ClipRating.entity"
 
 @Entity("clip_statistic")
 export class ClipStatisticEntity {

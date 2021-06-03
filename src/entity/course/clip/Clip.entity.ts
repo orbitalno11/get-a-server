@@ -1,7 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm"
 import { OnlineCourseEntity } from "../online/OnlineCourse.entity"
 import { TutorEntity } from "../../profile/tutor.entity"
-import { ClipRatingEntity } from "./ClipRating.entity"
 import { ClipRatingTransactionEntity } from "./ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "./ClipTransaction.entity"
 import { ClipStatisticEntity } from "./ClipStatistic.entity"

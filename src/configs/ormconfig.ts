@@ -41,7 +41,6 @@ import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFr
 import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
-import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import { ClipRatingTransactionEntity } from "../entity/course/clip/ClipRatingTransaction.entity"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
 import { BankEntity } from "../entity/common/Bank.entity"
@@ -94,7 +93,6 @@ const ormConfig: TypeOrmModuleOptions = {
         TutorAnalyticMonetaryEntity,
         OnlineCourseEntity,
         ClipEntity,
-        ClipRatingEntity,
         ClipRatingTransactionEntity,
         ClipTransactionEntity,
         BankEntity,
