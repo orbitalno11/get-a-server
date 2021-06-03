@@ -13,6 +13,7 @@ import { isNotEmpty } from "../core/extension/CommonExtension"
 import OnlineCourse from "../model/course/OnlineCourse"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
 
 /**
  * Repository for analytic manager
@@ -204,22 +205,20 @@ class AnalyticRepository {
             let tutorId = ""
 
             if (courseType === CourseType.OFFLINE_SINGLE || courseType === CourseType.OFFLINE_GROUP) {
-                const offlineCourse = await queryRunner.manager.getRepository(OfflineCourseEntity)
-                    .findOne({
-                        where: {
-                            id: courseId
-                        },
-                        join: {
-                            alias: "offlineCourse",
-                            leftJoinAndSelect: {
-                                owner: "offlineCourse.owner"
-                            }
-                        }
-                    })
+                const { ownerId } = await queryRunner.manager.createQueryBuilder(OfflineCourseEntity, "course")
+                    .select("course.ownerId")
+                    .where("course.id like :courseId", { courseId: courseId })
+                    .getRawOne()
 
-                if (isNotEmpty(offlineCourse)) {
-                    tutorId = offlineCourse.owner.id
+                if (ownerId?.isSafeNotBlank()) {
+                    tutorId = ownerId
+                    await queryRunner.manager.update(OfflineCourseStatisticEntity,
+                        { course: courseId },
+                        {
+                            numberOfView: () => "number_of_view + 1"
+                        })
                 }
+
             } else if (courseType === CourseType.ONLINE) {
                 const onlineCourse = await queryRunner.manager.getRepository(OnlineCourseEntity)
                     .findOne({
@@ -242,11 +241,10 @@ class AnalyticRepository {
             }
 
             if (tutorId.isSafeNotBlank()) {
-                const frequency = await this.getTutorFrequency(tutorId)
                 await queryRunner.manager.update(TutorAnalyticFrequencyEntity,
                     { tutor: tutorId },
                     {
-                        numberOfCourseView: frequency.numberOfCourseView + 1
+                        numberOfCourseView: () => "number_of_course_view + 1"
                     })
             }
 
