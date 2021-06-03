@@ -400,7 +400,6 @@ create table clip
     urlCloudPath      varchar(255),
     coverUrl          varchar(255),
     coverUrlCloudPath varchar(255),
-    clip_view         int            not null default 0,
     PRIMARY KEY (id),
     CONSTRAINT `FK_CLIP_OWNER` FOREIGN KEY (ownerId) REFERENCES tutor_profile (id),
     CONSTRAINT `FK_CLIP_COURSE` FOREIGN KEY (onlineCourseId) REFERENCES online_course (id)

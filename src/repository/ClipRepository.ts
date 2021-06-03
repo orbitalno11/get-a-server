@@ -16,6 +16,8 @@ import { MemberEntity } from "../entity/member/member.entitiy"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import LearnerProfile from "../model/profile/LearnerProfile"
 import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository class for clip
@@ -29,15 +31,27 @@ class ClipRepository {
     /**
      * Create clip data
      * @param clipId
-     * @param course
+     * @param courseId
      * @param tutor
      * @param data
      * @param clipUrl
      */
-    async createClip(clipId: string, course: OnlineCourseEntity, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
+    async createClip(clipId: string, courseId: string, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            // course.numberOfClip += 1
+            const statistic = new ClipStatisticEntity()
+            statistic.rating = 0
+            statistic.clipRank = 0
+            statistic.numberOfView = 0
+            statistic.numberOfReview = 0
+            statistic.oneStar = 0
+            statistic.twoStar = 0
+            statistic.threeStar = 0
+            statistic.fourStar = 0
+            statistic.fiveStar = 0
+
+            const course = new OnlineCourseEntity()
+            course.id = courseId
 
             const clip = new ClipEntity()
             clip.id = clipId
@@ -48,18 +62,16 @@ class ClipRepository {
             clip.cost = data.cost
             clip.url = clipUrl.url
             clip.urlCloudPath = clipUrl.path
-            clip.clipView = 0
-
-            const rating = new ClipRatingEntity()
-            rating.clip = clip
-            rating.reviewNumber = 0
-            rating.rating = 0
+            clip.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            await queryRunner.manager.save(course)
             await queryRunner.manager.save(clip)
-            await queryRunner.manager.save(rating)
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: courseId },
+                {
+                    numberOfClip: () => "number_of_clip + 1"
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

@@ -441,9 +441,9 @@ class AnalyticRepository {
      */
     async trackImpressClip(clipId: string) {
         try {
-            const clip = await this.connection.getRepository(ClipEntity).findOne(clipId)
-            clip.clipView += 1
-            await this.connection.getRepository(ClipEntity).save(clip)
+            // const clip = await this.connection.getRepository(ClipEntity).findOne(clipId)
+            // clip.clipView += 1
+            // await this.connection.getRepository(ClipEntity).save(clip)
         } catch (error) {
             logger.error(error)
         }

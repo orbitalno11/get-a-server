@@ -68,7 +68,7 @@ export class ClipService {
                 }
             )
 
-            await this.repository.createClip(clipId, course, tutor, data, uploadedFile)
+            await this.repository.createClip(clipId, course.id, tutor, data, uploadedFile)
 
             return clipId
         } catch (error) {

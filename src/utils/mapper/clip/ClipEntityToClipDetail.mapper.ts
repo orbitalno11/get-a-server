@@ -14,7 +14,7 @@ export class ClipEntityToClipDetailMapper implements Mapper<ClipEntity, ClipDeta
         detail.clipUrl = from.url
         detail.owner = from.owner ? TutorEntityToPublicProfileMapper.getTutorNameCard(from.owner) : undefined
         detail.course = from.onlineCourse ? new OnlineCourseToCourseCardMapper().map(from.onlineCourse) : undefined
-        detail.clipView = from.clipView
+        // detail.clipView = from.clipView
         return detail
     }
 

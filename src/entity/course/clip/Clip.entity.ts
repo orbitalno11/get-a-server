@@ -32,9 +32,6 @@ export class ClipEntity {
     @Column()
     coverUrlCloudPath: string
 
-    @Column({ name: "clip_view" })
-    clipView: number
-
     // entity relation
     @ManyToOne(
         () => OnlineCourseEntity,
@@ -58,7 +55,8 @@ export class ClipEntity {
 
     @OneToOne(
         () => ClipStatisticEntity,
-        (statistic) => statistic.clip
+        (statistic) => statistic.clip,
+        { cascade: ["insert"] }
     )
     statistic: ClipStatisticEntity
 
