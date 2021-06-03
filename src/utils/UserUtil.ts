@@ -252,8 +252,7 @@ class UserUtil {
     isSubscribeClip(userId: string, clipId: string): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
-                const course = await this.getSubscribeClip(userId, clipId)
-                return isNotEmpty(course)
+                return await this.userRepository.isSubscribeClipById(LearnerProfile.getLearnerId(userId), clipId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }

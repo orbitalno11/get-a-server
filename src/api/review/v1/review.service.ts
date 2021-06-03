@@ -56,45 +56,39 @@ export class ReviewService {
                 throw ErrorExceptions.create("Your are not enroll this course", CourseError.NOT_ENROLLED)
             }
 
+            const tutorId = await this.repository.getCourseOwnerById(data.courseId, isOfflineCourse)
+
             if (isOfflineCourse) {
                 // offline course
-                const tutorId = await this.repository.getOfflineCourseOwnerId(data.courseId)
                 let courseStatistic = await this.repository.getOfflineCourseStatistic(data.courseId)
 
-                courseStatistic = this.updateOfflineCourseStar(data.rating, courseStatistic, true)
+                courseStatistic = this.updateStatisticStar(data.rating, courseStatistic, true)
                 courseStatistic.rating = RatingUtil.calculateIncreaseRatingAvg(courseStatistic.rating, data.rating, courseStatistic.numberOfReview)
                 courseStatistic.numberOfReview += 1
 
                 await this.repository.createOfflineCourseReview(data, user.id, data.courseId, courseStatistic)
-                await this.analytic.trackLearnerReviewOfflineCourse(tutorId, data.rating)
             } else {
                 // online course
-                // const subscribeClip = await this.userUtil.getSubscribeClip(user.id, data.clipId)
-                // if (isNotEmpty(subscribeClip)) {
-                //     const courseRating = await this.repository.getOnlineCourseRating(data.courseId)
-                //     const clipRating = await this.repository.getClipRating(data.clipId)
-                //
-                //     const updateCourseRating = RatingUtil.calculateIncreaseRatingAvg(courseRating.rating, data.rating, courseRating.reviewNumber)
-                //     const updateCourseReviewNumber = courseRating.reviewNumber + 1
-                //
-                //     const updateClipRating = RatingUtil.calculateIncreaseRatingAvg(clipRating.rating, data.rating, clipRating.reviewNumber)
-                //     const updateClipReviewNumber = clipRating.reviewNumber + 1
-                //
-                //     await this.repository.createOnlineCourseReview(
-                //         data,
-                //         learner,
-                //         enrolledCourse,
-                //         subscribeClip,
-                //         updateCourseRating,
-                //         updateCourseReviewNumber,
-                //         updateClipRating,
-                //         updateClipReviewNumber
-                //     )
-                //     await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, data.rating)
-                // } else {
-                //     throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
-                // }
+                const isSubscribe = await this.userUtil.isSubscribeClip(user.id, data.clipId)
+
+                if (!isSubscribe) {
+                    throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                }
+
+                let courseStatistic = await this.repository.getOnlineCourseStatistic(data.courseId)
+                let clipStatistic = await this.repository.getClipRating(data.clipId)
+
+                courseStatistic = this.updateStatisticStar(data.rating, courseStatistic, true)
+                courseStatistic.rating = RatingUtil.calculateIncreaseRatingAvg(courseStatistic.rating, data.rating, courseStatistic.numberOfReview)
+                courseStatistic.numberOfReview += 1
+
+                clipStatistic = this.updateStatisticStar(data.rating, clipStatistic, true)
+                clipStatistic.rating = RatingUtil.calculateIncreaseRatingAvg(clipStatistic.rating, data.rating, clipStatistic.numberOfReview)
+                clipStatistic.numberOfReview += 1
+
+                await this.repository.createOnlineCourseReview(data, user.id, data.courseId, data.clipId, courseStatistic, clipStatistic)
             }
+            await this.analytic.trackLearnerReview(tutorId, data.rating, isOfflineCourse)
         })
     }
 
@@ -118,13 +112,14 @@ export class ReviewService {
                 throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
             }
 
+            const tutorId = await this.repository.getCourseOwnerById(data.courseId, isOfflineCourse)
+
             if (isOfflineCourse) {
                 // offline course
-                const tutorId = await this.repository.getOfflineCourseOwnerId(data.courseId)
                 let courseStatistic = await this.repository.getOfflineCourseStatistic(data.courseId)
 
-                courseStatistic = this.updateOfflineCourseStar(userRating, courseStatistic, false)
-                courseStatistic = this.updateOfflineCourseStar(data.rating, courseStatistic, true)
+                courseStatistic = this.updateStatisticStar(userRating, courseStatistic, false)
+                courseStatistic = this.updateStatisticStar(data.rating, courseStatistic, true)
 
                 courseStatistic.rating = RatingUtil.calculateUpdateRatingAvg(
                     courseStatistic.rating,
@@ -134,7 +129,7 @@ export class ReviewService {
                 )
 
                 await this.repository.updateOfflineCourseReview(data, courseStatistic)
-                await this.analytic.trackLearnerReviewOfflineCourse(tutorId, data.rating, false, userRating)
+                await this.analytic.trackLearnerReview(tutorId, data.rating, true, false, userRating)
             } else {
                 // online course
                 // const subscribeClip = await this.userUtil.getSubscribeClip(user.id, data.clipId)
@@ -196,18 +191,19 @@ export class ReviewService {
                 throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
             }
 
+            const tutorId = await this.repository.getCourseOwnerById(courseId, isOfflineCourse)
+
             if (isOfflineCourse) {
                 // offline course
-                const tutorId = await this.repository.getOfflineCourseOwnerId(courseId)
                 let courseStatistic = await this.repository.getOfflineCourseStatistic(courseId)
 
-                courseStatistic = this.updateOfflineCourseStar(userRating, courseStatistic, false)
+                courseStatistic = this.updateStatisticStar(userRating, courseStatistic, false)
 
                 courseStatistic.rating = RatingUtil.calculateDecreaseRatingAvg(courseStatistic.rating, userRating, courseStatistic.numberOfReview)
                 courseStatistic.numberOfReview -= 1
 
                 await this.repository.deleteOfflineReview(reviewId, courseStatistic)
-                await this.analytic.trackLearnerReviewOfflineCourse(tutorId, 0.0, false, userRating)
+                await this.analytic.trackLearnerReview(tutorId, 0.0, true, false, userRating)
             } else {
                 // online course
                 // const subscribeClip = await this.userUtil.getSubscribeClip(user.id, clipId)
@@ -301,11 +297,18 @@ export class ReviewService {
         return courseType === CourseType.OFFLINE_SINGLE || courseType === CourseType.OFFLINE_GROUP
     }
 
-    private updateOfflineCourseStar(
+    /**
+     * Update statistic star number
+     * @param rating
+     * @param statistic
+     * @param increase
+     * @private
+     */
+    private updateStatisticStar<T>(
         rating: number,
-        statistic: OfflineCourseStatisticEntity,
+        statistic: T,
         increase: boolean = true
-    ): OfflineCourseStatisticEntity {
+    ): T {
         const ratingKey = this.mapRatingKey(rating)
         if (ratingKey.isSafeNotBlank()) {
             if (increase) {

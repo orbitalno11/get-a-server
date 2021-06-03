@@ -182,6 +182,24 @@ class UserRepository {
     }
 
     /**
+     * Check user already by clip
+     * @param learnerId
+     * @param clipId
+     */
+    async isSubscribeClipById(learnerId: string, clipId: string): Promise<boolean> {
+        try {
+            const count = await this.connection.createQueryBuilder(ClipTransactionEntity, "transaction")
+                .andWhere("transaction.learner like :learnerId", { learnerId: learnerId })
+                .andWhere("transaction.clipId = :clipId", { clipId: clipId })
+                .getCount()
+            return count === 1
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get clip", ClipError.CAN_NOT_GET_CLIP)
+        }
+    }
+
+    /**
      * Get course review by learner id and course id
      * @param learnerId
      * @param courseId

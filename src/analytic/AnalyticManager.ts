@@ -2,8 +2,11 @@ import { Injectable } from "@nestjs/common"
 import AnalyticRepository from "../repository/AnalyticRepository"
 import { launch } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
-import { isNotEmpty } from "../core/extension/CommonExtension"
+import { isEmpty, isNotEmpty } from "../core/extension/CommonExtension"
 import { CourseType } from "../model/course/data/CourseType"
+import { TutorStatisticEntity } from "../entity/analytic/TutorStatistic.entity"
+import { TutorAnalyticMonetaryEntity } from "../entity/analytic/TutorAnalyticMonetary.entity"
+import { of } from "rxjs"
 
 /**
  * Analytic manager
@@ -50,7 +53,7 @@ class AnalyticManager {
      * Track tutor profile view
      * @param tutorId
      */
-    trackProfileView(tutorId: string) {
+    trackImpressProfile(tutorId: string) {
         return launch(async () => {
             await this.repository.trackProfileView(tutorId)
         })
@@ -64,6 +67,16 @@ class AnalyticManager {
     trackImpressCourse(courseId: string, courseType: CourseType) {
         return launch(async () => {
             await this.repository.trackImpressCourse(courseId, courseType)
+        })
+    }
+
+    /**
+     * Track impress clip
+     * @param clipId
+     */
+    trackImpressClip(clipId: string) {
+        return launch(async () => {
+            await this.repository.trackImpressClip(clipId)
         })
     }
 
@@ -88,73 +101,6 @@ class AnalyticManager {
     }
 
     /**
-     * Track learner review offline course
-     * TODO Refactor review tracking
-     * @param tutorId
-     * @param rating
-     * @param firstTime
-     * @param oldRating
-     */
-    trackLearnerReviewOfflineCourse(tutorId: string, rating: number, firstTime: boolean = true, oldRating: number = 0) {
-        return launch(async () => {
-            const statistic = await this.repository.getTutorStatistic(tutorId)
-            const monetary = await this.repository.getTutorMonetary(tutorId)
-
-            if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
-                const deleteReview = rating === 0.0
-
-                if (firstTime) {
-                    statistic.offlineRating = RatingUtil.calculateIncreaseRatingAvg(
-                        statistic.offlineRating,
-                        rating,
-                        statistic.numberOfOfflineReview
-                    )
-                    statistic.numberOfOfflineReview += 1
-
-                    monetary.offlineRating = RatingUtil.calculateIncreaseRatingAvg(
-                        monetary.offlineRating,
-                        rating,
-                        monetary.numberOfOfflineReview
-                    )
-                    monetary.numberOfOfflineReview += 1
-                } else {
-                    statistic.offlineRating = RatingUtil.calculateUpdateRatingAvg(
-                        statistic.offlineRating,
-                        rating,
-                        oldRating,
-                        statistic.numberOfOfflineReview
-                    )
-                    statistic.numberOfOfflineReview = !deleteReview ? statistic.numberOfOfflineReview : statistic.numberOfOfflineReview - 1
-
-                    monetary.offlineRating = RatingUtil.calculateUpdateRatingAvg(
-                        monetary.offlineRating,
-                        rating,
-                        oldRating,
-                        monetary.numberOfOfflineReview
-                    )
-                    monetary.numberOfOfflineReview = !deleteReview ? monetary.numberOfOfflineReview : monetary.numberOfOfflineReview - 1
-                }
-
-                statistic.rating = RatingUtil.calculateTutorRatingAvg(
-                    statistic.offlineRating,
-                    statistic.onlineRating,
-                    statistic.numberOfOfflineReview,
-                    statistic.numberOfOnlineReview
-                )
-
-                monetary.rating = RatingUtil.calculateTutorRatingAvg(
-                    monetary.offlineRating,
-                    monetary.onlineRating,
-                    monetary.numberOfOfflineReview,
-                    monetary.numberOfOnlineReview
-                )
-
-                await this.repository.trackLearnerReviewOfflineCourse(tutorId, statistic, monetary, deleteReview)
-            }
-        })
-    }
-
-    /**
      * Track tutor create online course
      * @param tutorId
      */
@@ -165,103 +111,105 @@ class AnalyticManager {
     }
 
     /**
-     * Track learner review online course
-     * TODO Refactor review tracking
+     * Track learner review
      * @param tutorId
      * @param rating
+     * @param offline
      * @param firstTime
      * @param oldRating
      */
-    trackLearnerReviewOnlineCourse(tutorId: string, rating: number, firstTime: boolean = true, oldRating: number = 0) {
+    trackLearnerReview(tutorId: string, rating: number, offline: boolean, firstTime: boolean = true, oldRating: number = 0) {
         return launch(async () => {
-            const statistic = await this.repository.getTutorStatistic(tutorId)
-            const monetary = await this.repository.getTutorMonetary(tutorId)
+            let statistic = await this.repository.getTutorStatistic(tutorId)
+            let monetary = await this.repository.getTutorMonetary(tutorId)
 
-            if (isNotEmpty(statistic) && isNotEmpty(monetary)) {
-                const deleteReview = rating === 0.0
-                let updateStatisticTutorRating: number
-                let updateStatisticRating: number
-                let updateStatisticReviewNumber: number
-                let updateMonetaryTutorRating: number
-                let updateMonetaryRating: number
-                let updateMonetaryReviewNumber: number
-
-                if (firstTime) {
-                    updateStatisticRating = RatingUtil.calculateIncreaseRatingAvg(
-                        statistic.onlineRating,
-                        rating,
-                        statistic.numberOfOnlineReview
-                    )
-                    updateStatisticReviewNumber = statistic.numberOfOnlineReview + 1
-
-                    updateMonetaryRating = RatingUtil.calculateIncreaseRatingAvg(
-                        monetary.onlineRating,
-                        rating,
-                        monetary.numberOfOnlineReview
-                    )
-                    updateMonetaryReviewNumber = monetary.numberOfOnlineReview + 1
-                } else {
-                    updateStatisticRating = RatingUtil.calculateUpdateRatingAvg(
-                        statistic.onlineRating,
-                        rating,
-                        oldRating,
-                        statistic.numberOfOnlineReview
-                    )
-                    updateStatisticReviewNumber = !deleteReview ? statistic.numberOfOnlineReview : statistic.numberOfOnlineReview - 1
-
-                    updateMonetaryRating = RatingUtil.calculateUpdateRatingAvg(
-                        monetary.onlineRating,
-                        rating,
-                        oldRating,
-                        monetary.numberOfOnlineReview
-                    )
-                    updateMonetaryReviewNumber = !deleteReview ? monetary.numberOfOnlineReview : monetary.numberOfOnlineReview - 1
-                }
-
-                updateStatisticTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateStatisticRating,
-                    statistic.offlineRating,
-                    updateStatisticReviewNumber,
-                    statistic.numberOfOfflineReview
-                )
-
-                updateMonetaryTutorRating = RatingUtil.calculateTutorRatingAvg(
-                    updateMonetaryRating,
-                    monetary.offlineRating,
-                    updateMonetaryReviewNumber,
-                    monetary.numberOfOfflineReview
-                )
-
-                if (updateStatisticTutorRating?.isSafeNumber() &&
-                    updateStatisticRating?.isSafeNumber() &&
-                    updateStatisticReviewNumber?.isSafeNumber() &&
-                    updateMonetaryTutorRating?.isSafeNumber() &&
-                    updateMonetaryRating?.isSafeNumber() &&
-                    updateMonetaryReviewNumber?.isSafeNumber()
-                ) {
-                    await this.repository.trackLearnerReviewOnlineCourse(
-                        tutorId,
-                        updateStatisticTutorRating,
-                        updateStatisticRating,
-                        updateStatisticReviewNumber,
-                        updateMonetaryTutorRating,
-                        updateMonetaryRating,
-                        updateMonetaryReviewNumber,
-                        deleteReview
-                    )
-                }
+            if (isEmpty(statistic) || isEmpty(monetary)) {
+                return
             }
+
+            const deleteReview = rating < 0.0
+
+            const updatedData = this.calculateReview(rating, statistic, monetary, offline, firstTime, oldRating, deleteReview)
+            statistic = updatedData.statistic
+            monetary = updatedData.monetary
+
+            statistic.rating = RatingUtil.calculateTutorRatingAvg(
+                statistic.offlineRating,
+                statistic.onlineRating,
+                statistic.numberOfOfflineReview,
+                statistic.numberOfOnlineReview
+            )
+
+            monetary.rating = RatingUtil.calculateTutorRatingAvg(
+                monetary.offlineRating,
+                monetary.onlineRating,
+                monetary.numberOfOfflineReview,
+                monetary.numberOfOnlineReview
+            )
+
+            await this.repository.trackLearnerReview(tutorId, statistic, monetary, deleteReview)
         })
     }
 
     /**
-     * Track impress clip
-     * @param clipId
+     * Calculate review data
+     * @param rating
+     * @param statistic
+     * @param monetary
+     * @param offline
+     * @param firstTime
+     * @param oldRating
+     * @param deleteReview
+     * @private
      */
-    trackImpressClip(clipId: string) {
-        return launch(async () => {
-            await this.repository.trackImpressClip(clipId)
-        })
+    private calculateReview(
+        rating: number,
+        statistic: TutorStatisticEntity,
+        monetary: TutorAnalyticMonetaryEntity,
+        offline: boolean,
+        firstTime: boolean,
+        oldRating: number,
+        deleteReview: boolean
+    ): { statistic: TutorStatisticEntity, monetary: TutorAnalyticMonetaryEntity } {
+        const ratingKey = offline ? "offlineRating" : "onlineRating"
+        const reviewNumberKey = offline ? "numberOfOfflineReview" : "numberOfOnlineReview"
+
+        if (firstTime) {
+            statistic[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
+                statistic[ratingKey],
+                rating,
+                statistic[reviewNumberKey]
+            )
+            statistic[reviewNumberKey] += 1
+
+            monetary[ratingKey] = RatingUtil.calculateIncreaseRatingAvg(
+                monetary[ratingKey],
+                rating,
+                monetary[reviewNumberKey]
+            )
+            monetary[reviewNumberKey] += 1
+        } else {
+            statistic[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
+                statistic[ratingKey],
+                rating,
+                oldRating,
+                statistic[reviewNumberKey]
+            )
+            statistic[reviewNumberKey] = !deleteReview ? statistic[reviewNumberKey] : statistic[reviewNumberKey] - 1
+
+            monetary[ratingKey] = RatingUtil.calculateUpdateRatingAvg(
+                monetary[ratingKey],
+                rating,
+                oldRating,
+                monetary[reviewNumberKey]
+            )
+            monetary[reviewNumberKey] = !deleteReview ? monetary[reviewNumberKey] : monetary[reviewNumberKey] - 1
+        }
+
+        return {
+            statistic: statistic,
+            monetary: monetary
+        }
     }
 }
 
