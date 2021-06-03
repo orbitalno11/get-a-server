@@ -14,6 +14,8 @@ import OnlineCourse from "../model/course/OnlineCourse"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository for analytic manager
@@ -440,12 +442,34 @@ class AnalyticRepository {
      * @param clipId
      */
     async trackImpressClip(clipId: string) {
+        const queryRunner = this.connection.createQueryRunner()
         try {
-            // const clip = await this.connection.getRepository(ClipEntity).findOne(clipId)
-            // clip.clipView += 1
-            // await this.connection.getRepository(ClipEntity).save(clip)
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+
+            const { onlineCourseId } = await this.connection.createQueryBuilder(ClipEntity, "clip")
+                .select("clip.onlineCourse")
+                .where("clip.id like :clipId", { clipId: clipId })
+                .getRawOne()
+
+            await queryRunner.manager.update(ClipStatisticEntity,
+                { clip: clipId },
+                {
+                    numberOfView: () => "number_of_view + 1"
+                })
+
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: onlineCourseId },
+                {
+                    numberOfClipView: () => "number_of_clip_view + 1"
+                })
+
+            await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
+            await queryRunner.rollbackTransaction()
+        } finally {
+            await queryRunner.release()
         }
     }
 
