@@ -127,7 +127,7 @@ class AnalyticManager {
                 return
             }
 
-            const deleteReview = rating < 0.0
+            const deleteReview = rating === 0.0
 
             const updatedData = this.calculateReview(rating, statistic, monetary, offline, firstTime, oldRating, deleteReview)
             statistic = updatedData.statistic

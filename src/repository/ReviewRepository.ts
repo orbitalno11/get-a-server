@@ -386,33 +386,25 @@ class ReviewRepository {
         }
     }
 
+    /**
+     * Delete clip review
+     * @param reviewId
+     * @param courseStatistic
+     * @param clipStatistic
+     */
     async deleteClipReview(
-        course: OnlineCourseEntity,
-        clip: ClipEntity,
-        userReview: ClipRatingTransactionEntity,
-        updatedCourseRating: number,
-        updatedCourseReviewNumber: number,
-        updatedClipRating: number,
-        updatedClipReviewNumber: number
+        reviewId: number,
+        courseStatistic: OnlineCourseStatisticEntity,
+        clipStatistic: ClipStatisticEntity
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.remove(userReview)
-            await queryRunner.manager.update(ClipRatingEntity,
-                { clip: clip },
-                {
-                    reviewNumber: updatedClipReviewNumber,
-                    rating: updatedClipRating
-                })
-            await queryRunner.manager.update(OnlineCourseRatingEntity,
-                { onlineCourse: course },
-                {
-                    reviewNumber: updatedCourseReviewNumber,
-                    rating: updatedCourseRating
-                })
+            await queryRunner.manager.delete(ClipRatingTransactionEntity, reviewId)
+            await queryRunner.manager.save(clipStatistic)
+            await queryRunner.manager.save(courseStatistic)
 
             await queryRunner.commitTransaction()
         } catch (error) {

@@ -181,7 +181,7 @@ export class ReviewService {
                 throw ErrorExceptions.create("Your are not enroll this course", CourseError.NOT_ENROLLED)
             }
 
-            const userRating = await this.repository.getOfflineCourseRatingByUser(reviewId)
+            const userRating = isOfflineCourse ? await this.repository.getOfflineCourseRatingByUser(reviewId) : await this.repository.getClipRatingByUser(reviewId)
 
             if (!userRating?.isSafeNumber()) {
                 throw ErrorExceptions.create("Can not found review", ReviewError.CAN_NOT_FOUND_REVIEW)
@@ -199,32 +199,36 @@ export class ReviewService {
                 courseStatistic.numberOfReview -= 1
 
                 await this.repository.deleteOfflineReview(reviewId, courseStatistic)
-                await this.analytic.trackLearnerReview(tutorId, 0.0, true, false, userRating)
             } else {
                 // online course
-                // const subscribeClip = await this.userUtil.getSubscribeClip(user.id, clipId)
-                // if (isNotEmpty(subscribeClip)) {
-                //     const courseRating = await this.repository.getOnlineCourseRating(courseId)
-                //     const clipRating = await this.repository.getClipRating(clipId)
-                //
-                //     const updatedCourseRating = RatingUtil.calculateDecreaseRatingAvg(courseRating.rating, userRating.rating, courseRating.reviewNumber)
-                //
-                //     const updateClipRating = RatingUtil.calculateDecreaseRatingAvg(clipRating.rating, userRating.rating, clipRating.reviewNumber)
-                //
-                //     await this.repository.deleteClipReview(
-                //         enrolledCourse,
-                //         subscribeClip,
-                //         userRating,
-                //         updatedCourseRating,
-                //         courseRating.reviewNumber - 1,
-                //         updateClipRating,
-                //         clipRating.reviewNumber - 1
-                //     )
-                //     await this.analytic.trackLearnerReviewOnlineCourse(enrolledCourse.owner?.id, 0.0, false, userRating.rating)
-                // } else {
-                //     throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
-                // }
+                const isSubscribe = await this.userUtil.isSubscribeClip(user.id, clipId)
+
+                if (!isSubscribe) {
+                    throw ErrorExceptions.create("Your is not subscribe this clip", ClipError.NOT_SUBSCRIBE)
+                }
+
+                let courseStatistic = await this.repository.getOnlineCourseStatistic(courseId)
+                let clipStatistic = await this.repository.getClipStatistic(clipId)
+
+                courseStatistic = this.updateStatisticStar(userRating, courseStatistic, false)
+                courseStatistic.rating = RatingUtil.calculateDecreaseRatingAvg(
+                    courseStatistic.rating,
+                    userRating,
+                    courseStatistic.numberOfReview
+                )
+                courseStatistic.numberOfReview -= 1
+
+                clipStatistic = this.updateStatisticStar(userRating, clipStatistic, false)
+                clipStatistic.rating = RatingUtil.calculateDecreaseRatingAvg(
+                    clipStatistic.rating,
+                    userRating,
+                    clipStatistic.numberOfReview
+                )
+                clipStatistic.numberOfReview -= 1
+
+                await this.repository.deleteClipReview(reviewId, courseStatistic, clipStatistic)
             }
+            await this.analytic.trackLearnerReview(tutorId, 0.0, isOfflineCourse, false, userRating)
         })
     }
 
