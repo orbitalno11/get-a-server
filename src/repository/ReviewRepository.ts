@@ -89,12 +89,13 @@ class ReviewRepository {
      */
     async getOfflineCourseRatingByUser(reviewId: number): Promise<{ id: number, rating: number }> {
         try {
-            const { rating_id, rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
+            const { rating_rating } = await this.connection.getRepository(OfflineCourseRatingTransactionEntity)
                 .createQueryBuilder("rating")
                 .select(["rating.id", "rating.rating"])
+                .where("rating.id = :reviewId", { reviewId: reviewId })
                 .getRawOne()
             return {
-                id: rating_id,
+                id: undefined,
                 rating: rating_rating
             }
         } catch (error) {
