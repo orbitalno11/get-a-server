@@ -13,7 +13,7 @@ export class OfflineCourseEntityToOfflineCourseMapper implements Mapper<OfflineC
         course.name = from.name
         course.description = from.description
         course.cost = from.cost
-        course.costText = `${from.cost} บาท/ชั่วโมง`
+        course.costText = `${from.cost.toLocaleString()} บาท/ชั่วโมง`
         course.dayOfWeek = from.day
         course.startTime = from.startTime
         course.endTime = from.endTime

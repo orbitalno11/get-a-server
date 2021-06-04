@@ -6,7 +6,7 @@ import CommonError from "../core/exceptions/constants/common-error.enum"
 
 @Injectable()
 export class AllowTimeoutInterceptor implements NestInterceptor {
-    constructor(private timeoutLimit: number = 1800) {
+    constructor(private timeoutLimit: number = 30000) {
     }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> | Promise<Observable<any>> {

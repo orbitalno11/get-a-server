@@ -18,7 +18,7 @@ export const OfflineCourseEntityToSimpleCourseMapper = (from: OfflineCourseEntit
     out.timeText = `${getDayOfWeekTh(from.day)} ${from.startTime}น. - ${from.endTime}น.`
     out.rating = from.statistic?.rating
     out.cost = from.cost
-    out.costText = `${from.cost} บาท/ชั่วโมง`
+    out.costText = `${from.cost.toLocaleString()} บาท/ชั่วโมง`
     out.courseType = from.courseType?.id
     out.status = from.status as CourseStatus
     if (isOwner) {
