@@ -42,7 +42,6 @@ class HomeRepository {
 
     /**
      * Get online course by rank
-     * waiting for ranking sys. keep online course rank
      * @param rankLimit
      */
     async getOnlineCourse(rankLimit: number = 10): Promise<OnlineCourseEntity[]> {
@@ -51,6 +50,7 @@ class HomeRepository {
                 .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("owner.member", "member")
+                .orderBy("statistic.courseRank", "DESC")
                 .orderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
