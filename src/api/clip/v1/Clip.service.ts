@@ -68,7 +68,7 @@ export class ClipService {
                 }
             )
 
-            await this.repository.createClip(clipId, course, tutor, data, uploadedFile)
+            await this.repository.createClip(clipId, course.id, tutor, data, uploadedFile)
 
             return clipId
         } catch (error) {
@@ -232,7 +232,7 @@ export class ClipService {
                 throw ErrorExceptions.create("Can not delete clip data", ClipError.CAN_NOT_DELETE_CLIP_HAVE_SUBSCRIBER)
             }
 
-            await this.repository.deleteClip(clip)
+            await this.repository.deleteClip(clipId, clip.onlineCourse.id)
 
             await this.fileStorageUtil.deleteFileFromPath(clip.urlCloudPath)
         } catch (error) {

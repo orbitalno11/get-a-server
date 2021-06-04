@@ -48,10 +48,10 @@ class HomeRepository {
     async getOnlineCourse(rankLimit: number = 10): Promise<OnlineCourseEntity[]> {
         try {
             return await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("owner.member", "member")
-                .orderBy("rating.rating", "DESC")
+                .orderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
         } catch (error) {

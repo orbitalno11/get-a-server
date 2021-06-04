@@ -8,11 +8,11 @@ import { CourseStatus } from "../model/course/data/CourseStatus"
 import { GradeEntity } from "../entity/common/grade.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
 import { CourseTypeEntity } from "../entity/course/courseType.entity"
-import { OfflineCourseRatingEntity } from "../entity/course/offline/offlineCourseRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import { OfflineCourseLeanerRequestEntity } from "../entity/course/offline/offlineCourseLearnerRequest.entity"
 import { EnrollStatus } from "../model/course/data/EnrollStatus"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
 
 /**
  * Repository for offline course
@@ -32,6 +32,17 @@ class OfflineCourseRepository {
     async createCourse(courseId: string, data: OfflineCourseForm, tutor: TutorEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            const statistic = new OfflineCourseStatisticEntity()
+            statistic.courseRank = 0
+            statistic.rating = 0
+            statistic.numberOfView = 0
+            statistic.numberOfReview = 0
+            statistic.oneStar = 0
+            statistic.twoStar = 0
+            statistic.threeStar = 0
+            statistic.fourStar = 0
+            statistic.fiveStar = 0
+
             const offlineCourse = new OfflineCourseEntity()
             offlineCourse.id = courseId
             offlineCourse.name = data.name
@@ -46,16 +57,11 @@ class OfflineCourseRepository {
             offlineCourse.subject = SubjectEntity.createFromCode(data.subject)
             offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
             offlineCourse.owner = tutor
-
-            const courseRating = new OfflineCourseRatingEntity()
-            courseRating.course = offlineCourse
-            courseRating.reviewNumber = 0
-            courseRating.rating = 0
+            offlineCourse.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(offlineCourse)
-            await queryRunner.manager.save(courseRating)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -77,7 +83,7 @@ class OfflineCourseRepository {
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("owner.member", "member")
                 .leftJoinAndSelect("owner.contact", "contact")
                 .where("course.id like :id")

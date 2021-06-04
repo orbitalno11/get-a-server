@@ -31,7 +31,7 @@ class SearchRepository {
         try {
             const query = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("owner.member", "member")
@@ -56,7 +56,7 @@ class SearchRepository {
             }
 
             query.distinct(true)
-                .orderBy("rating.rating", "DESC")
+                .orderBy("statistic.rating", "DESC")
 
             return paginate<OfflineCourseEntity>(query, paginationOption)
         } catch (error) {
@@ -76,7 +76,7 @@ class SearchRepository {
         try {
             const query = await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("owner.member", "member")
@@ -94,7 +94,7 @@ class SearchRepository {
             }
 
             query.distinct(true)
-                .orderBy("rating.rating", "DESC")
+                .orderBy("statistic.rating", "DESC")
 
             return paginate<OnlineCourseEntity>(query, paginationOption)
         } catch (error) {
