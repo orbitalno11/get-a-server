@@ -42,7 +42,6 @@ class HomeRepository {
 
     /**
      * Get online course by rank
-     * waiting for ranking sys. keep online course rank
      * @param rankLimit
      */
     async getOnlineCourse(rankLimit: number = 10): Promise<OnlineCourseEntity[]> {
