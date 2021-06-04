@@ -191,4 +191,4 @@ INSERT INTO institute (id, title) VALUES
 (155, 'วิทยาลัยอินเตอร์เทคลำปาง');
 
 -- insert into branch()
-insert into branch (id, title) VALUES (1, "คณิตศาสตร์"), (2, "วิทยาศาสตร์"), (3, "ภาษาไทย"), (4, "ภาษาอังกฤษ");
+insert into branch (id, title) VALUES (1, 'คณิตศาสตร์'), (2, 'วิทยาศาสตร์'), (3, 'ภาษาไทย'), (4, 'ภาษาอังกฤษ');
