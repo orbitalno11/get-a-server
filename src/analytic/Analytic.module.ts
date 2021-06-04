@@ -3,6 +3,7 @@ import { CoreModule } from "../core/core.module"
 import { UtilityModule } from "../utils/utility.module"
 import { RepositoryModule } from "../repository/repository.module"
 import AnalyticManager from "./AnalyticManager"
+import { AnalyticScheduler } from "./Analytic.scheduler"
 
 /**
  * Module for analytic tutor
@@ -10,8 +11,8 @@ import AnalyticManager from "./AnalyticManager"
  */
 @Module({
     imports: [CoreModule, UtilityModule, RepositoryModule],
-    providers: [AnalyticManager],
-    exports: [AnalyticManager]
+    providers: [AnalyticManager, AnalyticScheduler],
+    exports: [AnalyticManager, AnalyticScheduler]
 })
 export class AnalyticModule {
 

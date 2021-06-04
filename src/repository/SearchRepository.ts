@@ -94,6 +94,7 @@ class SearchRepository {
             }
 
             query.distinct(true)
+                .orderBy("statistic.courseRank", "DESC")
                 .orderBy("statistic.rating", "DESC")
 
             return paginate<OnlineCourseEntity>(query, paginationOption)

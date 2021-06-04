@@ -176,6 +176,15 @@ class AnalyticManager {
             await this.repository.trackLearnerReview(tutorId, statistic, monetary, deleteReview)
         })
     }
+
+    /**
+     * Update online course rank
+     */
+    updateOnlineCourseRank() {
+        return launch(async () => {
+            await this.repository.updateOnlineCourseRank()
+        })
+    }
 }
 
 export default AnalyticManager
