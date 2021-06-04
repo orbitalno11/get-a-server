@@ -31,6 +31,8 @@ class HomeRepository {
                 .leftJoinAndSelect("address.province", "province")
                 .leftJoinAndSelect("address.district", "district")
                 .leftJoinAndSelect("interestedSubject.subject", "subject")
+                .where("interestedSubject.subjectRank = 1")
+                .groupBy("statistic.tutor")
                 .orderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
