@@ -51,6 +51,7 @@ class HomeRepository {
                 .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("owner.member", "member")
+                .orderBy("statistic.courseRank", "DESC")
                 .orderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()

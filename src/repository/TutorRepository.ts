@@ -467,6 +467,7 @@ class TutorRepository {
                 .leftJoinAndSelect("course.owner", "tutor")
                 .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("tutor.contact", "contact")
+                .leftJoinAndSelect("tutor.member", "member")
                 .where("course.owner like :tutorId", { tutorId: tutorId })
                 .orderBy("statistic.rating", "DESC")
                 .getMany()
