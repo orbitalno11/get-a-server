@@ -56,6 +56,9 @@ const ormConfig: TypeOrmModuleOptions = {
     password: DATABASE_PASSWORD,
     database: DATABASE_NAME,
     synchronize: false,
+    extra: {
+        decimalNumbers: true
+    },
     entities: [
         MemberEntity,
         GradeEntity,

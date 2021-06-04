@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import AnalyticRepository from "../repository/AnalyticRepository"
-import { launch } from "../core/common/launch"
+import { launch, launchAnalytic } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
 import { isEmpty } from "../core/extension/CommonExtension"
 import { CourseType } from "../model/course/data/CourseType"
@@ -19,7 +19,7 @@ class AnalyticManager {
      * @param tutorId
      */
     increaseNumberOfFavorite(tutorId: string) {
-        return launch(async () => {
+        launchAnalytic(async () => {
             await this.repository.increaseNumberOfFavorite(tutorId)
         })
     }
@@ -29,7 +29,7 @@ class AnalyticManager {
      * @param tutorId
      */
     decreaseNumberOfFavorite(tutorId: string) {
-        return launch(async () => {
+        launchAnalytic(async () => {
             await this.repository.decreaseNumberOfFavorite(tutorId)
         })
     }

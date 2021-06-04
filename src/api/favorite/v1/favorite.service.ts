@@ -38,10 +38,10 @@ export class FavoriteService {
 
             if (liked) {
                 await this.repository.unLikeTutor(tutorId, learnerId)
-                await this.analytic.decreaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
+                this.analytic.decreaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
             } else {
                 await this.repository.likeTutor(tutorId, learnerId)
-                await this.analytic.increaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
+                this.analytic.increaseNumberOfFavorite(TutorProfile.getTutorId(tutorUserId))
             }
         })
     }
