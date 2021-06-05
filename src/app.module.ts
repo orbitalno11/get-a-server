@@ -26,6 +26,7 @@ import { GatewayModule } from "./gateway/gateway.module"
 import { SearchModule } from "./api/search/v1/Search.module"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AnalyticModule } from "./analytic/Analytic.module"
+import { DataModule } from "./api/data/data.module"
 
 const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
 
@@ -52,7 +53,8 @@ const env = process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : ".env"
         AnalyticApiModule,
         OnlineCourseModule,
         ClipModule,
-        SearchModule
+        SearchModule,
+        DataModule
     ],
     controllers: [AppController],
     providers: [AppService]
