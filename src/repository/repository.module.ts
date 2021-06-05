@@ -15,6 +15,7 @@ import HomeRepository from "./HomeRepository"
 import OnlineCourseRepository from "./OnlineCourseRepository"
 import ClipRepository from "./ClipRepository"
 import SearchRepository from "./SearchRepository"
+import DataRepository from "./DataRepository"
 
 /**
  * Class for Repository module
@@ -37,7 +38,8 @@ import SearchRepository from "./SearchRepository"
         HomeRepository,
         OnlineCourseRepository,
         ClipRepository,
-        SearchRepository
+        SearchRepository,
+        DataRepository
     ],
     exports: [
         AnalyticRepository,
@@ -54,7 +56,8 @@ import SearchRepository from "./SearchRepository"
         HomeRepository,
         OnlineCourseRepository,
         ClipRepository,
-        SearchRepository
+        SearchRepository,
+        DataRepository
     ]
 })
 export class RepositoryModule {
