@@ -3,7 +3,8 @@ enum CommonError {
     VALIDATE_DATA = "validate-data-error",
     INVALID_REQUEST_DATA = "invalid-request-data",
     INVALID = "invalid",
-    TIMEOUT = "timeout"
+    TIMEOUT = "timeout",
+    CAN_NOT_GET_DATA = "can-not-get-data"
 }
 
 export default CommonError

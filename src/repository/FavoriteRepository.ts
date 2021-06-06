@@ -6,8 +6,6 @@ import { TutorEntity } from "../entity/profile/tutor.entity"
 import { LearnerEntity } from "../entity/profile/learner.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { FavoriteError } from "../core/exceptions/constants/favorite-error.enum"
-import TutorProfile from "../model/profile/TutorProfile"
-import LearnerProfile from "../model/profile/LearnerProfile"
 
 /**
  * Repository for favorite api
