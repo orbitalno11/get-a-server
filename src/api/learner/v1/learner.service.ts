@@ -95,7 +95,8 @@ export class LearnerService {
                 email: member.email,
                 username: member.username,
                 profileUrl: member.profileUrl,
-                role: UserRole.LEARNER
+                role: UserRole.LEARNER,
+                verified: false
             })
 
             return token

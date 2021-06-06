@@ -83,7 +83,8 @@ export class TutorService {
                 email: result.email,
                 username: result.username,
                 profileUrl: result.profileUrl,
-                role: UserRole.TUTOR
+                role: UserRole.TUTOR,
+                verified: false
             })
         } catch (error) {
             logger.error(error)
