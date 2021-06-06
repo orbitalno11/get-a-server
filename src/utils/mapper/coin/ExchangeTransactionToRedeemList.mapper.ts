@@ -24,7 +24,9 @@ export const ExchangeTransactionToRedeemListMapper = (from: RedeemTransactionEnt
  */
 export const ExchangeTransactionToRedeemMapper = (from: RedeemTransactionEntity): RedeemTransaction => {
     const redeem = new RedeemTransaction()
-    redeem.coinRate = ExchangeRateEntityToCoinRateMapper(from.exchangeRate)
+    redeem.id = from.id
+    redeem.amount = from.amount
+    redeem.amountCoin = from.amountCoin
     redeem.requestDate = from.requestDate
     redeem.approveDate = from.approveDate
     redeem.transferDate = from.transferDate
