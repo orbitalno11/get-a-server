@@ -224,6 +224,7 @@ export class CoinService {
             if (fileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtil.deleteFile(fileUrl)
             }
+            if (error instanceof ErrorExceptions) throw error
             throw ErrorExceptions.create("Can not request redeem", CoinError.CAN_NOT_CREATE_REDEEM)
         }
     }

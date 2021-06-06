@@ -280,6 +280,7 @@ create table redeem_transaction
     account_name   varchar(255)   not null,
     account_pic    varchar(255)   not null,
     amount         decimal(10, 3) not null,
+    amount_coin    decimal(10, 3) not null,
     request_date   timestamp      not null,
     approve_date   timestamp,
     transfer_date  timestamp,

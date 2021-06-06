@@ -352,12 +352,6 @@ class MeRepository {
                     where: {
                         member: user.id
                     },
-                    join: {
-                        alias: "transaction",
-                        leftJoinAndSelect: {
-                            exchangeRate: "transaction.exchangeRate"
-                        }
-                    },
                     order: {
                         requestDate: "ASC"
                     }
