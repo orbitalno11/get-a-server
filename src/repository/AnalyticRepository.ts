@@ -10,6 +10,11 @@ import { TutorAnalyticFrequencyEntity } from "../entity/analytic/TutorAnalyticFr
 import { CourseType } from "../model/course/data/CourseType"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { isNotEmpty } from "../core/extension/CommonExtension"
+import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
+import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { OfflineCourseStatisticEntity } from "../entity/course/offline/OfflineCourseStatistic.entity"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository for analytic manager
@@ -22,44 +27,23 @@ class AnalyticRepository {
     }
 
     /**
-     * Increase number of learner favorite in tutor statistic
+     * Increase number of favorite
      * @param tutorId
      */
-    async increaseStatisticNumberOfFavorite(tutorId: string) {
+    async increaseNumberOfFavorite(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: statistic.numberOfFavorite + 1
+                    numberOfFavorite: () => "number_of_favorite + 1"
                 })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
-     * Increase number of learner favorite in tutor monetary analytic
-     * @param tutorId
-     */
-    async increaseMonetaryNumberOfFavorite(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: monetary.numberOfFavorite + 1
+                    numberOfFavorite: () => "number_of_favorite + 1"
                 })
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -71,45 +55,20 @@ class AnalyticRepository {
         }
     }
 
-    /**
-     * Decrease number of learner favorite in tutor statistic
-     * @param tutorId
-     */
-    async decreaseStatisticNumberOfFavorite(tutorId: string) {
+    async decreaseNumberOfFavorite(tutorId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: statistic.numberOfFavorite - 1
+                    numberOfFavorite: () => "number_of_favorite - 1"
                 })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
-     * Decrease number of learner favorite in tutor monetary analytic
-     * @param tutorId
-     */
-    async decreaseMonetaryNumberOfFavorite(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfFavorite: monetary.numberOfFavorite - 1
+                    numberOfFavorite: () => "number_of_favorite - 1"
                 })
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -201,32 +160,49 @@ class AnalyticRepository {
             let tutorId = ""
 
             if (courseType === CourseType.OFFLINE_SINGLE || courseType === CourseType.OFFLINE_GROUP) {
-                const offlineCourse = await queryRunner.manager.getRepository(OfflineCourseEntity)
+                const { ownerId } = await queryRunner.manager.createQueryBuilder(OfflineCourseEntity, "course")
+                    .select("course.ownerId")
+                    .where("course.id like :courseId", { courseId: courseId })
+                    .getRawOne()
+
+                if (ownerId?.isSafeNotBlank()) {
+                    tutorId = ownerId
+                    await queryRunner.manager.update(OfflineCourseStatisticEntity,
+                        { course: courseId },
+                        {
+                            numberOfView: () => "number_of_view + 1"
+                        })
+                }
+
+            } else if (courseType === CourseType.ONLINE) {
+                const onlineCourse = await queryRunner.manager.getRepository(OnlineCourseEntity)
                     .findOne({
                         where: {
                             id: courseId
                         },
                         join: {
-                            alias: "offlineCourse",
+                            alias: "onlineCourse",
                             leftJoinAndSelect: {
-                                owner: "offlineCourse.owner"
+                                owner: "onlineCourse.owner"
                             }
                         }
                     })
 
-                if (isNotEmpty(offlineCourse)) {
-                    tutorId = offlineCourse.owner.id
+                if (isNotEmpty(onlineCourse)) {
+                    tutorId = onlineCourse.owner.id
+                    await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                        {onlineCourse: courseId },
+                        {
+                            numberOfClipView: () => "number_of_clip_view + 1"
+                        })
                 }
-            } else {
-                // todo online course
             }
 
             if (tutorId.isSafeNotBlank()) {
-                const frequency = await this.getTutorFrequency(tutorId)
                 await queryRunner.manager.update(TutorAnalyticFrequencyEntity,
                     { tutor: tutorId },
                     {
-                        numberOfCourseView: frequency.numberOfCourseView + 1
+                        numberOfCourseView: () => "number_of_course_view + 1"
                     })
             }
 
@@ -249,13 +225,11 @@ class AnalyticRepository {
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const monetary = await this.getTutorMonetary(tutorId)
-            const statistic = await this.getTutorStatistic(tutorId)
 
             await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
                 { tutor: tutorId },
                 {
-                    numberOfLearner: monetary.numberOfLearner + 1
+                    numberOfLearner: () => "number_of_learner + 1"
                 })
             await queryRunner.manager.update(TutorAnalyticRecencyEntity,
                 { tutor: tutorId },
@@ -265,7 +239,7 @@ class AnalyticRepository {
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    numberOfLearner: statistic.numberOfLearner + 1
+                    numberOfLearner: () => "number_of_learner + 1"
                 })
 
             await queryRunner.commitTransaction()
@@ -283,48 +257,31 @@ class AnalyticRepository {
      * @param tutorId
      */
     async trackTutorCreateOfflineCourse(tutorId: string) {
-        const queryRunner = this.connection.createQueryRunner()
         try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
-
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    offlineCourseNumber: statistic.offlineCourseNumber + 1
+            await this.connection.createQueryBuilder()
+                .update(TutorStatisticEntity)
+                .set({
+                    offlineCourseNumber: () => "number_of_offline_course + 1"
                 })
-
-            await queryRunner.commitTransaction()
+                .where("tutor like :tutorId", { tutorId: tutorId })
+                .execute()
         } catch (error) {
             logger.error(error)
-            await queryRunner.rollbackTransaction()
             throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
         }
     }
 
     /**
-     * Track learner review offline course
-     * TODO Refactor review tracking
+     * Track learner review
      * @param tutorId
-     * @param updatedStatisticTutorRating
-     * @param updatedStatisticRating
-     * @param updatedStatisticReviewNumber
-     * @param updatedMonetaryTutorRating
-     * @param updatedMonetaryRating
-     * @param updatedMonetaryReviewNumber
+     * @param statistic
+     * @param monetary
      * @param deleteReview
      */
-    async trackLearnerReviewOfflineCourse(
+    async trackLearnerReview(
         tutorId: string,
-        updatedStatisticTutorRating: number,
-        updatedStatisticRating: number,
-        updatedStatisticReviewNumber: number,
-        updatedMonetaryTutorRating: number,
-        updatedMonetaryRating: number,
-        updatedMonetaryReviewNumber: number,
+        statistic: TutorStatisticEntity,
+        monetary: TutorAnalyticMonetaryEntity,
         deleteReview: boolean
     ) {
         const queryRunner = this.connection.createQueryRunner()
@@ -332,20 +289,8 @@ class AnalyticRepository {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedStatisticTutorRating,
-                    offlineRating: updatedStatisticRating,
-                    numberOfOfflineReview: updatedStatisticReviewNumber
-                })
-            await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
-                { tutor: tutorId },
-                {
-                    rating: updatedMonetaryTutorRating,
-                    offlineRating: updatedMonetaryRating,
-                    numberOfOfflineReview: updatedMonetaryReviewNumber
-                })
+            await queryRunner.manager.save(statistic)
+            await queryRunner.manager.save(monetary)
             if (!deleteReview) {
                 await queryRunner.manager.update(TutorAnalyticRecencyEntity,
                     { tutor: tutorId },
@@ -372,12 +317,11 @@ class AnalyticRepository {
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            const statistic = await this.getTutorStatistic(tutorId)
 
             await queryRunner.manager.update(TutorStatisticEntity,
                 { tutor: tutorId },
                 {
-                    onlineCourseNumber: statistic.onlineCourseNumber + 1
+                    onlineCourseNumber: () => "number_of_online_course + 1"
                 })
 
             await queryRunner.commitTransaction()
@@ -391,58 +335,36 @@ class AnalyticRepository {
     }
 
     /**
-     * Track learner review online course
-     * TODO Refactor review tracking
-     * @param tutorId
-     * @param updatedStatisticTutorRating
-     * @param updatedStatisticRating
-     * @param updatedStatisticReviewNumber
-     * @param updatedMonetaryTutorRating
-     * @param updatedMonetaryRating
-     * @param updatedMonetaryReviewNumber
-     * @param deleteReview
+     * Track impress clip view
+     * @param clipId
      */
-    async trackLearnerReviewOnlineCourse(
-        tutorId: string,
-        updatedStatisticTutorRating: number,
-        updatedStatisticRating: number,
-        updatedStatisticReviewNumber: number,
-        updatedMonetaryTutorRating: number,
-        updatedMonetaryRating: number,
-        updatedMonetaryReviewNumber: number,
-        deleteReview: boolean
-    ) {
+    async trackImpressClip(clipId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            await queryRunner.manager.update(TutorStatisticEntity,
-                { tutor: tutorId },
+            const { onlineCourseId } = await this.connection.createQueryBuilder(ClipEntity, "clip")
+                .select("clip.onlineCourse")
+                .where("clip.id like :clipId", { clipId: clipId })
+                .getRawOne()
+
+            await queryRunner.manager.update(ClipStatisticEntity,
+                { clip: clipId },
                 {
-                    rating: updatedStatisticTutorRating,
-                    onlineRating: updatedStatisticRating,
-                    numberOfOnlineReview: updatedStatisticReviewNumber
+                    numberOfView: () => "number_of_view + 1"
                 })
-            await queryRunner.manager.update(TutorAnalyticMonetaryEntity,
-                { tutor: tutorId },
+
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: onlineCourseId },
                 {
-                    rating: updatedMonetaryTutorRating,
-                    onlineRating: updatedMonetaryRating,
-                    numberOfOnlineReview: updatedMonetaryReviewNumber
+                    numberOfClipView: () => "number_of_clip_view + 1"
                 })
-            if (!deleteReview) {
-                await queryRunner.manager.update(TutorAnalyticRecencyEntity,
-                    { tutor: tutorId },
-                    {
-                        recentComment: new Date()
-                    })
-            }
+
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
             await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
         } finally {
             await queryRunner.release()
         }
@@ -455,21 +377,10 @@ class AnalyticRepository {
      */
     async getTutorStatistic(tutorId: string): Promise<TutorStatisticEntity> {
         try {
-            return await this.connection.getRepository(TutorStatisticEntity).findOne(tutorId)
-        } catch (error) {
-            logger.error(error)
-            throw ErrorExceptions.create("Can not get tutor recency analytic", AnalyticError.CAN_NOT_GET_TUTOR_RECENCY)
-        }
-    }
-
-    /**
-     * Get tutor recency entity
-     * @param tutorId
-     * @private
-     */
-    async getTutorRecency(tutorId: string): Promise<TutorAnalyticRecencyEntity> {
-        try {
-            return await this.connection.getRepository(TutorAnalyticRecencyEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorStatisticEntity).createQueryBuilder("statistic")
+                .innerJoinAndSelect("statistic.tutor", "tutor")
+                .where("statistic.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor recency analytic", AnalyticError.CAN_NOT_GET_TUTOR_RECENCY)
@@ -483,7 +394,10 @@ class AnalyticRepository {
      */
     async getTutorFrequency(tutorId: string): Promise<TutorAnalyticFrequencyEntity> {
         try {
-            return await this.connection.getRepository(TutorAnalyticFrequencyEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorAnalyticFrequencyEntity).createQueryBuilder("frequency")
+                .innerJoinAndSelect("frequency.tutor", "tutor")
+                .where("frequency.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor frequency analytic", AnalyticError.CAN_NOT_GET_TUTOR_FREQ)
@@ -497,10 +411,60 @@ class AnalyticRepository {
      */
     async getTutorMonetary(tutorId: string): Promise<TutorAnalyticMonetaryEntity> {
         try {
-            return await this.connection.getRepository(TutorAnalyticMonetaryEntity).findOne(tutorId)
+            return await this.connection.getRepository(TutorAnalyticMonetaryEntity).createQueryBuilder("monetary")
+                .innerJoinAndSelect("monetary.tutor", "tutor")
+                .where("monetary.tutor like :tutorId", { tutorId: tutorId })
+                .getOne()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get tutor monetary analytic", AnalyticError.CAN_NOT_GET_TUTOR_MONETARY)
+        }
+    }
+
+    /**
+     * Update online course rank
+     */
+    async updateOnlineCourseRank() {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.createQueryBuilder()
+                .update(ClipStatisticEntity)
+                .set({
+                    clipRank: () => "(((number_of_five_star + number_of_four_star + number_of_three_star) + 1.9208) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)) - 1.96 * SQRT(((number_of_five_star + number_of_four_star + number_of_three_star) * (number_of_two_star + number_of_one_star)) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)) + 0.9604) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star))) / (1 + 3.8416 / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)))"
+                })
+                .where("(number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star) > 0")
+                .execute()
+            await queryRunner.manager.createQueryBuilder()
+                .update(OnlineCourseStatisticEntity)
+                .set({
+                    courseRank: () =>
+                        "("+
+                        this.connection.createQueryBuilder()
+                            .select("((positive + 1.9208) / (positive + negative) - 1.96 * SQRT((positive * negative) / (positive + negative) + 0.9604) / (positive + negative)) / (1 + 3.8416 / (positive + negative))")
+                            .from(subQuery => {
+                                return subQuery
+                                    .select([
+                                        "(SUM(number_of_one_star) + SUM(number_of_two_star)) AS negative",
+                                        "(SUM(number_of_five_star) + SUM(number_of_four_star) + SUM(number_of_three_star)) AS positive"
+                                    ])
+                                    .from(ClipEntity, "clip")
+                                    .innerJoinAndSelect("clip.statistic", "statistic")
+                                    .innerJoinAndSelect("clip.onlineCourse", "course")
+                                    .where("clip.onlineCourse LIKE online_course_statistic.course_id")
+                                    .groupBy("clip.onlineCourse")
+                            }, "calculate").getQuery()
+                        +")"
+                })
+                .execute()
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
+        } finally {
+            await queryRunner.release()
         }
     }
 }

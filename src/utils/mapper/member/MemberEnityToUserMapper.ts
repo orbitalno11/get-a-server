@@ -17,6 +17,7 @@ export class MemberEntityToUserMapper implements Mapper<MemberEntity, User> {
         user.email = from.email
         user.profileUrl = from.profileUrl
         user.role = this.getUserRole(this.role)
+        user.verified = from.verified
         return user
     }
 

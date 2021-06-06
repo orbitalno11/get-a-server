@@ -70,13 +70,15 @@ export class OfflineCourseController {
 
     /**
      * Create am offline course
-     * @param currentUserId
+     * @param currentUser
      * @param body
      */
     @Post("create")
-    createOfflineCourse(@CurrentUser("id") currentUserId: string, @Body() body: OfflineCourseForm): Promise<IResponse<string>> {
+    createOfflineCourse(@CurrentUser() currentUser: User, @Body() body: OfflineCourseForm): Promise<IResponse<string>> {
         return launch(async () => {
-            this.checkCurrentUser(currentUserId)
+            if (!currentUser.verified) {
+                throw FailureResponse.create(UserError.NOT_VERIFIED, HttpStatus.FORBIDDEN)
+            }
 
             const data = OfflineCourseForm.createFromBody(body)
             const validator = new OfflineCourseFormValidator()
@@ -88,7 +90,7 @@ export class OfflineCourseController {
                 throw FailureResponse.create(CommonError.VALIDATE_DATA, HttpStatus.BAD_REQUEST, validate.error)
             }
 
-            const courseId = await this.service.createOfflineCourse(currentUserId, data)
+            const courseId = await this.service.createOfflineCourse(currentUser.id, data)
 
             return SuccessResponse.create(courseId)
         })

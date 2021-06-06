@@ -14,9 +14,9 @@ export class OnlineCourseEntityToOnlineCourseMapper implements Mapper<OnlineCour
         course.subject = Subject.create(from.subject?.code, from.subject?.title)
         course.grade = new Grade(from.grade?.grade, from.grade?.title)
         course.owner = from.owner ? TutorEntityToPublicProfileMapper.getTutorSimpleDetail(from.owner) : undefined
-        course.rating = from.rating?.rating
-        course.numberOfView = 0 // todo keep all course view
-        course.numberOfVideo = from.clips ? from.clips?.length : 0
+        course.rating = from.statistic?.rating
+        course.numberOfView = from.statistic?.numberOfClipView
+        course.numberOfVideo = from.statistic?.numberOfClip
         return course
     }
 

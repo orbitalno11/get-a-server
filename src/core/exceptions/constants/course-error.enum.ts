@@ -12,5 +12,6 @@ export enum CourseError {
     CAN_NOT_GET_ENROLL_LIST = "can-not-get-enroll-list",
     CAN_NOT_GET_COURSE = "can-not-get-course",
     CAN_NOT_FOUND_COURSE = "can-not-found-course",
-    CAN_NOT_GET_CLIP_IN_COURSE = "can-not-get-clip-in-course"
+    CAN_NOT_GET_CLIP_IN_COURSE = "can-not-get-clip-in-course",
+    CAN_NOT_UPDATE_COURSE_STATISTIC = "can-not-update-course-statistic"
 }

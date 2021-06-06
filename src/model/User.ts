@@ -6,4 +6,5 @@ export default class User {
   username: string
   profileUrl: string | null
   role: UserRole
+  verified: boolean
 }

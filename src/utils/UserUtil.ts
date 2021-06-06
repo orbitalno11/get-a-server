@@ -221,8 +221,7 @@ class UserUtil {
     isEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const course = await this.getEnrolled(userId, courseId, isOfflineCourse)
-                return isNotEmpty(course)
+                return await this.userRepository.isEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -253,8 +252,7 @@ class UserUtil {
     isSubscribeClip(userId: string, clipId: string): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
-                const course = await this.getSubscribeClip(userId, clipId)
-                return isNotEmpty(course)
+                return await this.userRepository.isSubscribeClipById(LearnerProfile.getLearnerId(userId), clipId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -284,8 +282,7 @@ class UserUtil {
     isReviewCourse(userId: string, courseId: string): Promise<boolean> {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                const review = await this.getCourseReview(userId, courseId)
-                return isNotEmpty(review)
+                return await this.userRepository.isReviewCourseById(LearnerProfile.getLearnerId(userId), courseId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
@@ -346,23 +343,7 @@ class UserUtil {
     isLiked(learnerId: string, tutorId: string): Promise<boolean> {
         return launch(async () => {
             if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
-                const result = await this.getFavoriteTutor(learnerId, tutorId)
-                return isNotEmpty(result)
-            } else {
-                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
-            }
-        })
-    }
-
-    /**
-     * Get favorite tutor by learner id and tutor id
-     * @param learnerId
-     * @param tutorId
-     */
-    getFavoriteTutor(learnerId: string, tutorId: string): Promise<FavoriteTutorEntity> {
-        return launch(async () => {
-            if (learnerId?.isSafeNotBlank() && tutorId?.isSafeNotBlank()) {
-                return await this.userRepository.getFavoriteTutor(
+                return await this.userRepository.isFavoriteTutor(
                     LearnerProfile.getLearnerId(learnerId),
                     TutorProfile.getTutorId(tutorId)
                 )

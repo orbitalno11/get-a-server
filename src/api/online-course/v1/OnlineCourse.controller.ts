@@ -60,6 +60,10 @@ export class OnlineCourseController {
         @CurrentUser() currentUser: User
     ) {
         return launch(async () => {
+            if (!currentUser.verified) {
+                throw FailureResponse.create(UserError.NOT_VERIFIED, HttpStatus.FORBIDDEN)
+            }
+
             const data = OnlineCourseForm.createFromBody(body)
             const validator = new OnlineCourseFormValidator(data)
             const { valid, error } = validator.validate()

@@ -11,6 +11,7 @@ class ClipDetail {
     @ApiProperty() bought: boolean
     @ApiProperty() owner: PublicProfile
     @ApiProperty() course: OnlineCourseCard
+    @ApiProperty() clipView: number
 }
 
 export default ClipDetail

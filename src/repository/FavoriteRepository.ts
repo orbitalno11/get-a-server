@@ -19,14 +19,21 @@ class FavoriteRepository {
 
     /**
      * Like tutor by tutor id
-     * @param tutor
-     * @param learner
+     * @param tutorId
+     * @param learnerId
      */
-    async likeTutor(tutor: TutorEntity, learner: LearnerEntity) {
+    async likeTutor(tutorId: string, learnerId: string) {
         try {
+            const tutor = new TutorEntity()
+            tutor.id = tutorId
+
+            const learner = new LearnerEntity()
+            learner.id = learnerId
+
             const favorite = new FavoriteTutorEntity()
             favorite.tutor = tutor
             favorite.learner = learner
+
             await this.connection.getRepository(FavoriteTutorEntity).save(favorite)
         } catch (error) {
             logger.error(error)
@@ -36,19 +43,19 @@ class FavoriteRepository {
 
     /**
      * Unlike tutor by tutor id
-     * @param tutor
-     * @param learner
+     * @param tutorId
+     * @param learnerId
      */
-    async unLikeTutor(tutor: TutorEntity, learner: LearnerEntity) {
+    async unLikeTutor(tutorId: string, learnerId: string) {
         try {
-            const favorite = await this.connection.getRepository(FavoriteTutorEntity).findOne({
-                where: {
-                    tutor: tutor,
-                    learner: learner
-                }
-            })
-
-            await this.connection.getRepository(FavoriteTutorEntity).remove(favorite)
+            await this.connection.createQueryBuilder()
+                .delete()
+                .from(FavoriteTutorEntity)
+                .where(
+                    "learner like :learnerId and tutor like :tutorId",
+                    { learnerId: learnerId, tutorId: tutorId }
+                )
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not unlike tutor by id", FavoriteError.CAN_NOT_UNLIKE_TUTOR)

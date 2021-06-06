@@ -6,11 +6,11 @@ import { logger } from "../core/logging/Logger"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
 import { GradeEntity } from "../entity/common/grade.entity"
-import { OnlineCourseRatingEntity } from "../entity/course/online/OnlineCourseRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import OnlineCourseNameList from "../model/course/OnlineCourseNameList"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository for online course
@@ -30,17 +30,18 @@ class OnlineCourseRepository {
     async createOnlineCourse(courseId: string, data: OnlineCourseForm, tutor: TutorEntity) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
+            const statistic = new OnlineCourseStatisticEntity()
+            statistic.rating = 0
+            statistic.numberOfClip = 0
+            statistic.numberOfClipView = 0
+            statistic.numberOfReview = 0
 
-            const courseRating = new OnlineCourseRatingEntity()
-            courseRating.onlineCourse = onlineCourse
-            courseRating.rating = 0
-            courseRating.reviewNumber = 0
+            const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
+            onlineCourse.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(onlineCourse)
-            await queryRunner.manager.save(courseRating)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -61,7 +62,7 @@ class OnlineCourseRepository {
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
                 .leftJoinAndSelect("course.owner", "tutor")
-                .leftJoinAndSelect("course.rating", "rating")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.clips", "clips")
                 .leftJoinAndSelect("tutor.member", "member")
                 .leftJoinAndSelect("tutor.contact", "contact")

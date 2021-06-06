@@ -13,14 +13,14 @@ export class OfflineCourseEntityToCardMapper implements Mapper<OfflineCourseEnti
     map(from: OfflineCourseEntity): OfflineCourseCard {
         const card = new OfflineCourseCard()
         card.id = from.id
-        card.name = from.id
+        card.name = from.name
         card.subject = isNotEmpty(from.subject) ? Subject.create(from.subject?.code, from.subject?.title) : undefined
         card.grade = isNotEmpty(from.grade) ? new Grade(from.grade?.grade, from.grade?.title) : undefined
         card.dayOfWeek = from.day
         card.startTime = from.startTime
         card.endTime = from.endTime
         card.timeText = `${getDayOfWeekTh(from.day)} ${from.startTime}น. - ${from.endTime}น.`
-        card.rating = from.rating?.rating
+        card.rating = from.statistic?.rating
         card.cost = from.cost
         card.costText = `${from.cost.toLocaleString()} บาท/ชั่วโมง`
         card.status = from.status as CourseStatus

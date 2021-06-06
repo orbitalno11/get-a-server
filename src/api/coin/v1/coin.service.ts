@@ -190,10 +190,6 @@ export class CoinService {
     async redeemCoin(data: RedeemForm, file: Express.Multer.File, user: User) {
         let fileUrl = ""
         try {
-            if (!await this.userUtil.isVerified(user.id)) {
-                throw ErrorExceptions.create("Your account is not verified", UserError.NOT_VERIFIED)
-            }
-
             const rate = await this.repository.getCoinRateById(data.rateId)
             if (isEmpty(rate) || rate?.type !== CoinRateType.TRANSFER || !rate?.active) {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
@@ -224,6 +220,7 @@ export class CoinService {
             if (fileUrl.isSafeNotBlank()) {
                 await this.fileStorageUtil.deleteFile(fileUrl)
             }
+            if (error instanceof ErrorExceptions) throw error
             throw ErrorExceptions.create("Can not request redeem", CoinError.CAN_NOT_CREATE_REDEEM)
         }
     }

@@ -4,7 +4,6 @@ import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import ClipForm from "../model/clip/ClipForm"
 import { logger } from "../core/logging/Logger"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
-import { ClipRatingEntity } from "../entity/course/clip/ClipRating.entity"
 import ErrorExceptions from "../core/exceptions/ErrorExceptions"
 import { ClipError } from "../core/exceptions/constants/clip-error.enum"
 import { TutorEntity } from "../entity/profile/tutor.entity"
@@ -16,6 +15,8 @@ import { MemberEntity } from "../entity/member/member.entitiy"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import LearnerProfile from "../model/profile/LearnerProfile"
 import { CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
+import { ClipStatisticEntity } from "../entity/course/clip/ClipStatistic.entity"
+import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
 
 /**
  * Repository class for clip
@@ -29,14 +30,28 @@ class ClipRepository {
     /**
      * Create clip data
      * @param clipId
-     * @param course
+     * @param courseId
      * @param tutor
      * @param data
      * @param clipUrl
      */
-    async createClip(clipId: string, course: OnlineCourseEntity, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
+    async createClip(clipId: string, courseId: string, tutor: TutorEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
         const queryRunner = this.connection.createQueryRunner()
         try {
+            const statistic = new ClipStatisticEntity()
+            statistic.rating = 0
+            statistic.clipRank = 0
+            statistic.numberOfView = 0
+            statistic.numberOfReview = 0
+            statistic.oneStar = 0
+            statistic.twoStar = 0
+            statistic.threeStar = 0
+            statistic.fourStar = 0
+            statistic.fiveStar = 0
+
+            const course = new OnlineCourseEntity()
+            course.id = courseId
+
             const clip = new ClipEntity()
             clip.id = clipId
             clip.owner = tutor
@@ -46,16 +61,16 @@ class ClipRepository {
             clip.cost = data.cost
             clip.url = clipUrl.url
             clip.urlCloudPath = clipUrl.path
-
-            const rating = new ClipRatingEntity()
-            rating.clip = clip
-            rating.reviewNumber = 0
-            rating.rating = 0
+            clip.statistic = statistic
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(clip)
-            await queryRunner.manager.save(rating)
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: courseId },
+                {
+                    numberOfClip: () => "number_of_clip + 1"
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -197,6 +212,12 @@ class ClipRepository {
                     where: {
                         id: clipId,
                         owner: tutorId
+                    },
+                    join: {
+                        alias: "clip",
+                        leftJoinAndSelect: {
+                            onlineCourse: "clip.onlineCourse"
+                        }
                     }
                 })
         } catch (error) {
@@ -225,24 +246,23 @@ class ClipRepository {
 
     /**
      * Delete clip
-     * @param clip
+     * @param clipId
+     * @param courseId
      */
-    async deleteClip(clip: ClipEntity) {
+    async deleteClip(clipId: string, courseId: string) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             await queryRunner.connect()
             await queryRunner.startTransaction()
 
-            const clipRating = await queryRunner.manager.getRepository(ClipRatingEntity).findOne(
+            await queryRunner.manager.delete(ClipStatisticEntity, { clip: clipId })
+            await queryRunner.manager.delete(ClipEntity, clipId)
+            await queryRunner.manager.update(OnlineCourseStatisticEntity,
+                { onlineCourse: courseId },
                 {
-                    where: {
-                        clip: clip
-                    }
-                }
-            )
+                    numberOfClip: () => "number_of_clip - 1"
+                })
 
-            await queryRunner.manager.remove(clipRating)
-            await queryRunner.manager.remove(clip)
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)

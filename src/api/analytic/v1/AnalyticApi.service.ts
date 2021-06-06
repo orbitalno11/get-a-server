@@ -37,7 +37,7 @@ export class AnalyticApiService {
      */
     trackProfileView(userId: string) {
         launchAnalytic(async () => {
-            await this.analytic.trackProfileView(TutorProfile.getTutorId(userId))
+            await this.analytic.trackImpressProfile(TutorProfile.getTutorId(userId))
         })
     }
 
@@ -49,6 +49,16 @@ export class AnalyticApiService {
     trackImpressCourse(courseId: string, courseType: CourseType) {
         launchAnalytic(async () => {
             await this.analytic.trackImpressCourse(courseId, courseType)
+        })
+    }
+
+    /**
+     * Track impress clip
+     * @param clipId
+     */
+    trackImpressClip(clipId: string) {
+        launchAnalytic(async () => {
+            await this.analytic.trackImpressClip(clipId)
         })
     }
 }

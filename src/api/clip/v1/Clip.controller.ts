@@ -63,7 +63,7 @@ export class ClipController {
      * @param socketId
      */
     @Post("create")
-    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(2700))
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(1800000))
     @ApiBearerAuth()
     @ApiConsumes("multipart/form-data")
     @ApiImplicitFile({ name: "video", required: true })
@@ -127,7 +127,7 @@ export class ClipController {
      * @param socketId
      */
     @Put(":id")
-    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(2700))
+    @UseInterceptors(FileInterceptor("video", new UploadFileUtils().uploadHdVideo()), new AllowTimeoutInterceptor(1800000))
     @ApiBearerAuth()
     @ApiConsumes("multipart/form-data")
     @ApiImplicitFile({ name: "video" })
