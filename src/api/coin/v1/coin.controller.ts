@@ -43,6 +43,7 @@ import RedeemFormValidator from "../../../utils/validator/coin/RedeemFormValidat
 import { ApiImplicitFile } from "@nestjs/swagger/dist/decorators/api-implicit-file.decorator"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import RedeemDetail from "../../../model/coin/RedeemDetail"
+import ErrorExceptions from "../../../core/exceptions/ErrorExceptions"
 
 /**
  * Class for coin api controller
@@ -235,6 +236,9 @@ export class CoinController {
     @UseInterceptors(FileInterceptor("accountPic", new UploadFileUtils().uploadImageA4Vertical()))
     redeemCoin(@Body() body: RedeemForm, @UploadedFile() accountPic: Express.Multer.File, @CurrentUser() currentUser: User): Promise<IResponse<string>> {
         return launch(async () => {
+            if (!currentUser.verified) {
+                throw FailureResponse.create(UserError.NOT_VERIFIED, HttpStatus.FORBIDDEN)
+            }
             const data = RedeemForm.createFromBody(body)
             const validator = new RedeemFormValidator(data)
             const { valid, error } = validator.validate()
