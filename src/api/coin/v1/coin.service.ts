@@ -214,7 +214,8 @@ export class CoinService {
                 throw ErrorExceptions.create("Total amount is invalid", CoinError.INVALID_AMOUNT)
             }
 
-            await this.repository.redeemCoin(data, userBalance, rate, bank, fileUrl, user)
+            const transactionId = "GET-A" + uuidV4()
+            await this.repository.redeemCoin(transactionId, data, userBalance, rate, bank, fileUrl, user)
         } catch (error) {
             logger.error(error)
             if (fileUrl.isSafeNotBlank()) {
@@ -261,7 +262,7 @@ export class CoinService {
      * Get redeem detail list
      * @param status
      */
-    getRedeemCoinList(status: number =  CoinRedeemStatus.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
+    getRedeemCoinList(status: number = CoinRedeemStatus.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
         return launch(async () => {
             const redeemList = await this.repository.getRedeemCoinList(status)
             return isNotEmpty(redeemList) ? new RedeemTransactionToRedeemDetailMapper().mapList(redeemList) : Array()
