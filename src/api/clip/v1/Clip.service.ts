@@ -161,7 +161,7 @@ export class ClipService {
                 }
             }
 
-            await this.repository.updateClipDetail(clipId, course, data, uploadedFile)
+            await this.repository.updateClipDetail(clipId, data, uploadedFile)
 
             if (oldUploadedFile?.path?.isSafeNotBlank()) {
                 await this.fileStorageUtil.deleteFileFromPath(oldUploadedFile?.path)

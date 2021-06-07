@@ -5,7 +5,7 @@ import {
     HttpStatus,
     Param,
     Post,
-    Put,
+    Put, Query,
     UploadedFile,
     UseFilters,
     UseInterceptors
@@ -33,6 +33,8 @@ import { UserRole } from "../../../core/constant/UserRole"
 import UserError from "../../../core/exceptions/constants/user-error.enum"
 import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger"
 import ClipDetail from "../../../model/clip/ClipDetail"
+import OnlineCourseCard from "../../../model/course/OnlineCourseCard"
+import SearchResult from "../../../model/search/SearchResult"
 
 /**
  * Controller class for "v1/online-course"
@@ -101,6 +103,21 @@ export class OnlineCourseController {
         })
     }
 
+    /**
+     * Get new online course
+     * @param page
+     * @param limit
+     */
+    @Get("new-course")
+    getNewOnlineCourse(@Query("page") page: string, @Query("limit") limit: string): Promise<IResponse<SearchResult<OnlineCourseCard>>> {
+        return launch(async () => {
+            const _page = page?.isSafeNotBlank() && page?.isNumber() ? page?.toNumber() : 1
+            const _limit = limit?.isSafeNotBlank() && page?.isNumber() ? limit?.toNumber() : 10
+            const searchResult = await this.service.getNewOnlineCourse(_page, _limit)
+            return SuccessResponse.create(searchResult)
+        })
+    }
+
 
     /**
      * Get Online course by id
@@ -162,7 +179,7 @@ export class OnlineCourseController {
     @Get(":id/clip")
     @ApiOkResponse({ description: "list of clip detail", type: ClipDetail, isArray: true })
     @ApiBadRequestResponse({ description: "Invalid course id" })
-    @ApiInternalServerErrorResponse({ description: "Can not get clip in course"})
+    @ApiInternalServerErrorResponse({ description: "Can not get clip in course" })
     getClipInOnlineCourse(@Param("id") courseId: string, @CurrentUser() currentUser: User) {
         return launch(async () => {
             if (!courseId?.isSafeNotBlank()) {

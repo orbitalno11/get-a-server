@@ -47,6 +47,12 @@ export class OfflineCourseEntity {
     @Column()
     studentNumber: number
 
+    @Column()
+    created: Date
+
+    @Column()
+    updated: Date
+
     // entity relation attribute
     @ManyToOne(
         () => TutorEntity,

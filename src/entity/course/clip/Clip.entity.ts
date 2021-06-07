@@ -31,6 +31,12 @@ export class ClipEntity {
     @Column()
     coverUrlCloudPath: string
 
+    @Column()
+    created: Date
+
+    @Column()
+    updated: Date
+
     // entity relation
     @ManyToOne(
         () => OnlineCourseEntity,

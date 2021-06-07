@@ -11,6 +11,7 @@ import { CourseError } from "../core/exceptions/constants/course-error.enum"
 import OnlineCourseNameList from "../model/course/OnlineCourseNameList"
 import { ClipEntity } from "../entity/course/clip/Clip.entity"
 import { OnlineCourseStatisticEntity } from "../entity/course/online/OnlineCourseStatistic.entity"
+import { IPaginationOptions, paginate, Pagination } from "nestjs-typeorm-paginate"
 
 /**
  * Repository for online course
@@ -38,6 +39,7 @@ class OnlineCourseRepository {
 
             const onlineCourse = this.getOnlineCourseEntity(courseId, data, tutor)
             onlineCourse.statistic = statistic
+            onlineCourse.created = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
@@ -153,6 +155,27 @@ class OnlineCourseRepository {
     }
 
     /**
+     * Get new online course
+     * @param pageOption
+     */
+    async getNewOnlineCourse(pageOption: IPaginationOptions): Promise<Pagination<OnlineCourseEntity>> {
+        try {
+            const query = this.connection.createQueryBuilder(OnlineCourseEntity, "course")
+                .leftJoinAndSelect("course.statistic", "statistic")
+                .leftJoinAndSelect("course.owner", "owner")
+                .leftJoinAndSelect("owner.member", "member")
+                .orderBy("course.created", "DESC")
+                .orderBy("statistic.courseRank", "DESC")
+                .orderBy("statistic.rating", "DESC")
+
+            return paginate<OnlineCourseEntity>(query, pageOption)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not get course", CourseError.CAN_NOT_GET_COURSE)
+        }
+    }
+
+    /**
      * Create online course entity
      * @param courseId
      * @param data
@@ -167,6 +190,7 @@ class OnlineCourseRepository {
         onlineCourse.grade = GradeEntity.createFromGrade(data.grade)
         onlineCourse.coverUrl = data.coverUrl
         onlineCourse.owner = tutor
+        onlineCourse.updated = new Date()
         return onlineCourse
     }
 }
