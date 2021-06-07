@@ -30,11 +30,11 @@ class RedeemFormValidator extends AbstractValidator2<RedeemForm> {
             this.errors["accountName"] = "account name is required"
         }
 
-        if (!this.form.numberOfCoin?.isSafeNumber() && !this.form.numberOfCoin?.isPositiveValue()) {
+        if (!this.form.numberOfCoin?.isSafeNumber() || !this.form.numberOfCoin?.isPositiveValue()) {
             this.errors["numberOfCoin"] = "number of coin is invalid"
         }
 
-        if (!this.form.amount?.isSafeNumber() && !this.form.amount?.isPositiveValue()) {
+        if (!this.form.amount?.isSafeNumber() || !this.form.amount?.isPositiveValue()) {
             this.errors["amount"] = "amount is invalid"
         }
 

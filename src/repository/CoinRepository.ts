@@ -18,8 +18,9 @@ import RedeemForm from "../model/coin/RedeemForm"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import User from "../model/User"
 import { BankEntity } from "../entity/common/Bank.entity"
-import { CoinRedeemStatus } from "../model/coin/data/CoinTransaction.enum"
+import { CoinRedeemStatus, CoinTransactionType } from "../model/coin/data/CoinTransaction.enum"
 import { isNotEmpty } from "../core/extension/CommonExtension"
+import { CoinTransactionEntity } from "../entity/coins/CoinTransaction.entity"
 
 /**
  * Repository for "v1/coin"
@@ -199,6 +200,7 @@ class CoinRepository {
 
     /**
      * Create redeem request
+     * @param coinTransactionId
      * @param data
      * @param balance
      * @param rate
@@ -206,7 +208,15 @@ class CoinRepository {
      * @param fileUrl
      * @param user
      */
-    async redeemCoin(data: RedeemForm, balance: CoinEntity, rate: ExchangeRateEntity, bank: BankEntity, fileUrl: string, user: User) {
+    async redeemCoin(
+        coinTransactionId: string,
+        data: RedeemForm,
+        balance: CoinEntity,
+        rate: ExchangeRateEntity,
+        bank: BankEntity,
+        fileUrl: string,
+        user: User
+    ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const member = new MemberEntity()
@@ -224,12 +234,20 @@ class CoinRepository {
             redeem.requestDate = new Date()
             redeem.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_SENT
 
+            const coinTransaction = new CoinTransactionEntity()
+            coinTransaction.transactionId = coinTransactionId
+            coinTransaction.member = member
+            coinTransaction.numberOfCoin = data.numberOfCoin
+            coinTransaction.transactionType = CoinTransactionType.WITHDRAW
+            coinTransaction.transactionDate = new Date()
+
             balance.amount = balance.amount - data.numberOfCoin
             balance.updated = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(redeem)
+            await queryRunner.manager.save(coinTransaction)
             await queryRunner.manager.save(balance)
             await queryRunner.commitTransaction()
         } catch (error) {
