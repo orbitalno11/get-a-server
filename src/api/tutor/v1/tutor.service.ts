@@ -40,6 +40,7 @@ import { ImageSize } from "../../../core/constant/ImageSize.enum"
 import Document from "../../../model/common/Document"
 import OnlineCourse from "../../../model/course/OnlineCourse"
 import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
+import TutorDashboard from "../../../model/profile/TutorDashboard"
 
 /**
  * Service for tutor controller
@@ -492,6 +493,35 @@ export class TutorService {
         return launch(async () => {
             const courses = await this.repository.getOnlineCourse(TutorProfile.getTutorId(userId))
             return isNotEmpty(courses) ? new OnlineCourseEntityToOnlineCourseMapper().mapList(courses) : []
+        })
+    }
+
+    /**
+     * Get tutor dashboard
+     * @param user
+     */
+    getDashboard(user: User): Promise<TutorDashboard> {
+        return launch(async () => {
+            const tutorId = TutorProfile.getTutorId(user.id)
+            const statistic = await this.repository.getTutorStatistic(tutorId)
+            const frequency = await this.repository.getTutorFrequency(tutorId)
+            const monetary = await this.repository.getTutorMonetary(tutorId)
+
+            const dashboard = new TutorDashboard()
+            dashboard.statistic = {
+                rating: statistic.rating,
+                numberOfFavorite: statistic.numberOfFavorite,
+                numberOfLearner: statistic.numberOfLearner,
+                numberOfOfflineCourse: statistic.offlineCourseNumber,
+                numberOfOnlineCourse: statistic.onlineCourseNumber
+            }
+            dashboard.weekly = {
+                numberOfCourseView: frequency.numberOfCourseView,
+                numberOfProfileView: frequency.numberOfProfileView,
+                numberOfFavorite: monetary.numberOfFavorite,
+                numberOfLearner: monetary.numberOfLearner
+            }
+            return dashboard
         })
     }
 }

@@ -42,6 +42,7 @@ import SimpleOfflineCourse from "../../../model/course/SimpleOfflineCourse"
 import Document from "../../../model/common/Document"
 import OnlineCourse from "../../../model/course/OnlineCourse"
 import { ApiTags } from "@nestjs/swagger"
+import TutorDashboard from "../../../model/profile/TutorDashboard"
 
 @ApiTags("tutor")
 @Controller("v1/tutor")
@@ -78,6 +79,18 @@ export class TutorController {
             const result = await this.tutorService.createTutor(data, file)
 
             return SuccessResponse.create(result)
+        })
+    }
+
+    /**
+     * Get tutor dashboard
+     * @param currentUser
+     */
+    @Get("home/dashboard")
+    getTutorDashboard(@CurrentUser() currentUser: User): Promise<IResponse<TutorDashboard>> {
+        return launch(async () => {
+            const dashboard = await this.tutorService.getDashboard(currentUser)
+            return SuccessResponse.create(dashboard)
         })
     }
 
