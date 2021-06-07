@@ -12,6 +12,8 @@ class OnlineCourseCard {
     @ApiProperty() coverUrl: string
     @ApiProperty() owner: PublicProfile
     @ApiProperty() numberOfVideo: number
+    @ApiProperty() created: Date
+    @ApiProperty() updated: Date
 }
 
 export default OnlineCourseCard

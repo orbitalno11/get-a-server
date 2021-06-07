@@ -133,6 +133,7 @@ export class OfflineCourseService {
             offlineCourseEntity.grade = GradeEntity.createFromGrade(data.grade)
             offlineCourseEntity.subject = SubjectEntity.createFromCode(data.subject)
             offlineCourseEntity.courseType = CourseTypeEntity.createFromType(data.type)
+            offlineCourseEntity.updated = new Date()
 
             await this.connection.getRepository(OfflineCourseEntity).save(offlineCourseEntity)
 

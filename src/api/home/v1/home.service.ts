@@ -5,6 +5,7 @@ import { launch } from "../../../core/common/launch"
 import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { TutorStatisticEntityToTutorCardListMapper } from "../../../utils/mapper/tutor/TutorStatisticEntityToTutorCard.mapper"
 import { OnlineCourseToCourseCardMapper } from "../../../utils/mapper/course/online/OnlineCourseToCourseCard.mapper"
+import OnlineCourseCard from "../../../model/course/OnlineCourseCard"
 
 /**
  * Service class for "v1/home"
@@ -31,7 +32,7 @@ export class HomeService {
      * Get online course by rank
      * @param rankLimit
      */
-    getOnlineCourseListByRank(rankLimit: number) {
+    getOnlineCourseListByRank(rankLimit: number): Promise<Array<OnlineCourseCard>> {
         return launch(async () => {
             const courseList = await this.repository.getOnlineCourse(rankLimit)
             return isNotEmpty(courseList) ? new OnlineCourseToCourseCardMapper().mapList(courseList) : []
