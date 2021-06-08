@@ -1,10 +1,11 @@
 import AbstractValidator from "../AbstractValidator";
 import CoinRate from "../../../model/coin/CoinRate";
 import ValidateResult from "../ValidateResult";
-import {isEmpty} from "../../../core/extension/CommonExtension";
+import { isEmpty, isValidDate } from "../../../core/extension/CommonExtension"
 import {CoinRateType} from "../../../model/coin/data/CoinRateType";
 
 export class CreateCoinRateFormValidator extends AbstractValidator<CoinRate> {
+    private readonly coinType: Array<string> = Object.values(CoinRateType)
 
     constructor(form: CoinRate) {
         super();
@@ -24,21 +25,23 @@ export class CreateCoinRateFormValidator extends AbstractValidator<CoinRate> {
             this.errors["coin"] = "Coin values is required"
         }
 
-        if (isEmpty(this.form?.startDate)) {
+        if (isValidDate(this.form?.startDate)) {
             this.errors["startDate"] = "Start date is required"
         }
 
-        if (isEmpty(this.form?.endDate)) {
+        if (isValidDate(this.form?.endDate)) {
             this.errors["endDate"] = "End date is required"
         }
 
-        if (this.form?.type?.isSafeNotNull() && !this.isCoinRateType(this.form?.type)) {
-            this.errors["type"] = "Coin rate type is invalid"
+        if (this.form?.type?.isSafeNotNull()) {
+            if (!this.isCoinRateType(this.form?.type)) {
+                this.errors["type"] = "Coin rate type is invalid"
+            }
         } else {
             this.errors["type"] = "Coin rate type is required"
         }
 
-        this.isValid = !isEmpty(this.errors)
+        this.isValid = isEmpty(this.errors)
 
         return {
             error: this.errors,
@@ -47,6 +50,6 @@ export class CreateCoinRateFormValidator extends AbstractValidator<CoinRate> {
     }
 
     private isCoinRateType(type: string): boolean {
-        return type in CoinRateType
+        return this.coinType.includes(type)
     }
 }
