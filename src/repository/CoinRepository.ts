@@ -202,25 +202,23 @@ class CoinRepository {
      * Create redeem request
      * @param coinTransactionId
      * @param data
-     * @param balance
      * @param rate
      * @param bank
      * @param fileUrl
-     * @param user
+     * @param userId
      */
     async redeemCoin(
         coinTransactionId: string,
         data: RedeemForm,
-        balance: CoinEntity,
         rate: ExchangeRateEntity,
         bank: BankEntity,
         fileUrl: string,
-        user: User
+        userId: string
     ) {
         const queryRunner = this.connection.createQueryRunner()
         try {
             const member = new MemberEntity()
-            member.id = user.id
+            member.id = userId
 
             const redeem = new RedeemTransactionEntity()
             redeem.member = member
@@ -234,21 +232,18 @@ class CoinRepository {
             redeem.requestDate = new Date()
             redeem.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_SENT
 
-            const coinTransaction = new CoinTransactionEntity()
-            coinTransaction.transactionId = coinTransactionId
-            coinTransaction.member = member
-            coinTransaction.numberOfCoin = data.numberOfCoin
-            coinTransaction.transactionType = CoinTransactionType.WITHDRAW
-            coinTransaction.transactionDate = new Date()
-
-            balance.amount = balance.amount - data.numberOfCoin
-            balance.updated = new Date()
+            const coinTransaction = this.createCoinTransaction(coinTransactionId, userId, data.numberOfCoin, CoinTransactionType.WITHDRAW)
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
             await queryRunner.manager.save(redeem)
             await queryRunner.manager.save(coinTransaction)
-            await queryRunner.manager.save(balance)
+            await queryRunner.manager.update(CoinEntity,
+                { member: userId },
+                {
+                    amount: () => `amount - ${data.numberOfCoin}`,
+                    updated: new Date()
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -311,22 +306,32 @@ class CoinRepository {
 
     /**
      * Cancel redeem request
-     * @param detail
-     * @param userBalance
+     * @param transactionId
+     * @param userId
+     * @param redeemId
+     * @param numberOfCoin
      */
-    async cancelRedeemCoinById(detail: RedeemTransactionEntity, userBalance: CoinEntity) {
+    async cancelRedeemCoinById(transactionId: string, userId: string, redeemId: number, numberOfCoin: number) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            userBalance.amount = userBalance.amount + detail.amountCoin
-
-            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_CANCELED
-            detail.transferDate = new Date()
-            detail.approveDate = new Date()
+            const coinTransaction = this.createCoinTransaction(transactionId, userId, numberOfCoin, CoinTransactionType.REFUND)
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            await queryRunner.manager.save(detail)
-            await queryRunner.manager.save(userBalance)
+            await queryRunner.manager.update(RedeemTransactionEntity,
+                { id: redeemId },
+                {
+                    requestStatus: CoinRedeemStatus.REQUEST_REDEEM_CANCELED,
+                    transferDate: new Date(),
+                    approveDate: new Date()
+                })
+            await queryRunner.manager.save(coinTransaction)
+            await queryRunner.manager.update(CoinEntity,
+                { member: userId },
+                {
+                    amount: () => `amount + ${numberOfCoin}`,
+                    updated: new Date()
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -339,22 +344,32 @@ class CoinRepository {
 
     /**
      * Denied redeem request
-     * @param detail
-     * @param userBalance
+     * @param transactionId
+     * @param userId
+     * @param redeemId
+     * @param numberOfCoin
      */
-    async deniedRedeemCoinById(detail: RedeemTransactionEntity, userBalance: CoinEntity) {
+    async deniedRedeemCoinById(transactionId: string, userId: string, redeemId: number, numberOfCoin: number) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            userBalance.amount = userBalance.amount + detail.amountCoin
-
-            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_DENIED
-            detail.transferDate = new Date()
-            detail.approveDate = new Date()
+            const coinTransaction = this.createCoinTransaction(transactionId, userId, numberOfCoin, CoinTransactionType.REFUND)
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            await queryRunner.manager.save(detail)
-            await queryRunner.manager.save(userBalance)
+            await queryRunner.manager.update(RedeemTransactionEntity,
+                { id: redeemId },
+                {
+                    requestStatus: CoinRedeemStatus.REQUEST_REDEEM_DENIED,
+                    transferDate: new Date(),
+                    approveDate: new Date()
+                })
+            await queryRunner.manager.save(coinTransaction)
+            await queryRunner.manager.update(CoinEntity,
+                { member: userId },
+                {
+                    amount: () => `amount + ${numberOfCoin}`,
+                    updated: new Date()
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -367,18 +382,20 @@ class CoinRepository {
 
     /**
      * Approved redeem request
-     * @param detail
+     * @param redeemId
      */
-    async approvedRedeemCoinById(detail: RedeemTransactionEntity) {
+    async approvedRedeemCoinById(redeemId: number) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            detail.requestStatus = CoinRedeemStatus.REQUEST_REDEEM_APPROVED
-            detail.transferDate = new Date()
-            detail.approveDate = new Date()
-
             await queryRunner.connect()
             await queryRunner.startTransaction()
-            await queryRunner.manager.save(detail)
+            await queryRunner.manager.update(RedeemTransactionEntity,
+                { id: redeemId },
+                {
+                    requestStatus: CoinRedeemStatus.REQUEST_REDEEM_APPROVED,
+                    transferDate: new Date(),
+                    approveDate: new Date()
+                })
             await queryRunner.commitTransaction()
         } catch (error) {
             logger.error(error)
@@ -391,15 +408,43 @@ class CoinRepository {
 
     /**
      * Activate or deactivate coin rate
-     * @param rate
+     * @param rateId
+     * @param status
      */
-    async activateCoinRate(rate: ExchangeRateEntity) {
+    async activateCoinRate(rateId: number, status: boolean) {
         try {
-            await this.connection.getRepository(ExchangeRateEntity).save(rate)
+            await this.connection.createQueryBuilder()
+                .update(ExchangeRateEntity)
+                .set({
+                    active: status
+                })
+                .where("id = :rateId", { rateId: rateId})
+                .execute()
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not edit coin rate", CoinError.CAN_NOT_EDIT_RATE)
         }
+    }
+
+    /**
+     * Create coin transaction entity
+     * @param transactionId
+     * @param userId
+     * @param numberOfCoin
+     * @param type
+     * @private
+     */
+    private createCoinTransaction(transactionId: string, userId: string, numberOfCoin: number, type: CoinTransactionType): CoinTransactionEntity {
+        const member = new MemberEntity()
+        member.id = userId
+
+        const transaction = new CoinTransactionEntity()
+        transaction.transactionId = transactionId
+        transaction.member = member
+        transaction.numberOfCoin = numberOfCoin
+        transaction.transactionType = type
+        transaction.transactionDate = new Date()
+        return transaction
     }
 }
 

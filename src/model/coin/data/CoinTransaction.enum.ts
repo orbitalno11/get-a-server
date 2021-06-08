@@ -7,7 +7,8 @@ export enum CoinTransactionType {
     WITHDRAW = 1,
     TRANSFER = 2,
     PAID = 3,
-    INCOME = 4
+    INCOME = 4,
+    REFUND = 5
 }
 
 export enum CoinRedeemStatus {
