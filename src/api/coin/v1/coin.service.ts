@@ -234,7 +234,8 @@ export class CoinService {
      * @private
      */
     private calculateAmountBahtTransfer(numberOfCoin: number, exchangeBaht: number, exchangeCoin: number): number {
-        return (numberOfCoin * exchangeBaht) / exchangeCoin
+        const amount = (numberOfCoin * exchangeBaht) / exchangeCoin
+        return Math.round((amount + Number.EPSILON) * 100) / 100
     }
 
     /**
