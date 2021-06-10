@@ -14,6 +14,7 @@ interface Profile {
     address: string
     created: Date | null
     updated: Date | null
+    verified: boolean
 }
 
 export default Profile
