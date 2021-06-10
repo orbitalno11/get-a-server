@@ -214,7 +214,8 @@ export class CoinService {
                 throw ErrorExceptions.create("Total amount is invalid", CoinError.INVALID_AMOUNT)
             }
 
-            await this.repository.redeemCoin(data, userBalance, rate, bank, fileUrl, user)
+            const transactionId = "GET-A" + uuidV4()
+            await this.repository.redeemCoin(transactionId, data, rate, bank, fileUrl, user.id)
         } catch (error) {
             logger.error(error)
             if (fileUrl.isSafeNotBlank()) {
@@ -233,7 +234,8 @@ export class CoinService {
      * @private
      */
     private calculateAmountBahtTransfer(numberOfCoin: number, exchangeBaht: number, exchangeCoin: number): number {
-        return (numberOfCoin * exchangeBaht) / exchangeCoin
+        const amount = (numberOfCoin * exchangeBaht) / exchangeCoin
+        return Math.round((amount + Number.EPSILON) * 100) / 100
     }
 
     /**
@@ -261,7 +263,7 @@ export class CoinService {
      * Get redeem detail list
      * @param status
      */
-    getRedeemCoinList(status: number =  CoinRedeemStatus.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
+    getRedeemCoinList(status: number = CoinRedeemStatus.REQUEST_REDEEM_SENT): Promise<Array<RedeemDetail>> {
         return launch(async () => {
             const redeemList = await this.repository.getRedeemCoinList(status)
             return isNotEmpty(redeemList) ? new RedeemTransactionToRedeemDetailMapper().mapList(redeemList) : Array()
@@ -289,9 +291,9 @@ export class CoinService {
                 throw ErrorExceptions.create("Can not cancel", CoinError.CAN_NOT_CANCEL_REDEEM_REQUEST)
             }
 
-            const userBalance = await this.userUtil.getCoinBalance(user.id)
+            const transactionId = "GET-A" + uuidV4()
 
-            await this.repository.cancelRedeemCoinById(detail, userBalance)
+            await this.repository.cancelRedeemCoinById(transactionId, user.id, redeemId, detail.amountCoin)
         })
     }
 
@@ -316,9 +318,9 @@ export class CoinService {
                 throw ErrorExceptions.create("Can not denied request", CoinError.CAN_NOT_DENIED_REDEEM_REQUEST)
             }
 
-            const userBalance = await this.userUtil.getCoinBalance(userId)
+            const transactionId = "GET-A" + uuidV4()
 
-            await this.repository.deniedRedeemCoinById(detail, userBalance)
+            await this.repository.deniedRedeemCoinById(transactionId, userId, redeemId, detail.amountCoin)
         })
     }
 
@@ -338,7 +340,7 @@ export class CoinService {
                 throw ErrorExceptions.create("Can not approved", CoinError.CAN_NOT_APPROVED_REDEEM_REQUEST)
             }
 
-            await this.repository.approvedRedeemCoinById(detail)
+            await this.repository.approvedRedeemCoinById(redeemId)
         })
     }
 
@@ -354,9 +356,7 @@ export class CoinService {
                 throw ErrorExceptions.create("Can not found coin rate", CoinError.CAN_NOT_FOUND_COIN_RATE)
             }
 
-            rate.active = !rate.active
-
-            await this.repository.activateCoinRate(rate)
+            await this.repository.activateCoinRate(rateId, !rate.active)
         })
     }
 }

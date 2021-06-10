@@ -41,6 +41,7 @@ class LearnerRepository {
                 .leftJoinAndSelect("course.clips", "clip")
                 .leftJoinAndSelect("course.subject", "subject")
                 .leftJoinAndSelect("course.grade", "grade")
+                .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("clip.transaction", "transaction")
                 .where("transaction.learner like :learnerId", { learnerId: learnerId})
                 .distinct(true)

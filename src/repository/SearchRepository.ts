@@ -29,7 +29,7 @@ class SearchRepository {
      */
     async searchOfflineCourse(grade: Grade, subject: string, gender: Gender, paginationOption: IPaginationOptions, location?: string): Promise<Pagination<OfflineCourseEntity>> {
         try {
-            const query = await this.connection.createQueryBuilder(OfflineCourseEntity, "course")
+            const query = this.connection.createQueryBuilder(OfflineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.subject", "subject")
@@ -74,7 +74,7 @@ class SearchRepository {
      */
     async searchOnlineCourse(grade: Grade, subject: string, gender: Gender, paginationOption: IPaginationOptions): Promise<Pagination<OnlineCourseEntity>> {
         try {
-            const query = await this.connection.createQueryBuilder(OnlineCourseEntity, "course")
+            const query = this.connection.createQueryBuilder(OnlineCourseEntity, "course")
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("course.statistic", "statistic")
                 .leftJoinAndSelect("course.grade", "grade")

@@ -18,7 +18,6 @@ import TestingVerifyForm from "../model/education/TestingVerifyForm"
 import { ExamTypeEntity } from "../entity/education/examType.entity"
 import { TestingHistoryEntity } from "../entity/education/testingHistory.entity"
 import { SubjectEntity } from "../entity/common/subject.entity"
-import { LocationType } from "../model/location/data/LocationType"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import TutorForm from "../model/form/register/TutorForm"
 import TutorFormToMemberEntityMapper from "../utils/mapper/tutor/TutorFormToMemberEntityMapper"
@@ -474,6 +473,45 @@ class TutorRepository {
         } catch (error) {
             logger.error(error)
             throw ErrorExceptions.create("Can not get online course", TutorError.CAN_NOT_GET_TUTOR_COURSE)
+        }
+    }
+
+    /**
+     * Get tutor statistic
+     * @param tutorId
+     */
+    async getTutorStatistic(tutorId: string): Promise<TutorStatisticEntity> {
+        try {
+            return await this.connection.getRepository(TutorStatisticEntity).findOne(tutorId)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not tutor statistic", TutorError.CAN_NOT_GET_STATISTIC)
+        }
+    }
+
+    /**
+     * Get tutor frequency
+     * @param tutorId
+     */
+    async getTutorFrequency(tutorId: string): Promise<TutorAnalyticFrequencyEntity> {
+        try {
+            return await this.connection.getRepository(TutorAnalyticFrequencyEntity).findOne(tutorId)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not tutor statistic", TutorError.CAN_NOT_GET_STATISTIC)
+        }
+    }
+
+    /**
+     * Get tutor monetary
+     * @param tutorId
+     */
+    async getTutorMonetary(tutorId: string): Promise<TutorAnalyticMonetaryEntity> {
+        try {
+            return await this.connection.getRepository(TutorAnalyticMonetaryEntity).findOne(tutorId)
+        } catch (error) {
+            logger.error(error)
+            throw ErrorExceptions.create("Can not tutor statistic", TutorError.CAN_NOT_GET_STATISTIC)
         }
     }
 

@@ -22,6 +22,11 @@ import OnlineCourseNameList from "../../../model/course/OnlineCourseNameList"
 import { ClipEntityToClipDetailMapper } from "../../../utils/mapper/clip/ClipEntityToClipDetail.mapper"
 import { UserRole } from "../../../core/constant/UserRole"
 import LearnerProfile from "../../../model/profile/LearnerProfile"
+import OnlineCourseCard from "../../../model/course/OnlineCourseCard"
+import ClipDetail from "../../../model/clip/ClipDetail"
+import { IPaginationOptions } from "nestjs-typeorm-paginate"
+import SearchResult from "../../../model/search/SearchResult"
+import { OnlineCourseToCourseCardMapper } from "../../../utils/mapper/course/online/OnlineCourseToCourseCard.mapper"
 
 /**
  * Service class for "v1/online-course"
@@ -166,7 +171,7 @@ export class OnlineCourseService {
      * @param courseId
      * @param user
      */
-    getClipInOnlineCourse(courseId: string, user?: User) {
+    getClipInOnlineCourse(courseId: string, user?: User): Promise<Array<ClipDetail>> {
         return launch(async () => {
             const clips = await this.repository.getClipInOnlineCourse(courseId)
             if (user?.role === UserRole.LEARNER) {
@@ -177,5 +182,36 @@ export class OnlineCourseService {
             }
             return isNotEmpty(clips) ? new ClipEntityToClipDetailMapper().mapList(clips) : []
         })
+    }
+
+    /**
+     * Get new online course
+     * @param page
+     * @param limit
+     */
+    getNewOnlineCourse(page: number = 1, limit: number = 10): Promise<SearchResult<OnlineCourseCard>> {
+        return launch(async () => {
+            const pageOption = this.createPaginationOption(page, limit)
+            const result = await this.repository.getNewOnlineCourse(pageOption)
+            const searchResult = new SearchResult<OnlineCourseCard>()
+            searchResult.links = result.links
+            searchResult.meta = result.meta
+            searchResult.item = new OnlineCourseToCourseCardMapper().mapList(result.items)
+            return searchResult
+        })
+    }
+
+    /**
+     * Create pagination option
+     * @private
+     * @param page
+     * @param limit
+     */
+    private createPaginationOption(page: number, limit: number): IPaginationOptions {
+        return {
+            page: page,
+            limit: limit,
+            route: "online-course/new-course"
+        }
     }
 }

@@ -58,6 +58,8 @@ class OfflineCourseRepository {
             offlineCourse.courseType = CourseTypeEntity.createFromType(data.type)
             offlineCourse.owner = tutor
             offlineCourse.statistic = statistic
+            offlineCourse.created = new Date()
+            offlineCourse.updated = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()

@@ -16,6 +16,7 @@ class TutorProfile implements Profile {
     address: string
     created: Date | null
     updated: Date | null
+    verified: boolean
     introduction: string
     subject: Subject[]
 

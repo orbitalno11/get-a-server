@@ -52,16 +52,12 @@ class ClipRepository {
             const course = new OnlineCourseEntity()
             course.id = courseId
 
-            const clip = new ClipEntity()
-            clip.id = clipId
+            const clip = this.createClipEntity(clipId, data, clipUrl)
             clip.owner = tutor
             clip.onlineCourse = course
-            clip.name = data.name
-            clip.description = data.description
-            clip.cost = data.cost
-            clip.url = clipUrl.url
             clip.urlCloudPath = clipUrl.path
             clip.statistic = statistic
+            clip.created = new Date()
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
@@ -102,20 +98,13 @@ class ClipRepository {
     /**
      * Update clip detail
      * @param clipId
-     * @param course
      * @param data
      * @param clipUrl
      */
-    async updateClipDetail(clipId: string, course: OnlineCourseEntity, data: ClipForm, clipUrl: UploadedFileProperty) {
+    async updateClipDetail(clipId: string, data: ClipForm, clipUrl: UploadedFileProperty) {
         const queryRunner = this.connection.createQueryRunner()
         try {
-            const clip = new ClipEntity()
-            clip.id = clipId
-            clip.name = data.name
-            clip.description = data.description
-            clip.cost = data.cost
-            clip.url = clipUrl.url
-            clip.urlCloudPath = clipUrl.path
+            const clip = this.createClipEntity(clipId, data, clipUrl)
 
             await queryRunner.connect()
             await queryRunner.startTransaction()
@@ -271,6 +260,25 @@ class ClipRepository {
         } finally {
             await queryRunner.release()
         }
+    }
+
+    /**
+     * Create clip entity
+     * @param clipId
+     * @param data
+     * @param clipUrl
+     * @private
+     */
+    private createClipEntity(clipId: string, data: ClipForm, clipUrl: UploadedFileProperty): ClipEntity {
+        const clip = new ClipEntity()
+        clip.id = clipId
+        clip.name = data.name
+        clip.description = data.description
+        clip.cost = data.cost
+        clip.url = clipUrl.url
+        clip.urlCloudPath = clipUrl.path
+        clip.updated = new Date()
+        return clip
     }
 }
 

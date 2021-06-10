@@ -12,6 +12,7 @@ import { isNotEmpty } from "../../../core/extension/CommonExtension"
 export class LearnerEntityToLearnerProfile implements Mapper<LearnerEntity, LearnerProfile> {
     map(from: LearnerEntity): LearnerProfile {
         const out = new LearnerProfile()
+        out.id = from.member?.id
         out.firstname = from.member.firstname
         out.lastname = from.member.lastname
         out.fullNameText = `${from.member.firstname} ${from.member.lastname}`
@@ -24,6 +25,7 @@ export class LearnerEntityToLearnerProfile implements Mapper<LearnerEntity, Lear
         out.grade = new Grade(from.grade?.grade, from.grade?.title)
         out.created = from.member.created
         out.updated = from.member.updated
+        out.verified = from.member?.verified
         return out
     }
 
