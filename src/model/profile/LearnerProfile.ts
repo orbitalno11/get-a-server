@@ -16,6 +16,7 @@ class LearnerProfile implements Profile {
     address: string
     created: Date | null
     updated: Date | null
+    verified: boolean
     grade: Grade
 
     public static getLearnerId(userId: string): string {

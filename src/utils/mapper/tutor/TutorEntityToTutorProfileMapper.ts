@@ -26,6 +26,7 @@ export class TutorEntityToTutorProfile implements Mapper<TutorEntity, TutorProfi
         out.subject = from.member?.interestedSubject?.map((item) => Subject.create(item?.subject?.code, item?.subject?.title))
         out.created = from.member.created
         out.updated = from.member.updated
+        out.verified = from.member?.verified
         return out
     }
 }

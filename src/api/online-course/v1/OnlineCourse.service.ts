@@ -211,7 +211,7 @@ export class OnlineCourseService {
         return {
             page: page,
             limit: limit,
-            route: "online-course/new"
+            route: "online-course/new-course"
         }
     }
 }
