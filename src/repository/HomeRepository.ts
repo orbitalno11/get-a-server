@@ -33,7 +33,7 @@ class HomeRepository {
                 .where("interestedSubject.subjectRank = 1")
                 .groupBy("statistic.tutor")
                 .orderBy("statistic.offlineCourseRank", "ASC")
-                .orderBy("statistic.rating", "DESC")
+                .addOrderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
         } catch (error) {
@@ -53,7 +53,7 @@ class HomeRepository {
                 .leftJoinAndSelect("course.owner", "owner")
                 .leftJoinAndSelect("owner.member", "member")
                 .orderBy("statistic.courseRank", "DESC")
-                .orderBy("statistic.rating", "DESC")
+                .addOrderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
         } catch (error) {
