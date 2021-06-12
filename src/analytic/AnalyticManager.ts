@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common"
+import { PythonShell } from "python-shell"
 import AnalyticRepository from "../repository/AnalyticRepository"
 import { launch, launchAnalytic } from "../core/common/launch"
 import RatingUtil from "../utils/rating/RatingUtil"
 import { isEmpty } from "../core/extension/CommonExtension"
 import { CourseType } from "../model/course/data/CourseType"
+import * as config from "../configs/EnvironmentConfig"
 
 /**
  * Analytic manager
@@ -183,6 +185,43 @@ class AnalyticManager {
     updateOnlineCourseRank() {
         return launch(async () => {
             await this.repository.updateOnlineCourseRank()
+        })
+    }
+
+    /**
+     * Update tutor rank
+     */
+    updateTutorRank() {
+        const host = config.DATABASE_HOST
+        const name = config.DATABASE_NAME
+        const user = config.DATABASE_USER
+        const password = config.DATABASE_PASSWORD
+        const port = config.DATABASE_PORT.toString()
+
+        const option = {
+            args: [host, name, user, password, port]
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            PythonShell.run("./ranking/start_rfm.py", option, (err, output) => {
+                if (err) {
+                    reject()
+                }
+                if (output[0] === "success") {
+                    resolve()
+                } else {
+                    reject()
+                }
+            })
+        })
+    }
+
+    /**
+     * Clear tutor statistic data
+     */
+    clearAnalyticData() {
+        return launch(async () => {
+            await this.repository.clearAnalyticData()
         })
     }
 }

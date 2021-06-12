@@ -46,6 +46,7 @@
         "mysql2": "^2.2.5",
         "nestjs-typeorm-paginate": "^2.5.1",
         "path": "^0.12.7",
+        "python-shell": "^3.0.0",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
         "rxjs": "^6.6.6",
