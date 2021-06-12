@@ -467,6 +467,53 @@ class AnalyticRepository {
             await queryRunner.release()
         }
     }
+
+    /**
+     * Clear analytic data
+     */
+    async clearAnalyticData() {
+        const queryRunner = this.connection.createQueryRunner()
+        try {
+            await queryRunner.connect()
+            await queryRunner.startTransaction()
+            await queryRunner.manager.createQueryBuilder()
+                .update(TutorAnalyticRecencyEntity)
+                .set({
+                    recentLogin: null,
+                    recentProfileView: null,
+                    recentComment: null,
+                    recentApproved: null
+                })
+                .execute()
+            await queryRunner.manager.createQueryBuilder()
+                .update(TutorAnalyticFrequencyEntity)
+                .set({
+                    numberOfLogin: 0,
+                    numberOfProfileView: 0,
+                    numberOfCourseView: 0
+                })
+                .execute()
+            await queryRunner.manager.createQueryBuilder()
+                .update(TutorAnalyticMonetaryEntity)
+                .set({
+                    rating: 0,
+                    offlineRating: 0,
+                    onlineRating: 0,
+                    numberOfFavorite: 0,
+                    numberOfLearner: 0,
+                    numberOfOfflineReview: 0,
+                    numberOfOnlineReview: 0
+                })
+                .execute()
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            logger.error(error)
+            await queryRunner.rollbackTransaction()
+            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }
 
 export default AnalyticRepository

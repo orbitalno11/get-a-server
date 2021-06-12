@@ -18,7 +18,6 @@ class HomeRepository {
 
     /**
      * Get tutor list by rank
-     * waiting for ranking sys. => change "rating" to "offlineCourseRank"
      * @param rankLimit
      */
     async getTutorByRank(rankLimit: number = 10): Promise<TutorStatisticEntity[]> {
@@ -33,6 +32,7 @@ class HomeRepository {
                 .leftJoinAndSelect("interestedSubject.subject", "subject")
                 .where("interestedSubject.subjectRank = 1")
                 .groupBy("statistic.tutor")
+                .orderBy("statistic.offlineCourseRank", "ASC")
                 .orderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()

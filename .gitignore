@@ -46,3 +46,5 @@ jwtRS256.key.pub
 .env.local
 
 temp
+/get-a-python
+!**/__pycache__/
