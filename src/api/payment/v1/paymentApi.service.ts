@@ -5,6 +5,7 @@ import { launch } from "../../../core/common/launch"
 import PaymentRepository from "../../../repository/PaymentRepository"
 import { PaymentTransactionEntity } from "../../../entity/payment/PaymentTransaction.entity"
 import CoinPayment from "../../../model/payment/CoinPayment"
+import { AppGateway } from "../../../gateway/app.gateway"
 
 /**
  * Service class for payment API
@@ -15,7 +16,8 @@ export class PaymentApiService {
     constructor(
         private readonly connection: Connection,
         private readonly repository: PaymentRepository,
-        private readonly paymentManager: PaymentManager
+        private readonly paymentManager: PaymentManager,
+        private readonly appGateway: AppGateway
     ) {
     }
 
@@ -69,6 +71,7 @@ export class PaymentApiService {
     async confirmPayment(paymentDetail: CoinPayment): Promise<void> {
         return launch( async () => {
             await this.repository.updatePaymentStatus(paymentDetail)
+            this.appGateway.sendPaymentResult(paymentDetail.transactionId, paymentDetail.amount, true)
         })
     }
 }
