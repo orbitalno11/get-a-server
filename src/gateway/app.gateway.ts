@@ -1,7 +1,7 @@
 import {
     OnGatewayConnection,
     OnGatewayDisconnect,
-    OnGatewayInit,
+    OnGatewayInit, SubscribeMessage,
     WebSocketGateway,
     WebSocketServer
 } from "@nestjs/websockets"
@@ -16,6 +16,8 @@ import { logger } from "../core/logging/Logger"
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
     @WebSocketServer() server: Server
+
+    private paymentList: { clientId: string, transactionId: string }[] = []
 
     /**
      * Initial web socket
@@ -49,5 +51,45 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
      */
     sendUploadProgressToClient(progress: number, clientId: string) {
         this.server.to(`/_web#${clientId}`).emit("uploadProgress", progress)
+    }
+
+    /**
+     * Register client and transaction id
+     * @param client
+     * @param data
+     */
+    @SubscribeMessage("observe-payment")
+    userPaymentHandshake(client: Socket, data: string) {
+        const index = this.paymentList.indexOf({
+            clientId: client.id,
+            transactionId: data
+        })
+
+        if (index === -1) {
+            this.paymentList.push({
+                clientId: client.id,
+                transactionId: data
+            })
+        }
+    }
+
+    /**
+     * Send payment status to client
+     * @param transactionId
+     * @param amount
+     * @param status
+     */
+    sendPaymentResult(transactionId: string, amount: number, status: boolean) {
+        const index = this.paymentList.findIndex((item) => item.transactionId === transactionId)
+
+        if (index > -1) {
+            const client = this.paymentList[index]
+            this.server.to(client.clientId).emit("payment-result", {
+                "transactionId": transactionId,
+                "amount": amount,
+                "status": status
+            })
+            this.paymentList.splice(index, 1)
+        }
     }
 }

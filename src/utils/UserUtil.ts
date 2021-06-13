@@ -17,7 +17,6 @@ import CommonError from "../core/exceptions/constants/common-error.enum"
 import { launch } from "../core/common/launch"
 import { OfflineCourseEntity } from "../entity/course/offline/offlineCourse.entity"
 import { OfflineCourseRatingTransactionEntity } from "../entity/course/offline/offlineCourseRatingTransaction.entity"
-import { FavoriteTutorEntity } from "../entity/favoriteTutor.entity"
 import { OnlineCourseEntity } from "../entity/course/online/OnlineCourse.entity"
 import { CoinEntity } from "../entity/coins/coin.entity"
 import { ClipTransactionEntity } from "../entity/course/clip/ClipTransaction.entity"
@@ -229,22 +228,6 @@ class UserUtil {
     }
 
     /**
-     * Get enrolled course detail
-     * @param userId
-     * @param courseId
-     * @param isOfflineCourse
-     */
-    getEnrolled(userId: string, courseId: string, isOfflineCourse: boolean = true): Promise<OfflineCourseEntity | OnlineCourseEntity> {
-        return launch(async () => {
-            if (userId?.isSafeNotBlank() && courseId?.isSafeNotBlank()) {
-                return await this.userRepository.getEnrolledCourseById(LearnerProfile.getLearnerId(userId), courseId, isOfflineCourse)
-            } else {
-                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
-            }
-        })
-    }
-
-    /**
      * Check request learner is already subscribe clip
      * @param userId
      * @param clipId
@@ -253,21 +236,6 @@ class UserUtil {
         return launch(async () => {
             if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
                 return await this.userRepository.isSubscribeClipById(LearnerProfile.getLearnerId(userId), clipId)
-            } else {
-                throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
-            }
-        })
-    }
-
-    /**
-     * Get learner subscribe clip detail
-     * @param userId
-     * @param clipId
-     */
-    getSubscribeClip(userId: string, clipId: string): Promise<ClipEntity> {
-        return launch(async () => {
-            if (userId?.isSafeNotBlank() && clipId?.isSafeNotBlank()) {
-                return await this.userRepository.getSubscribeClipById(LearnerProfile.getLearnerId(userId), clipId)
             } else {
                 throw ErrorExceptions.create("Query data is invalid", CommonError.INVALID_REQUEST_DATA)
             }
