@@ -158,7 +158,11 @@ class AnalyticManager {
                     oldRating,
                     monetary[reviewNumberKey]
                 )
-                monetary[reviewNumberKey] = !deleteReview ? monetary[reviewNumberKey] : monetary[reviewNumberKey] - 1
+                if (deleteReview) {
+                    monetary[reviewNumberKey] = monetary[reviewNumberKey] > 0 ? monetary[reviewNumberKey] - 1 : 0
+                } else {
+                    monetary[reviewNumberKey] = monetary[reviewNumberKey] > 0 ? monetary[reviewNumberKey] : 1
+                }
             }
 
             statistic.rating = RatingUtil.calculateTutorRatingAvg(
