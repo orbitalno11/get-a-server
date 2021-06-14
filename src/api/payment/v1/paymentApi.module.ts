@@ -6,13 +6,14 @@ import { PaymentApiService } from "./paymentApi.service"
 import { PaymentApiController } from "./paymentApi.controller"
 import { PaymentModule } from "../../../payment/payment.module"
 import Authenticated from "../../../middleware/auth/Authenticated.middleware"
+import { GatewayModule } from "../../../gateway/gateway.module"
 
 /**
  * Module for payment API
  * @author orbitalno11 2021 A.D.
  */
 @Module({
-    imports: [CoreModule, UtilityModule, PaymentModule, RepositoryModule],
+    imports: [CoreModule, UtilityModule, PaymentModule, RepositoryModule, GatewayModule],
     controllers: [PaymentApiController],
     providers: [PaymentApiService]
 })

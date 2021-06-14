@@ -47,7 +47,7 @@ class RatingUtil {
         reviewNumber: number
     ): number {
         const decreaseRating = this.calculateDecreaseRatingAvg(avgRating, oldRating, reviewNumber)
-        const decreaseReviewNumber = reviewNumber - 1
+        const decreaseReviewNumber = reviewNumber > 0 ? reviewNumber - 1 : 0
         return this.calculateIncreaseRatingAvg(decreaseRating, newRating, decreaseReviewNumber)
     }
 
@@ -67,7 +67,8 @@ class RatingUtil {
         const offline = offlineCourseRating * numberOfOfflineReview
         const online = onlineCourseRating * numberOfOnlineReview
         const numberOfReview = numberOfOfflineReview + numberOfOnlineReview
-        return (offline + online) / numberOfReview
+        const rating = (offline + online) / numberOfReview
+        return rating.isNaN() || !isFinite(rating) ? 0 : rating
     }
 
     /**

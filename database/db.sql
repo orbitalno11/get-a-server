@@ -441,18 +441,18 @@ create table clip_transaction
 -- analytic data
 create table tutor_statistic
 (
-    tutor_id                 varchar(255)  not null,
-    number_of_offline_course int           not null default 0,
-    number_of_online_course  int           not null default 0,
-    number_of_learner        int           not null default 0,
-    number_of_favorite       int           not null default 0,
-    number_of_offline_review int           not null default 0,
-    number_of_online_review  int           not null default 0,
-    offline_course_rank      int           not null default 0,
-    online_course_rank       int           not null default 0,
-    tutor_rating             decimal(2, 1) not null default 0,
-    tutor_offline_rating     decimal(2, 1) not null default 0,
-    tutor_online_rating      decimal(2, 1) not null default 0,
+    tutor_id                 varchar(255)   not null,
+    number_of_offline_course int            not null default 0,
+    number_of_online_course  int            not null default 0,
+    number_of_learner        int            not null default 0,
+    number_of_favorite       int            not null default 0,
+    number_of_offline_review int            not null default 0,
+    number_of_online_review  int            not null default 0,
+    offline_course_rank      decimal(14, 4) not null default 0,
+    online_course_rank       decimal(14, 4) not null default 0,
+    tutor_rating             decimal(2, 1)  not null default 0,
+    tutor_offline_rating     decimal(2, 1)  not null default 0,
+    tutor_online_rating      decimal(2, 1)  not null default 0,
     PRIMARY KEY (tutor_id),
     CONSTRAINT `FK_STAT_TUTOR` FOREIGN KEY (tutor_id) REFERENCES tutor_profile (id)
 );

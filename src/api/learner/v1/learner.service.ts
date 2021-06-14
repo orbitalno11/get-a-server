@@ -21,6 +21,7 @@ import { isNotEmpty } from "../../../core/extension/CommonExtension"
 import { LearnerRequestToMyCourseListMapper } from "../../../utils/mapper/course/offline/LearnerRequestToMyCourse.mapper"
 import OnlineCourse from "../../../model/course/OnlineCourse"
 import { OnlineCourseEntityToOnlineCourseMapper } from "../../../utils/mapper/course/online/OnlineCourseEntityToOnlineCourse.mapper"
+import { CoinEntity } from "../../../entity/coins/coin.entity"
 
 @Injectable()
 export class LearnerService {
@@ -73,6 +74,11 @@ export class LearnerService {
             learnerProfile.grade = GradeEntity.createFromGrade(data.grade)
             member.leanerProfile = learnerProfile
 
+            const balance = new CoinEntity()
+            balance.member = member
+            balance.amount = 1000
+            balance.updated = new Date()
+
             // insert learner data to database
             const queryRunner = this.connection.createQueryRunner()
             try {
@@ -80,6 +86,7 @@ export class LearnerService {
                 await queryRunner.startTransaction()
                 await queryRunner.manager.save(contact)
                 await queryRunner.manager.save(member)
+                await queryRunner.manager.save(balance)
                 await queryRunner.commitTransaction()
             } catch (error) {
                 logger.error(error)

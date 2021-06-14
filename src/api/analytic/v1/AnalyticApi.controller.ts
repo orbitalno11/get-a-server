@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Query, UseFilters, UseInterceptors } from "@nestjs/common"
+import { Controller, Get, HttpCode, Query, UseFilters } from "@nestjs/common"
 import { FailureResponseExceptionFilter } from "../../../core/exceptions/filters/FailureResponseException.filter"
 import { ErrorExceptionFilter } from "../../../core/exceptions/filters/ErrorException.filter"
 import { AnalyticApiService } from "./AnalyticApi.service"

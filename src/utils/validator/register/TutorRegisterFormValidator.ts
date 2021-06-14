@@ -1,5 +1,5 @@
 import validator from "validator"
-import { isEmpty, isNotNull } from "../../../core/extension/CommonExtension"
+import { isEmpty, isSafeNotNull } from "../../../core/extension/CommonExtension"
 import TutorForm from "../../../model/form/register/TutorForm"
 import AbstractValidator from "../AbstractValidator"
 import ValidateResult from "../ValidateResult"
@@ -17,28 +17,28 @@ class TutorRegisterFormValidator extends AbstractValidator<TutorForm> {
             returnScore: false
         }
 
-        if (!this.form?.firstname.isSafeNotNull())
+        if (!this.form.firstname?.isSafeNotBlank())
             this.errors["firstname"] = "firstname is required"
-        if (!this.form?.lastname.isSafeNotNull())
+        if (!this.form.lastname?.isSafeNotBlank())
             this.errors["lastname"] = "lastname is required"
         if (!this.isInGenderList(this.form.gender))
             this.errors["gender"] = "gender is required"
-        if (!isNotNull(this.form?.dateOfBirth))
+        if (!isSafeNotNull(this.form?.dateOfBirth))
             this.errors["dateOfBirth"] = "dateOfBirth is required"
-        if (this.form?.email.isSafeNotNull()) {
+        if (this.form.email?.isSafeNotBlank()) {
             if (!validator.isEmail(this.form.email))
                 this.errors["email"] = "email is in valid"
         } else {
             this.errors["email"] = "email is required"
         }
-        if (this.form?.password.isSafeNotNull()) {
+        if (this.form.password?.isSafeNotBlank()) {
             if (!validator.isStrongPassword(this.form.password, passwordOptions))
                 this.errors["password"] = "password is not strong"
         } else {
             this.errors["password"] = "password is required"
         }
 
-        if (this.form?.confirmPassword.isSafeNotNull()) {
+        if (this.form.confirmPassword?.isSafeNotBlank()) {
             if (
                 !validator.isStrongPassword(
                     this.form.confirmPassword,
@@ -52,23 +52,23 @@ class TutorRegisterFormValidator extends AbstractValidator<TutorForm> {
             this.errors["confirmPassword"] = "confirm-password is required"
         }
 
-        if (this.form?.phoneNumber.isSafeNotNull()) {
+        if (this.form.phoneNumber?.isSafeNotBlank()) {
             if (!validator.isMobilePhone(this.form.phoneNumber, "th-TH")) this.errors["phoneNumber"] = "phone number is invalid"
         }
 
-        if (this.form?.subject1.isSafeNotNull()) {
+        if (this.form.subject1?.isSafeNotBlank()) {
             if (!this.isSubjectCode(this.form.subject1))
                 this.errors["subject1"] = "subject1 is invalid"
         } else {
             this.errors["subject1"] = "subject1 is required"
         }
 
-        if (this.form?.subject2?.isSafeNotNull()) {
+        if (this.form.subject2?.isSafeNotBlank()) {
             if (!this.isSubjectCode(this.form.subject2))
                 this.errors["subject2"] = "subject2 is invalid"
         }
 
-        if (this.form?.subject3?.isSafeNotNull()) {
+        if (this.form.subject3?.isSafeNotBlank()) {
             if (!this.isSubjectCode(this.form.subject3))
                 this.errors["subject3"] = "subject3 is invalid"
         }
