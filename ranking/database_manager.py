@@ -56,7 +56,7 @@ class DatabaseManager:
 
     def update_tutor_rank(self, data):
         try:
-            update_data = list(data.loc[:, ["rank", "tutor_id"]].itertuples(index=False, name=None))
+            update_data = list(data.loc[:, ["rfm_value", "tutor_id"]].itertuples(index=False, name=None))
             sql_command = "UPDATE tutor_statistic SET offline_course_rank=%s WHERE tutor_id LIKE %s"
             self.__cursor.executemany(sql_command, update_data)
             self.__db_connection.commit()

@@ -128,7 +128,6 @@ class RFM:
                                    (f_weight * self.__rfm["frequency"]) +
                                    (m_weight * self.__rfm["monetary"])) / (r_weight + f_weight + m_weight)
         self.__rfm.sort_values(by="rfm_value", ascending=False, inplace=True)
-        self.__rfm["rank"] = np.arange(self.__rfm.shape[0]) + 1
 
 
     def recency(self):
