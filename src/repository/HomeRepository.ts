@@ -32,7 +32,7 @@ class HomeRepository {
                 .leftJoinAndSelect("interestedSubject.subject", "subject")
                 .where("interestedSubject.subjectRank = 1")
                 .groupBy("statistic.tutor")
-                .orderBy("statistic.offlineCourseRank", "ASC")
+                .orderBy("statistic.offlineCourseRank", "DESC")
                 .addOrderBy("statistic.rating", "DESC")
                 .limit(rankLimit)
                 .getMany()
