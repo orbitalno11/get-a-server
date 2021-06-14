@@ -18,8 +18,8 @@ class LearnerRegisterFromValidator extends AbstractValidator<LearnerForm> {
             returnScore: false
         }
 
-        if (this.form.firstname?.isSafeNotBlank()) this.errors["firstname"] = "firstname is required"
-        if (this.form.lastname?.isSafeNotBlank()) this.errors["lastname"] = "lastname is required"
+        if (!this.form.firstname?.isSafeNotBlank()) this.errors["firstname"] = "firstname is required"
+        if (!this.form.lastname?.isSafeNotBlank()) this.errors["lastname"] = "lastname is required"
         if (!this.isInGenderList(this.form.gender)) this.errors["gender"] = "gender is required"
         if (!isSafeNotNull(this.form?.dateOfBirth)) this.errors["dateOfBirth"] = "dateOfBirth is required"
         if (this.form.email?.isSafeNotBlank()) {
