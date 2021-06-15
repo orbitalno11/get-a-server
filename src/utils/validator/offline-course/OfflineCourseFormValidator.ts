@@ -27,9 +27,9 @@ class OfflineCourseFormValidator extends AbstractValidator<OfflineCourseForm> {
             this.errors["description"] = "description is required"
         }
 
-        if (!this.form.grade?.isPositiveValue() || !(this.form.grade in Grade)) this.errors["grade"] = "grade is required"
+        if (!this.form.grade?.isSafeNumber() || !(this.form.grade in Grade)) this.errors["grade"] = "grade is required"
 
-        if (this.form.type?.isPositiveValue()) {
+        if (this.form.type?.isSafeNumber()) {
             if (!this.isCourseType(this.form.type)) this.errors["type"] = "course type is invalid"
         } else {
             this.errors["type"] = "course type is required"
