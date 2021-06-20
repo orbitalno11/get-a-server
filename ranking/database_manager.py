@@ -64,6 +64,30 @@ class DatabaseManager:
             print("Error %d: %s" % (error.args[0], error.args[1]))
             self.__db_connection.rollback()
 
+    def get_online_course_vote(self):
+        try:
+            sql_command = "SELECT onlineCourseId, (SUM(number_of_one_star) + SUM(number_of_two_star)) AS negative, (SUM(number_of_five_star) + SUM(number_of_four_star) + SUM(number_of_three_star)) AS positive FROM clip INNER JOIN clip_statistic statistic ON clip.id LIKE statistic.clip_id INNER JOIN online_course ON online_course.id LIKE clip.onlineCourseId GROUP BY clip.onlineCourseId"
+            self.__cursor.execute(sql_command)
+            result = self.__cursor.fetchall()
+            columns = ["course_id", "negative", "positive"]
+            dataframe = pd.DataFrame(result, columns=columns)
+            dataframe["negative"] = pd.to_numeric(dataframe["negative"])
+            dataframe["positive"] = pd.to_numeric(dataframe["positive"])
+            return dataframe
+        except pymysql.Error as error:
+            print("Error %d: %s" % (error.args[0], error.args[1]))
+            return None
+
+    def update_online_course_rank(self, data):
+        try:
+            update_data = list(data.loc[:, ["ci", "course_id"]].itertuples(index=False, name=None))
+            sql_command = "UPDATE online_course_statistic SET course_rank=%s WHERE course_id LIKE %s"
+            self.__cursor.executemany(sql_command, update_data)
+            self.__db_connection.commit()
+        except pymysql.Error as error:
+            print("Error %d: %s" % (error.args[0], error.args[1]))
+            self.__db_connection.rollback()
+
     def close(self):
         self.__cursor.close()
         self.__db_connection.close()
