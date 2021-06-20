@@ -5,7 +5,7 @@ export const SCB_BILLER_ID: string | undefined = process.env.SCB_BILLER_ID
 export const SCB_MERCHANT_ID: string | undefined = process.env.SCB_MERCHANT_ID
 export const SCB_TERMINAL_ID: string | undefined = process.env.SCB_TERMINAL_ID
 export const SCB_REF3_PREFIX: string | undefined = process.env.SCB_REF3_PREFIX
-export const PAYMENT_CALLBACK_URL: string | undefined = process.env.PAYMENT_CALL_BACK_URL
+export const PAYMENT_CALLBACK_URL: string | undefined = process.env.PAYMENT_CALLBACK_URL
 
 export const SERVER_PORT: string | undefined = process.env.PORT
 
