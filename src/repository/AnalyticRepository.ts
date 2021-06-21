@@ -422,53 +422,6 @@ class AnalyticRepository {
     }
 
     /**
-     * Update online course rank
-     */
-    async updateOnlineCourseRank() {
-        const queryRunner = this.connection.createQueryRunner()
-        try {
-            await queryRunner.connect()
-            await queryRunner.startTransaction()
-            await queryRunner.manager.createQueryBuilder()
-                .update(ClipStatisticEntity)
-                .set({
-                    clipRank: () => "(((number_of_five_star + number_of_four_star + number_of_three_star) + 1.9208) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)) - 1.96 * SQRT(((number_of_five_star + number_of_four_star + number_of_three_star) * (number_of_two_star + number_of_one_star)) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)) + 0.9604) / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star))) / (1 + 3.8416 / ((number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star)))"
-                })
-                .where("(number_of_five_star + number_of_four_star + number_of_three_star) + (number_of_two_star + number_of_one_star) > 0")
-                .execute()
-            await queryRunner.manager.createQueryBuilder()
-                .update(OnlineCourseStatisticEntity)
-                .set({
-                    courseRank: () =>
-                        "("+
-                        this.connection.createQueryBuilder()
-                            .select("((positive + 1.9208) / (positive + negative) - 1.96 * SQRT((positive * negative) / (positive + negative) + 0.9604) / (positive + negative)) / (1 + 3.8416 / (positive + negative))")
-                            .from(subQuery => {
-                                return subQuery
-                                    .select([
-                                        "(SUM(number_of_one_star) + SUM(number_of_two_star)) AS negative",
-                                        "(SUM(number_of_five_star) + SUM(number_of_four_star) + SUM(number_of_three_star)) AS positive"
-                                    ])
-                                    .from(ClipEntity, "clip")
-                                    .innerJoinAndSelect("clip.statistic", "statistic")
-                                    .innerJoinAndSelect("clip.onlineCourse", "course")
-                                    .where("clip.onlineCourse LIKE online_course_statistic.course_id")
-                                    .groupBy("clip.onlineCourse")
-                            }, "calculate").getQuery()
-                        +")"
-                })
-                .execute()
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            logger.error(error)
-            await queryRunner.rollbackTransaction()
-            throw ErrorExceptions.create("Can not update analytic data", AnalyticError.CAN_NOT_UPDATE_ANALYTIC_DATA)
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    /**
      * Clear analytic data
      */
     async clearAnalyticData() {

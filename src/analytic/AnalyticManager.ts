@@ -187,8 +187,27 @@ class AnalyticManager {
      * Update online course rank
      */
     updateOnlineCourseRank() {
-        return launch(async () => {
-            await this.repository.updateOnlineCourseRank()
+        const host = config.DATABASE_HOST
+        const name = config.DATABASE_NAME
+        const user = config.DATABASE_USER
+        const password = config.DATABASE_PASSWORD
+        const port = config.DATABASE_PORT.toString()
+
+        const option = {
+            args: [host, name, user, password, port]
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            PythonShell.run("./ranking/start_wilson_lower_bound.py", option, (err, output) => {
+                if (err) {
+                    reject()
+                }
+                if (output[0] === "success") {
+                    resolve()
+                } else {
+                    reject()
+                }
+            })
         })
     }
 
