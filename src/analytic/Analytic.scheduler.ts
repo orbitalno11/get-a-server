@@ -15,7 +15,7 @@ export class AnalyticScheduler {
     /**
      * Update tutor and online course rank
      */
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    @Cron(CronExpression.EVERY_WEEK)
     handleCron() {
         Promise.all([this.updateOnlineCourseRank(1), this.updateTutorRank(1)]).then((value) => {
             if (value[0] && value[1]) {
